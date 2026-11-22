@@ -86,15 +86,15 @@ P2-OD-006 (Pundit) aligns with ADR-012. Client quote acceptance (P2-OD-021) shou
 
 ---
 
-## 7. P2.3 schema handoff (PROPOSED — not approved)
+## 7. P2.3 schema handoff — P2.5B recommendations (PROPOSED — not approved)
 
-| ID | Question | P2.3 recommendation | Tradeoff |
-|---|---|---|---|
-| P2-OD-040 | Session storage | **Encrypted cookie session** + `users.security_version`; optional `sessions` table only if compliance requires inventory | Cookie: simpler ops; DB session: easier forced logout audit |
-| P2-OD-041 | Audit events shape | **`audit_events` STI** with `type` discriminator | Single query surface; wide table rows |
-| P2-OD-042 | Assignment access_scope | **`varchar` column** with CHECK ∈ `delivery`, `review`, `collaborator` on `assignments` | Simpler than join table; extensibility via migration |
+| ID | Question | Prior P2.3 wording | **P2.5B recommended default** | Tradeoff |
+|---|---|---|---|---|
+| P2-OD-040 | Session storage | Encrypted cookie + `security_version` | **DB-backed revocable `sessions`** + `security_version` invalidation | Revocation audit vs ops simplicity |
+| P2-OD-041 | Audit events shape | Rails STI `type` column | **`event_type` varchar + `metadata` jsonb** (no STI) | Fewer migrations; explicit readers |
+| P2-OD-042 | Assignment access_scope | varchar CHECK enum | **Same** — explicit CHECK + policy enforcement | — |
 
-Promote to ADR or APPROVED after stakeholder review. See [`P2_3_DATABASE_ARCHITECTURE.md`](P2_3_DATABASE_ARCHITECTURE.md).
+Full analysis: [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](P2_5B_PHASE_2_EXIT_DECISIONS.md). Promote to ADR or APPROVED after product-owner confirmation.
 
 ---
 

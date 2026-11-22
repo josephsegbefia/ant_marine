@@ -22,4 +22,6 @@
 
 Only mark a decision `APPROVED` when the user or authorized stakeholder clearly confirms it. Keep history when decisions change.
 
-**P2.5A reconciliation (2026-11-22):** Enumerated ADRs and P2-OD-004/043 approved per [`P2_5A_STAKEHOLDER_DECISION_RECORD.md`](architecture/P2_5A_STAKEHOLDER_DECISION_RECORD.md). Phase 2 **not** fully closed — ADR-010 implementation, Phase 1 formal sign-off, and outstanding P2-OD items remain.
+**P2.5A reconciliation (2026-11-22):** Enumerated ADRs and P2-OD-004/043 approved in commit `08a5423` — see [`P2_5A_STAKEHOLDER_DECISION_RECORD.md`](architecture/P2_5A_STAKEHOLDER_DECISION_RECORD.md).
+
+**P2.5B exit prep (2026-11-22):** P2-OD-040–042 recommendations in [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md) remain **PROPOSED** until product owner approves. Phase 2 full exit pending; Phase 3 Wave A **GO** per that document.
