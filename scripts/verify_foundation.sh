@@ -7,11 +7,23 @@ if [[ ! -f Gemfile || ! -f bin/rails ]]; then
   exit 1
 fi
 
+if [[ -f .env.local ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env.local
+  set +a
+fi
+
 FAIL=0
+RUN=( )
+if command -v mise >/dev/null 2>&1 && [[ -f mise.toml ]]; then
+  RUN=(mise exec --)
+fi
+
 check() {
   local name="$1"; shift
   printf '\n== %s ==\n' "$name"
-  if "$@"; then echo "PASS: $name"; else echo "FAIL: $name"; FAIL=1; fi
+  if "${RUN[@]}" "$@"; then echo "PASS: $name"; else echo "FAIL: $name"; FAIL=1; fi
 }
 
 check 'Ruby' ruby -v

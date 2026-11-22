@@ -1,0 +1,22 @@
+# LOCAL DEV ONLY: no external networking, no production data or secrets.
+# Start: docker compose --env-file .env.local -f compose.dev.yml up -d db
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: ant_marine_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ant_marine_dev
+      POSTGRES_PASSWORD: ${ANT_MARINE_DB_PASSWORD:?ANT_MARINE_DB_PASSWORD must be set (see .env.local)}
+      POSTGRES_DB: ant_marine_development
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - ant_marine_local_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ant_marine_dev -d ant_marine_development"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  ant_marine_local_pg:
