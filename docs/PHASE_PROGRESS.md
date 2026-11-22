@@ -17,7 +17,7 @@
 | B0.1A Prerequisites | — | **Passed** | mise Ruby 3.4.13, Rails 8.1.4.1 |
 | B0.1B Rails application | 2026-11-22 | **Passed** | Commit `c448c4c`, module `AntMarine` |
 | B0.2 Local PostgreSQL | 2026-11-22 | **Passed** | Commit `70a44f4`; PostgreSQL 17, `ant_marine_development` / `ant_marine_test`, `db:prepare`, HTTP 200, read/write verification |
-| B0.3 Development quality | 2026-11-22 | **Passed** | Smoke tests, `verify_foundation.sh`, `.env.example`, README, CI workflow — see B0.3 report in agent log |
+| B0.3 Development quality | 2026-11-22 | **Passed** | Commit `28a1b2b`; smoke tests (4), `scripts/verify_foundation.sh`, `.env.example`, README, `.github/workflows/ci.yml` |
 
 ## Local development quick reference
 
