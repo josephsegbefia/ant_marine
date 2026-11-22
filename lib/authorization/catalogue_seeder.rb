@@ -18,8 +18,12 @@ module Authorization
     end
 
     def self.catalogue_present?
-      expected = GeneratedPermissionDefinitions::RECORDS.size
-      Permission.count >= expected && RolePermission.exists?
+      expected_keys = GeneratedPermissionDefinitions::RECORDS.map { |row| row[:key] }.sort
+      return false unless Permission.pluck(:key).sort == expected_keys
+
+      RoleDefaults.all_role_keys.all? do |role_key|
+        RolePermission.where(role_key: role_key).exists?
+      end
     end
 
     def seed!

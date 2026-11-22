@@ -14,6 +14,7 @@ class WorkspaceSelectionsController < ApplicationController
     end
 
     Current.session.update!(membership: membership)
+    Current.session.sync_permission_epoch_from!(membership)
     Current.membership = membership
 
     if membership.staff_domain?
