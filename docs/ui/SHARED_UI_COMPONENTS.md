@@ -83,6 +83,15 @@ data: {
 - Home overview shows real invitation metrics or honest empty state — no studio demo stats.
 - Mobile: `staff-shell` Stimulus toggles sidebar nav below 1024px (`staff-mobile-nav-toggle`).
 
+## Staff sidebar visual refinement (P3-A2-UX-D)
+
+- **Width:** desktop sidebar `272px` (PO-refined from studio `236px` for label/icon comfort).
+- **Colour:** background `#164f67` (softer maritime navy vs studio `#10324a`); active item `#2b6674` with subtle teal border.
+- **Branding:** compact `ant-brand` block only — **no** duplicate org/workspace card in the sidebar.
+- **Icons:** inline SVG (`shared/staff/_nav_icon.html.erb`), studio stroke `1.65` — `home` (Overview), `mail` (Invitations), `switch` (workspace change), `menu` (mobile toggle).
+- **Workspace switch:** footer link when `portal_eligible_memberships.size > 1`; header back link unchanged.
+- **Mobile drawer:** fixed panel `min(272px, 88vw)`, backdrop dismiss, `Escape` close, body scroll lock (`staff_shell_controller.js`).
+
 ## Limitations (continued)
 
 - Client portal does not yet use the full staff sidebar pattern.

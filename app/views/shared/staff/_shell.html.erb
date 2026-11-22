@@ -1,4 +1,9 @@
 <div class="staff-app" data-controller="staff-shell">
+  <div class="staff-shell-backdrop"
+       hidden
+       data-staff-shell-target="backdrop"
+       data-action="click->staff-shell#close"
+       aria-hidden="true"></div>
   <%= render "shared/staff/sidebar" %>
 
   <div class="staff-app-main">

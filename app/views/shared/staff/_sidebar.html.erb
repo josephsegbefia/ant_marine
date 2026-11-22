@@ -1,18 +1,7 @@
 <aside class="staff-app-side" aria-label="Staff workspace">
   <div class="staff-app-side__inner">
-    <div class="px-2 pt-1">
+    <div class="staff-side-brand">
       <%= render "shared/ant_marine_brand" %>
-    </div>
-
-    <div class="staff-org-card">
-      <div class="staff-org-card__avatar" aria-hidden="true">AM</div>
-      <div class="min-w-0">
-        <div class="staff-org-card__name"><%= Current.membership.organization.name %></div>
-        <small class="staff-org-card__meta">Team workspace</small>
-        <% if staff_multiple_workspaces? %>
-          <%= link_to "Switch workspace", workspace_selection_path, class: "staff-org-card__switch" %>
-        <% end %>
-      </div>
     </div>
 
     <button type="button"
@@ -21,7 +10,8 @@
             data-action="staff-shell#toggle"
             aria-expanded="false"
             aria-controls="staff-workspace-nav">
-      Menu
+      <span>Menu</span>
+      <%= render "shared/staff/nav_icon", name: "menu", size: 16 %>
     </button>
 
     <div id="staff-workspace-nav" class="staff-app-side__nav" data-staff-shell-target="nav">

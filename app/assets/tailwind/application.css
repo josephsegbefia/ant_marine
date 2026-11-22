@@ -636,11 +636,15 @@
   }
 
   .staff-app-side {
-    @apply flex shrink-0 flex-col bg-[#10324a] text-white lg:w-[236px] lg:min-h-dvh;
+    @apply flex shrink-0 flex-col bg-[#164f67] text-white lg:w-[272px] lg:min-h-dvh;
   }
 
   .staff-app-side__inner {
-    @apply flex flex-1 flex-col p-3 sm:p-4 lg:px-3 lg:py-6;
+    @apply flex flex-1 flex-col p-3 sm:p-4 lg:px-3 lg:pb-6 lg:pt-5;
+  }
+
+  .staff-side-brand {
+    @apply px-2 pb-5 pt-1 lg:px-3;
   }
 
   .staff-app-side .ant-brand__title,
@@ -652,40 +656,40 @@
     color: #a5c6d4;
   }
 
-  .staff-org-card {
-    @apply mx-1.5 mb-5 mt-4 flex items-center gap-2.5 rounded-[11px] border border-[#3c6174] bg-[#20485d] p-3;
-  }
-
-  .staff-org-card__avatar {
-    @apply grid size-9 shrink-0 place-items-center rounded-full bg-[#2b6674] text-xs font-extrabold text-white;
-  }
-
-  .staff-org-card__name {
-    @apply text-[11px] font-bold text-white;
-  }
-
-  .staff-org-card__meta {
-    @apply mt-1 block text-[10px] text-[#a1c3cf];
-  }
-
-  .staff-org-card__switch {
-    @apply mt-1 text-[10px] font-bold text-[#8fd4cc] no-underline hover:underline;
+  .staff-app-side .ant-brand__icon {
+    @apply bg-[#2b6674]/90;
   }
 
   .staff-side-label {
-    @apply mx-3 mb-2 text-[10px] font-extrabold tracking-wide text-[#8aafbd];
+    @apply mx-3 mb-2.5 mt-1 text-[10px] font-extrabold tracking-wide text-[#8aafbd];
+  }
+
+  .staff-side-nav {
+    @apply mb-4 flex flex-col;
   }
 
   .staff-nav-button {
-    @apply mb-0.5 flex w-full items-center gap-2.5 rounded-[9px] border-0 bg-transparent px-3 py-2.5 text-left text-xs font-semibold text-[#b3ced7] no-underline hover:bg-[#1a4a5e];
+    @apply mb-1 flex w-full cursor-pointer items-center gap-2.5 rounded-[9px] border border-transparent bg-transparent px-3 py-[11px] text-left text-xs font-semibold text-[#c5d8e0] no-underline transition-colors duration-150 hover:border-[#3d7d8e]/40 hover:bg-[#1e5c74];
+  }
+
+  .staff-nav-button:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#8fd4cc];
   }
 
   .staff-nav-button--active {
-    @apply bg-[#2b6674] text-white;
+    @apply border-[#4a9aaa]/50 bg-[#2b6674] text-white shadow-sm;
+  }
+
+  .staff-nav-icon {
+    @apply shrink-0 text-current opacity-90;
+  }
+
+  .staff-nav-button--active .staff-nav-icon {
+    @apply opacity-100;
   }
 
   .staff-bottom-user {
-    @apply mt-auto border-t border-[#2a5165] px-3 py-4 text-[11px] text-[#b3ced7];
+    @apply mt-auto border-t border-[#3a6d84] px-3 py-4 text-[11px] text-[#c5d8e0];
   }
 
   .staff-bottom-user__name {
@@ -701,7 +705,15 @@
   }
 
   .staff-bottom-user__link {
-    @apply text-[10px] font-bold text-[#8fd4cc] no-underline hover:underline;
+    @apply inline-flex cursor-pointer text-[10px] font-bold text-[#8fd4cc] no-underline hover:underline;
+  }
+
+  .staff-bottom-user__link--row {
+    @apply items-center gap-2;
+  }
+
+  .staff-bottom-user__link:focus-visible {
+    @apply rounded outline-2 outline-offset-2 outline-[#8fd4cc];
   }
 
   .staff-app-main {
@@ -729,18 +741,33 @@
   }
 
   .staff-mobile-nav-toggle {
-    @apply mb-3 flex w-full items-center justify-between rounded-[9px] border border-[#3c6174] bg-[#20485d] px-3 py-2 text-xs font-bold text-white lg:hidden;
+    @apply mb-3 flex w-full cursor-pointer items-center justify-between rounded-[9px] border border-[#3d7d8e]/50 bg-[#1e5c74] px-3 py-2.5 text-xs font-bold text-white lg:hidden;
+  }
+
+  .staff-mobile-nav-toggle:focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#8fd4cc];
   }
 
   .staff-app-side__nav {
-    @apply hidden flex-col lg:flex;
+    @apply hidden flex-col lg:flex lg:static lg:z-auto lg:w-auto lg:shadow-none;
   }
 
   .staff-app-side__nav--open {
-    @apply flex;
+    @apply fixed bottom-0 left-0 top-0 z-40 flex w-[min(272px,88vw)] flex-col overflow-y-auto bg-[#164f67] px-3 pb-6 pt-4 shadow-xl;
+  }
+
+  .staff-shell-backdrop {
+    @apply fixed inset-0 z-30 bg-[#0b2533]/45;
+  }
+
+  .staff-shell-scroll-lock {
+    @apply overflow-hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .staff-nav-button {
+      transition: none;
+    }
     .ant-btn-primary:hover {
       transform: none;
       box-shadow: none;

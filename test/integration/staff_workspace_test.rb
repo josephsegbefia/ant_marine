@@ -3,7 +3,7 @@
 require "test_helper"
 
 class StaffWorkspaceTest < ActionDispatch::IntegrationTest
-  test "super admin staff home renders S01 shell with real team access data" do
+  test "super admin staff home renders refined shell with real team access data" do
     sign_in_as(users(:super_admin), membership: memberships(:super_admin_membership))
 
     get staff_root_path
@@ -11,26 +11,34 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
 
     assert_select ".staff-app-side", count: 1
     assert_select ".staff-app-main", count: 1
+    assert_select ".staff-org-card", count: 0
+    assert_select ".ant-brand__title", text: /ANT Marine W\.A\./
     assert_match(/Hello, Super/, response.body)
-    assert_select ".staff-org-card", text: /ANT Marine/
     assert_select ".staff-bottom-user", text: /Super Admin/
     assert_select ".staff-bottom-user", text: /Super Administrator/
     assert_match(/1 pending invitation/, response.body)
     assert_no_match(/Jobs in progress/, response.body)
     assert_no_match(/New requests/, response.body)
     assert_select "a.staff-nav-button--active[href=?]", staff_root_path, text: /Overview/
-    assert_select "a.staff-nav-button[href=?]", staff_invitations_path, text: /Invitations/
+    assert_select "a.staff-nav-button--active[href=?]", staff_root_path do
+      assert_select "svg.staff-nav-icon", count: 1
+    end
+    assert_select "a.staff-nav-button[href=?]", staff_invitations_path do
+      assert_select "svg.staff-nav-icon", count: 1
+    end
+    assert_select "button.staff-mobile-nav-toggle[aria-controls=?]", "staff-workspace-nav"
+    assert_select "[data-staff-shell-target='backdrop']", count: 1
     assert_no_match(/Back to workspaces/, response.body)
   end
 
-  test "dual-domain staff sees workspace back link in header" do
+  test "dual-domain staff sees workspace back link in header and footer switch" do
     sign_in_as(users(:dual_domain), membership: memberships(:dual_staff))
 
     get staff_root_path
     assert_response :success
 
     assert_select "a.ant-back-link[href=?]", workspace_selection_path, text: /Back to workspaces/
-    assert_select "a.staff-org-card__switch[href=?]", workspace_selection_path
+    assert_select "a.staff-bottom-user__link[href=?]", workspace_selection_path, text: /Switch workspace/
   end
 
   test "single staff membership has no workspace back link" do
@@ -40,7 +48,7 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     assert_no_match(/Back to workspaces/, response.body)
-    assert_select "a.staff-org-card__switch", count: 0
+    assert_select "a.staff-bottom-user__link", text: /Switch workspace/, count: 0
     assert_no_match(/Team access/, response.body)
     assert_select "a[href=?]", staff_invitations_path, count: 0
   end
@@ -50,6 +58,14 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
 
     get staff_root_path
     assert_redirected_to root_path
+  end
+
+  test "client portal does not render staff sidebar" do
+    sign_in_as(users(:client_owner), membership: memberships(:client_owner_membership))
+
+    get client_root_path
+    assert_response :success
+    assert_select ".staff-app-side", count: 0
   end
 
   test "invitations index loads inside staff shell" do
