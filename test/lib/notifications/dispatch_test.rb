@@ -21,7 +21,9 @@ class NotificationsDispatchTest < ActiveSupport::TestCase
     assert_match(/queue_adapter = :solid_queue/, production)
     assert_match(/delivery_method = :file/, development)
     assert_match(/SMTP_ADDRESS/, production)
-    assert_match(/MailDelivery/, production)
+
+    guard = Rails.root.join("config/initializers/mail_delivery_guard.rb").read
+    assert_match(/MailDelivery/, guard)
   end
 
   test "password reset still enqueues the mailer without a raw token argument" do
