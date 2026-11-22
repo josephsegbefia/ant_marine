@@ -131,21 +131,32 @@ Treat **document records** as distinct from **stored blobs**.
 - Database migrations must be reversible where feasible, reviewed and safe with existing data. Use DB constraints/indexes to enforce uniqueness and consistency.
 - Developer test stack: Minitest, Rails integration/system tests, fixtures/factories as project decides, RuboCop, Brakeman, dependency audit. CI must test from clean installation.
 
-### 3.1 Permission roles (proposal; approve during Phase 2)
+### 3.1 Configurable role & permission system [REQUIRED]
 
-| Role | Access boundary |
-|---|---|
-| Public visitor | Public approved content, submit inquiry |
-| Client member | Own organization projects, permitted documents, messages and bills |
-| Client manager | Client member rights plus authorized team/invitation and quote decisions |
-| Surveyor / consultant | Assigned jobs, task documents and drafting; no unconditional report release |
-| Project coordinator | Requests, jobs, schedules, assignments and client communications |
-| Technical reviewer | Approve/request corrections to report, cannot casually bypass release confirmation |
-| Finance officer | Invoices and collections; only minimal project information required |
-| Content editor | Edit draft public material, separate publish permission where appropriate |
-| ANT Marine administrator | Staff/company configuration within policy and audited approval gates |
+ANT Marine **must** ship a **configurable RBAC** system with two strictly separated domains:
 
-Final matrix must specify each action: `view, create, edit, assign, upload, preview, download, approve, release, archive, delete, invite, export` per resource and organization boundary. Denial tests are required for client and report access.
+- **ANT Marine staff** (`Organization.kind = ant_marine`)
+- **Client organisations** (`Organization.kind = client`)
+
+**Staff default roles:** Super Administrator, Operations Manager, Project Coordinator, Surveyor / Consultant, Technical Reviewer, Finance Officer, Content Manager, General Staff.
+
+**Client default roles:** Organisation Owner, Organisation Administrator, Client Manager, Client Member, Client Finance.
+
+A Client Organisation Owner is **never** equivalent to a Super Administrator. Client users **cannot** acquire staff permissions through roles or custom grants.
+
+**Authoritative architecture documents:**
+
+- [`docs/architecture/ROLE_PERMISSION_SPEC.md`](architecture/ROLE_PERMISSION_SPEC.md) — domains, resolution hierarchy, admin authority, project-level rules, sensitive operations, audit, Rails approach.
+- [`docs/architecture/PERMISSION_CATALOGUE.md`](architecture/PERMISSION_CATALOGUE.md) — stable internal keys, plain-English labels, categories, override rules.
+- [`docs/architecture/DEFAULT_ROLE_MATRIX.md`](architecture/DEFAULT_ROLE_MATRIX.md) — default grants per role.
+
+**Permission resolution (summary):** protected restrictions → organisation/resource boundaries → explicit user deny → explicit user grant → role defaults → deny. Permission changes take effect on the next request without requiring logout.
+
+**UI [REQUIRED]:** Dedicated **Team & Permissions** pages in staff and client portals (Phase 4); Phase 1 design change request in [`docs/design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md`](design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md) — **do not** alter the approved HTML studio until that request is signed off.
+
+**Enforcement:** Server-side on every action; feature permission does not grant all projects; assignment and org scope still apply. Denial tests are required for cross-organisation access, direct URLs, report approve/release separation, and permission revocation.
+
+**Public visitors** have no membership; they may only access published content and anonymous inquiry endpoints.
 
 ### 3.2 Data & event design principles
 
@@ -166,29 +177,31 @@ Responsibilities: interactive design system, public/client/staff/admin screens, 
 **Exit:** Stakeholders approve essential journeys and language; reconcile screen changes; save approved HTML snapshot and review JSON. Reference `design/PHASE_1_DESIGN_HANDOFF.md`.
 
 ### PHASE 2 — Domain, Database, Workflow & Authorization Architecture
-**Status:** Not started. **Owner:** Rails architecture agent; product owner approves decisions.
+**Status:** In progress (P2.1 domain + RBAC spec). **Owner:** Rails architecture agent; product owner approves decisions.
 
 Deliverables:
 - Entity relationship map, primary/foreign keys, tenancy strategy, unique constraints, soft delete/retention rules and PostgreSQL migration sequence.
 - State machines and guards: inquiry, quote, booking, job, task, document, report, invoice.
-- Role/action/resource permission matrix; policies and failure cases; invitation/onboarding decisions.
+- **Permission architecture:** staff and client role inventories, full permission catalogue, default role matrix, resolution hierarchy, project-level access rules, sensitive-operation safeguards, audit fields ([`docs/architecture/ROLE_PERMISSION_SPEC.md`](architecture/ROLE_PERMISSION_SPEC.md) and companions).
+- Threat model for privilege escalation and cross-organisation leakage.
 - Project structure, modules, navigation routes, view patterns, notification/event catalogue and job requirements.
 - Document storage security architecture, encryption feasibility proof-of-concept, backups and disaster-recovery assumptions.
-- Slice-by-slice acceptance tests traced to actual design screens.
+- Slice-by-slice acceptance tests traced to actual design screens and permission keys.
 
-**Exit:** Reviewed domain diagram and data dictionary, permission matrix and threat model, approved decisions in `docs/DECISIONS.md`, migration/implementation backlog. **Do not generate all models before approval.**
+**Exit:** Reviewed domain diagram and data dictionary, **approved permission catalogue and default matrix**, threat model, approved decisions in `docs/DECISIONS.md`, migration/implementation backlog. **Do not generate all models before approval.**
 
 ### PHASE 3 — Rails Foundation & Development Infrastructure
 **Status:** Not started. **Owner:** Rails foundation agent + infrastructure reviewer.
 
 Deliverables:
-- Rails 8.1/PostgreSQL/Hotwire/Tailwind/Stimulus baseline, Solid Queue/Cable/Cache configured to fit chosen topology, secure Rails authentication, invitations and policy integration.
+- Rails 8.1/PostgreSQL/Hotwire/Tailwind/Stimulus baseline, Solid Queue/Cable/Cache configured to fit chosen topology, secure Rails authentication, invitations and **permission infrastructure**.
+- **Authorization foundation (before business feature slices):** seeded permission catalogue, role-permission joins, membership overrides, `EffectivePermissions` resolution, Pundit (or equivalent) policies with deny-by-default, permission-change audit, cache/version invalidation on grant/revoke.
 - Design tokens, layout shells for public/client/staff/admin, shared components, icon helper and consistent messages.
 - Local Docker PostgreSQL, `.env` templates with no secrets, CI, unit/integration/system test harness, lint/security checks, seed demo and health checks.
 - Active Storage private bucket integration proof-of-concept, protected previews, quarantine pathway and sample backup restore verification.
 - Production-ready Dockerfile with separate web/worker commands, configuration contracts for Coolify/Hetzner/Cloudflare; staging isolated from production.
 
-**Exit:** Fresh clone passes boot, migrations, tests, audit, assets, responsive shell smoke tests, role-isolation checks and encrypted-storage acceptance gate. **No real private files until storage gate passes.**
+**Exit:** Fresh clone passes boot, migrations, tests, audit, assets, responsive shell smoke tests, **permission enforcement and cross-org denial tests**, role-isolation checks and encrypted-storage acceptance gate. **No real private files until storage gate passes.**
 
 ### PHASE 4 — Functional Implementation (vertical slices)
 **Status:** Not started. **Owner:** feature agents; reviewer validates each merged slice.
@@ -197,7 +210,8 @@ Recommended sequence:
 - `F4-01` Public site and content management; verified services, about, contact, cases, resources, training.
 - `F4-02` Anonymous quote/visit request, validation, attachments, confirmation and anti-abuse controls.
 - `F4-03` Staff intake queue, client records, qualification and quotation/version/acceptance workflow.
-- `F4-04` Organization invitations, client home, requests, project creation and staff assignment.
+- `F4-04` Organization invitations, client home, requests, project creation and staff assignment; **permission UI not required until `F4-04b` or dedicated slice below**.
+- `F4-04b` **Team & Permissions** (staff M07a–j and client C15a–j per design change request): invite, role change, grouped permission edits, effective access, history, sensitive confirmations.
 - `F4-05` Project milestones, task lists, status notifications, messages and schedules.
 - `F4-06` Secure document repository, requested uploads, version history, previews, access history.
 - `F4-07` Inspection checklists, report draft/review/approval, separate final release and client download.
@@ -206,7 +220,7 @@ Recommended sequence:
 
 For each slice: implement routes/models/views/jobs/policies, domain/integration/system tests, failure/denial tests, migrations, UI screenshots or browser acceptance, and a short completion report. No fake-success buttons are allowed in production.
 
-**Exit:** Essential end-to-end flow works for public, client, surveyor, reviewer, finance and admin, with an independently tested denied-access flow; success metrics are instrumented.
+**Exit:** Essential end-to-end flow works for public, client, surveyor, reviewer, finance and admin, with an independently tested denied-access flow; **Team & Permissions** management verified for staff and client owners; success metrics are instrumented.
 
 ### PHASE 5 — Deployment, Hardening, Acceptance & Launch
 **Status:** Not started. **Owner:** infrastructure/operations agent; product owner authorizes release.
@@ -214,7 +228,7 @@ For each slice: implement routes/models/views/jobs/policies, domain/integration/
 Deliverables:
 - Separate Hetzner production environment, Coolify deployments of web/worker/PostgreSQL, Cloudflare DNS/TLS/WAF with correct origin restrictions.
 - Private object storage, documented encryption/key management, staged backups, restoration tests, secrets rotation, monitored workers/queues, health/error/log alerts.
-- Staging acceptance across roles, load tests for large uploads/reports, accessibility checks, SEO checks, security review, incident/runbook and rollback.
+- Staging acceptance across roles, **privilege-escalation and organisation-isolation acceptance tests**, load tests for large uploads/reports, accessibility checks, SEO checks, security review, incident/runbook and rollback.
 - Content approval: business registration claims, certifications/partnerships, portfolio permissions, contact details and policy pages; training copy and live email templates.
 - Launch checklist, baseline analytics, operation owner and post-launch monitoring.
 
@@ -256,6 +270,8 @@ No live ship telemetry/remote monitoring dashboard, automatic professional engin
 - Screen inventory and journeys: `design/PHASE_1_DESIGN_HANDOFF.md`.
 - Setup instructions: `docs/SETUP_AND_BOOTSTRAP.md`.
 - Architecture decision register: `docs/DECISIONS.md` (starter ADRs present; mark `APPROVED` during Phase 2).
+- Role & permission architecture: `docs/architecture/ROLE_PERMISSION_SPEC.md`, `PERMISSION_CATALOGUE.md`, `DEFAULT_ROLE_MATRIX.md`.
+- Phase 1 Team & Permissions UI change request: `docs/design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md`.
 
 External technology references (re-check before implementation):
 - Rails guides: https://guides.rubyonrails.org/

@@ -196,3 +196,6 @@
 | `docs/DECISIONS.md` | Architecture decision register (approve entries in Phase 2) |
 | `docs/PHASE_PROGRESS.md` | Gate status and checkpoint evidence |
 | `docs/SETUP_AND_BOOTSTRAP.md` | Local Rails and PostgreSQL setup (B0) |
+| `docs/architecture/P2_1_DOMAIN_ARCHITECTURE.md` | Phase 2.1 domain design (pre-migration) |
+| `docs/architecture/ROLE_PERMISSION_SPEC.md` | Configurable RBAC (required product) |
+| `docs/design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md` | Proposed Team & Permissions screens (HTML not changed yet) |

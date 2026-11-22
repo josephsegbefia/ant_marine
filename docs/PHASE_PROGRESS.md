@@ -4,7 +4,7 @@
 |---|---|---|
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
-| Phase 2 — architecture | Not started | Reviewed domain map, state transitions, permissions, decisions, implementation slices |
+| Phase 2 — architecture | **In progress** — P2.1 designed, awaiting review | Reviewed domain map, state transitions, permissions, decisions, implementation slices |
 | Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
@@ -18,6 +18,12 @@
 | B0.1B Rails application | 2026-11-22 | **Passed** | Commit `c448c4c`, module `AntMarine` |
 | B0.2 Local PostgreSQL | 2026-11-22 | **Passed** | Commit `70a44f4`; PostgreSQL 17, `ant_marine_development` / `ant_marine_test`, `db:prepare`, HTTP 200, read/write verification |
 | B0.3 Development quality | 2026-11-22 | **Passed** | Commit `28a1b2b`; smoke tests (4), `scripts/verify_foundation.sh`, `.env.example`, README, `.github/workflows/ci.yml` |
+
+## P2 checkpoint log
+
+| Checkpoint | Date | Result | Notes |
+|---|---|---|---|
+| P2.1 Domain architecture | 2026-11-22 | **Designed — awaiting review** | `docs/architecture/P2_1_*`; RBAC: `ROLE_PERMISSION_SPEC.md`, `PERMISSION_CATALOGUE.md`, `DEFAULT_ROLE_MATRIX.md` |
 
 ## Local development quick reference
 

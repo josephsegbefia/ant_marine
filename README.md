@@ -31,11 +31,17 @@ Modular Rails application for ANT Marine’s public website, client portal, and 
    docker inspect -f 'health={{.State.Health.Status}}' ant_marine_postgres_dev
    ```
 
-3. Prepare databases and install gems:
+3. Install gems (required once per machine/clone; use `mise exec` so Ruby 3.4.13 matches the lockfile):
+
+   ```bash
+   mise exec -- bundle install
+   mise exec -- bundle check
+   ```
+
+4. Prepare databases:
 
    ```bash
    set -a && source .env.local && set +a
-   mise exec -- bundle install
    mise exec -- bin/rails db:prepare
    mise exec -- bin/rails db:prepare RAILS_ENV=test
    ```
@@ -49,6 +55,18 @@ mise exec -- bin/rails server
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Health check: [http://localhost:3000/up](http://localhost:3000/up).
+
+### Troubleshooting `Bundler::GemNotFound`
+
+If `mise exec -- bin/dev` fails with “Could not find … in locally installed gems”, gems are not installed for this project yet. From the project root:
+
+```bash
+unset BUNDLE_PATH
+mise exec -- bundle install
+mise exec -- bundle check
+```
+
+Do not rely on a temporary `BUNDLE_PATH` from another tool or sandbox session.
 
 ## Automated checks
 
