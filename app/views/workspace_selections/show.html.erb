@@ -1,0 +1,22 @@
+<div class="mx-auto max-w-lg py-12 px-4">
+  <h1 class="text-2xl font-semibold text-gray-900">Choose a workspace</h1>
+  <p class="mt-2 text-gray-700">Pick where you want to work. Access is limited to organisations you belong to.</p>
+
+  <% if @memberships.empty? %>
+    <p class="mt-6 text-red-700">No active workspace memberships are available on this account.</p>
+  <% else %>
+    <ul class="mt-8 space-y-4">
+      <% @memberships.each do |membership| %>
+        <li class="border border-gray-200 rounded-md p-4">
+          <p class="font-medium"><%= membership.organization.name %></p>
+          <p class="text-sm text-gray-600"><%= membership.organization.ant_marine? ? "Staff" : "Client" %> — <%= membership.role_key %></p>
+          <%= button_to "Continue", workspace_select_path, method: :patch, params: { membership_id: membership.id }, class: "mt-3 rounded-md bg-blue-600 px-3 py-2 text-sm text-white" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div class="mt-8">
+    <%= button_to "Sign out", session_path, method: :delete, class: "text-sm underline text-gray-700" %>
+  </div>
+</div>

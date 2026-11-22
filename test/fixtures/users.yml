@@ -1,0 +1,23 @@
+staff_only:
+  email: staff@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+
+client_only:
+  email: client@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+
+dual_domain:
+  email: dual@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+
+suspended:
+  email: suspended@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: suspended
+  security_version: 1

@@ -1,0 +1,17 @@
+ant_marine:
+  kind: ant_marine
+  name: ANT Marine W.A.
+  slug: ant-marine
+  status: active
+
+acme_client:
+  kind: client
+  name: Acme Shipping
+  slug: acme-shipping
+  status: active
+
+other_client:
+  kind: client
+  name: Other Client Co
+  slug: other-client
+  status: active

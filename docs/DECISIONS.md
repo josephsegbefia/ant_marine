@@ -19,9 +19,12 @@
 | ADR-015 | Ownership privileges | Protected role keys, `team.transfer_ownership`, last active Owner / Super Admin safeguards and recovery | **APPROVED** 2026-11-22 | Product owner P2.5A; ROLE_PERMISSION_SPEC §6 |
 | ADR-016 | Custom roles | Defer user-defined custom roles beyond initial release — fixed catalogue roles + per-user overrides only | **APPROVED** 2026-11-22 | Product owner P2.5A |
 | ADR-017 | Authentication stack | Rails 8 `authentication` generator + app-owned invitation/session extensions | **APPROVED** 2026-11-22 | See `docs/architecture/P2_2_AUTHENTICATION_ARCHITECTURE.md` |
+| P2-OD-040 | Session storage | Database-backed revocable `sessions` + `users.security_version` invalidation | **APPROVED** 2026-11-22 | Product owner; implemented P3-A1 |
+| P2-OD-041 | Audit events | `event_type` + JSONB `metadata`; no Rails STI on audit | **APPROVED** 2026-11-22 | Product owner; table deferred past P3-A1 |
+| P2-OD-042 | Assignment access | Explicit `access_scope` on assignments + policy enforcement | **APPROVED** 2026-11-22 | Product owner; assignments deferred past P3-A1 |
 
 Only mark a decision `APPROVED` when the user or authorized stakeholder clearly confirms it. Keep history when decisions change.
 
 **P2.5A reconciliation (2026-11-22):** Enumerated ADRs and P2-OD-004/043 approved in commit `08a5423` — see [`P2_5A_STAKEHOLDER_DECISION_RECORD.md`](architecture/P2_5A_STAKEHOLDER_DECISION_RECORD.md).
 
-**P2.5B exit prep (2026-11-22):** P2-OD-040–042 recommendations in [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md) remain **PROPOSED** until product owner approves. Phase 2 full exit pending; Phase 3 Wave A **GO** per that document.
+**P2.5B exit prep (2026-11-22):** P2-OD-040–042 **APPROVED** by product owner for Phase 3 foundation; see [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md). Phase 2 full exit still pending Phase 1 formal sign-off and ADR-010 implementation.

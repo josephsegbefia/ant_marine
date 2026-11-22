@@ -123,14 +123,30 @@ It checks local runtime, Rails boot, Postgres connectivity, tests, code loading 
 
 **B0 acceptance:** project can be cloned; pinned Ruby/Rails and dependencies install; local Postgres starts; `db:prepare` succeeds; web process runs; baseline tests/lint/security and asset build pass; no credentials committed; Cursor rules and spec are readable; baseline Git commit exists.
 
-## 8. What NOT to provision yet
+## 8. P3-A1 — development authentication bootstrap
+
+Rails 8 native authentication is enabled (`User`, database-backed `Session`, password reset mailer). **There is no public signup.** Provision the first Super Administrator only in development/test:
+
+```bash
+export ANT_MARINE_BOOTSTRAP_EMAIL="you@example.com"
+export ANT_MARINE_BOOTSTRAP_PASSWORD="choose-a-strong-password"
+mise exec -- bin/rails ant_marine:bootstrap_super_admin
+```
+
+The task is idempotent: it creates the single active `ant_marine` organisation if missing, creates the user if the email is new, and adds a `staff.super_administrator` membership without changing an existing user's password or silently promoting roles.
+
+**Sessions (P2-OD-040):** cookie holds signed `session_id` only; rows store `security_version_at_issue`, `revoked_at`, `expires_at` (30-day absolute), and `last_active_at` (12-hour idle). Bumping `users.security_version` (password change, suspension) invalidates outstanding sessions. Production cookies use `Secure`; `HttpOnly` and `SameSite=Lax` always.
+
+**Portals:** `/staff` requires an active ANT Marine membership; `/client` requires an active client-organisation membership. Users with both must choose a workspace at `/workspace`.
+
+## 9. What NOT to provision yet
 
 - Do **not** spin up production on Hetzner or move live client documents before storage encryption and backup design are approved.
 - Do **not** create all business tables immediately; this is Phase 2 modeling and Phase 4 incremental delivery.
 - Do **not** install a React stack, Node UI builder, Kafka, Redis, Elasticsearch or a full monitoring system speculatively.
 - Do **not** set real SMTP, S3 access keys, Cloudflare tokens, Coolify secrets, or live payment credentials in the starter archive.
 
-## 9. Deployment topology, to finalize in Phase 3 and harden in Phase 5
+## 10. Deployment topology, to finalize in Phase 3 and harden in Phase 5
 
 Cloudflare (proxied public web traffic) → Hetzner server running Coolify-managed Rails web + Rails background worker + PostgreSQL. Private S3-compatible object storage for files; separate off-server encrypted database and object backups. Test direct browser uploads carefully: Cloudflare upload limits and object-storage encryption may conflict with an assumption that every upload can be directly PUT to S3.
 

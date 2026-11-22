@@ -1,0 +1,43 @@
+staff_membership:
+  user: staff_only
+  organization: ant_marine
+  role_key: staff.general_staff
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+client_membership:
+  user: client_only
+  organization: acme_client
+  role_key: client.client_member
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+dual_staff:
+  user: dual_domain
+  organization: ant_marine
+  role_key: staff.project_coordinator
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+dual_client:
+  user: dual_domain
+  organization: acme_client
+  role_key: client.org_administrator
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+suspended_client_membership:
+  user: staff_only
+  organization: acme_client
+  role_key: client.client_member
+  status: suspended
+  permission_epoch: 0
+  lock_version: 0
