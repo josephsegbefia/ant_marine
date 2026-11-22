@@ -18,10 +18,11 @@
 
 1. State current phase and slice; inspect source/spec, affected existing files, and screen IDs.
 2. Present a concise file/migration/test plan before major edits.
-3. Implement and test a complete but bounded vertical slice.
-4. Run: relevant Rails tests, full test suite at checkpoint, `bin/rubocop`, `bin/brakeman`, migration check, diff check and targeted browser acceptance as applicable.
-5. Report **actual** pass/fail statuses and outstanding risks; never claim tests ran if they did not.
-6. Update `docs/DECISIONS.md`, any changed contract/requirements and phase progress only when the change is approved.
+3. Implement and test a complete but bounded vertical slice — no large unreviewed dumps.
+4. Add **meaningful tests** for new behaviour (success, denial, invalid state where applicable); use Minitest and existing conventions.
+5. Before finishing a slice, run applicable checks (`bash scripts/verify_foundation.sh` at B0+ checkpoints, or targeted `bin/rails test`, `bin/rubocop`, `bin/brakeman -q` for smaller edits). Report **actual** pass/fail; separate pre-existing failures from regressions you introduced.
+6. Record approved choices in `docs/DECISIONS.md`; update `docs/PHASE_PROGRESS.md` only after verified checkpoint evidence.
+7. Never bypass organization/role authorization or document-release rules when implementing features.
 
 ## Project precedence
 

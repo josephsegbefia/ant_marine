@@ -62,7 +62,7 @@ The supplied `templates/compose.dev.yml` is for **local only**. Copy it into the
 cp templates/compose.dev.yml compose.dev.yml
 ```
 
-Create a private `.env.local` (gitignored) with `ANT_MARINE_DB_PASSWORD` matching your local choice, then start PostgreSQL:
+Copy `.env.example` to `.env.local` (gitignored) and set `ANT_MARINE_DB_PASSWORD` to match your local choice, then start PostgreSQL:
 
 ```bash
 docker compose --env-file .env.local -f compose.dev.yml up -d db

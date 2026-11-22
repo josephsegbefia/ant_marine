@@ -3,7 +3,7 @@
 | Gate | Status | Evidence required |
 |---|---|---|
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
-| Preflight B0 — toolchain | **B0.0–B0.1B passed**; **B0.2 pending** | Ruby/Rails versions, Rails boot, `verify_foundation.sh`; B0.2: local Postgres up, `db:prepare`, tests |
+| Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | Not started | Reviewed domain map, state transitions, permissions, decisions, implementation slices |
 | Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
@@ -16,21 +16,19 @@
 | B0.0 Environment audit | — | **Passed** | Toolchain and workspace audit |
 | B0.1A Prerequisites | — | **Passed** | mise Ruby 3.4.13, Rails 8.1.4.1 |
 | B0.1B Rails application | 2026-11-22 | **Passed** | Commit `c448c4c`, module `AntMarine` |
-| B0.2 Local PostgreSQL | — | **Pending** | `templates/compose.dev.yml` → root `compose.dev.yml`, env-backed `config/database.yml`, `db:prepare`, foundation script |
+| B0.2 Local PostgreSQL | 2026-11-22 | **Passed** | Commit `70a44f4`; PostgreSQL 17, `ant_marine_development` / `ant_marine_test`, `db:prepare`, HTTP 200, read/write verification |
+| B0.3 Development quality | 2026-11-22 | **Passed** | Smoke tests, `verify_foundation.sh`, `.env.example`, README, CI workflow — see B0.3 report in agent log |
 
-## B0.2 — local PostgreSQL (pending verification)
+## Local development quick reference
 
-Procedure after starter integration audit (see `docs/SETUP_AND_BOOTSTRAP.md` §5). Paths below assume project root containing `Gemfile` (e.g. `~/Desktop/elorm/appsentrix/ant_marine`). Credentials live in **gitignored** `.env.local` (not committed).
+Paths assume project root containing `Gemfile` (e.g. `~/Desktop/elorm/appsentrix/ant_marine`). Credentials: copy `.env.example` → `.env.local` (gitignored).
 
 ### Start PostgreSQL
 
 ```bash
-cd /path/to/ant_marine
 docker compose --env-file .env.local -f compose.dev.yml up -d db
 docker inspect -f 'health={{.State.Health.Status}}' ant_marine_postgres_dev
 ```
-
-Wait until `health=healthy`.
 
 ### Stop PostgreSQL (keep data)
 
@@ -38,50 +36,29 @@ Wait until `health=healthy`.
 docker compose --env-file .env.local -f compose.dev.yml stop db
 ```
 
-Do **not** use `docker compose down -v` (that would delete the named volume).
+Do **not** use `docker compose down -v` (deletes volume `ant_marine_local_pg`).
 
-### Load environment for Rails
+### Load environment
 
 ```bash
 set -a && source .env.local && set +a
 ```
 
-Or prefix one-off commands: `set -a && source .env.local && set +a && mise exec -- bin/rails …`
-
-### Prepare databases
+### Foundation verification
 
 ```bash
-set -a && source .env.local && set +a
-mise exec -- bin/rails db:prepare
-mise exec -- bin/rails db:prepare RAILS_ENV=test
-```
-
-### Start Rails
-
-```bash
-set -a && source .env.local && set +a
-mise exec -- bin/rails server
-# or: mise exec -- bin/dev   # Rails + Tailwind watcher (requires PostgreSQL up)
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Run tests and foundation checks
-
-```bash
-set -a && source .env.local && set +a
 bash scripts/verify_foundation.sh
 ```
 
-The script sources `.env.local` and runs commands via `mise exec` when `mise.toml` is present.
+See `README.md` for Rails server and full setup links.
 
 ### Troubleshooting database connections
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `connection refused` / socket errors | DB container stopped | `docker compose --env-file .env.local -f compose.dev.yml up -d db` |
-| `password authentication failed` | `.env.local` out of sync with container | Align `ANT_MARINE_DB_PASSWORD` with compose; recreate container only if you understand data impact |
+| `connection refused` | DB container stopped | `docker compose --env-file .env.local -f compose.dev.yml up -d db` |
+| `password authentication failed` | `.env.local` out of sync with container | Align `ANT_MARINE_DB_PASSWORD`; avoid recreating volume unless intended |
 | `KeyError: ANT_MARINE_DB_PASSWORD` | Env not loaded | `source .env.local` before Rails |
-| Wrong Ruby / Bundler errors | System Ruby used | Use `mise exec --` or run `verify_foundation.sh` |
+| Wrong Ruby | System Ruby used | `mise exec --` or `verify_foundation.sh` |
 
-Update dates and links to test reports as work progresses.
+Update dates and links as gates complete.

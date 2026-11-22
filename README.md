@@ -1,28 +1,72 @@
-# README
+# ANT Marine W.A.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Modular Rails application for ANT Marine’s public website, client portal, and staff workspace. Phase 1 UI is defined in the design studio; implementation follows `docs/ANT_MARINE_MASTER_SPEC.md`.
 
-Things you may want to cover:
+## Technology stack
 
-* Ruby version
+- **Ruby** 3.4.13 (via [mise](https://mise.jdx.dev))
+- **Rails** 8.1 (Hotwire Turbo/Stimulus, Importmap, Propshaft)
+- **PostgreSQL** 17 (local Docker)
+- **Tailwind CSS** via `tailwindcss-rails`
+- **Tests & quality:** Minitest, RuboCop (Omakase), Brakeman, bundler-audit
 
-* System dependencies
+## Prerequisites
 
-* Configuration
+- macOS with Xcode Command Line Tools, Homebrew, mise, Docker (Desktop or OrbStack)
+- See `docs/SETUP_AND_BOOTSTRAP.md` and `scripts/bootstrap_macos.sh` for first-time setup
 
-* Database creation
+## Local setup
 
-* Database initialization
+1. Copy environment template:
 
-* How to run the test suite
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local if needed — never commit it.
+   ```
 
-* Services (job queues, cache servers, search engines, etc.)
+2. Start PostgreSQL (keeps data in Docker volume `ant_marine_local_pg`):
 
-* Deployment instructions
+   ```bash
+   docker compose --env-file .env.local -f compose.dev.yml up -d db
+   docker inspect -f 'health={{.State.Health.Status}}' ant_marine_postgres_dev
+   ```
 
-* ...
+3. Prepare databases and install gems:
 
----
+   ```bash
+   set -a && source .env.local && set +a
+   mise exec -- bundle install
+   mise exec -- bin/rails db:prepare
+   mise exec -- bin/rails db:prepare RAILS_ENV=test
+   ```
 
-ANT Marine W.A. — see `AGENTS.md`, `docs/ANT_MARINE_MASTER_SPEC.md`, `design/PHASE_1_DESIGN_HANDOFF.md`, `docs/SETUP_AND_BOOTSTRAP.md` (local Rails/PostgreSQL), and `docs/PHASE_PROGRESS.md` (checkpoint status).
+## Run the application
+
+```bash
+set -a && source .env.local && set +a
+mise exec -- bin/rails server
+# or: mise exec -- bin/dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Health check: [http://localhost:3000/up](http://localhost:3000/up).
+
+## Automated checks
+
+From the project root (loads `.env.local` when present):
+
+```bash
+bash scripts/verify_foundation.sh
+```
+
+Runs bundle check, database prepare (dev + test), Minitest, Zeitwerk, Tailwind build, RuboCop, Brakeman, and bundler-audit. CI runs the same checks (with GitHub-hosted PostgreSQL) in `.github/workflows/ci.yml`.
+
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | AI agent working agreement |
+| [`docs/ANT_MARINE_MASTER_SPEC.md`](docs/ANT_MARINE_MASTER_SPEC.md) | Master specification and phased roadmap |
+| [`docs/PHASE_PROGRESS.md`](docs/PHASE_PROGRESS.md) | Checkpoint status |
+| [`design/PHASE_1_DESIGN_HANDOFF.md`](design/PHASE_1_DESIGN_HANDOFF.md) | Screen inventory and journeys |
+| [`design/ANT_Marine_Design_Studio_Phase_1.html`](design/ANT_Marine_Design_Studio_Phase_1.html) | Interactive Phase 1 design studio |
+| [`docs/SETUP_AND_BOOTSTRAP.md`](docs/SETUP_AND_BOOTSTRAP.md) | Detailed bootstrap steps |

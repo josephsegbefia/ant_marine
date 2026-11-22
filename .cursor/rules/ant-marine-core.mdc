@@ -6,3 +6,5 @@ alwaysApply: true
 Read `AGENTS.md` and `docs/ANT_MARINE_MASTER_SPEC.md` before substantive work. Follow their phase gates and source hierarchy. The current public/client/staff/admin screen designs are in `design/ANT_Marine_Design_Studio_Phase_1.html` with requirements and journeys in `design/PHASE_1_DESIGN_HANDOFF.md`.
 
 Do not invent another frontend stack or application service. Rails + Hotwire + Stimulus + PostgreSQL are mandated. Keep UI simple, premium, accessible and plain-English. Never leak a client's project, file or invoice across organizations. Separate report approval from release. No real third-party effects or infrastructure changes without instruction. Report tests truthfully and preserve existing work.
+
+Deliver work in small, testable slices. Run `bash scripts/verify_foundation.sh` (or the relevant subset of checks) before claiming a checkpoint complete. Add Minitest coverage for new business transitions. Do not add gems or dependencies without demonstrated need.

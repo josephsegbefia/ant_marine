@@ -1,4 +1,6 @@
 # LOCAL DEV ONLY: no external networking, no production data or secrets.
+# Copy to project root as compose.dev.yml; set ANT_MARINE_DB_PASSWORD in `.env.local` (see `.env.example`).
+# Root compose.dev.yml uses ${ANT_MARINE_DB_PASSWORD} — keep this template as the documented starter copy.
 services:
   db:
     image: postgres:17-alpine
