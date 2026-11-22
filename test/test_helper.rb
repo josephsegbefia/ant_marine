@@ -9,6 +9,13 @@ module ActiveSupport
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
 
+    parallelize_setup do
+      Authorization::CatalogueSeeder.reset_seed_flag!
+      Authorization::CatalogueSeeder.seed!
+    end
+
+    setup { Authorization::CatalogueSeeder.seed! unless Authorization::CatalogueSeeder.catalogue_present? }
+
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 

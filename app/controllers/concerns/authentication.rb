@@ -44,10 +44,17 @@ module Authentication
       return unless membership
 
       if membership.portal_access? && membership.user_id == Current.user.id
+        refresh_permission_epoch_if_needed!(membership)
         Current.membership = membership
       else
         clear_membership_context
       end
+    end
+
+    def refresh_permission_epoch_if_needed!(membership)
+      return unless Current.session.permission_epoch_stale?(membership)
+
+      Current.session.sync_permission_epoch_from!(membership)
     end
 
     def clear_membership_context

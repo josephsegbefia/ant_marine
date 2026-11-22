@@ -4,7 +4,10 @@ module Staff
   class HomeController < BaseController
     def show
       @greeting_name = greeting_name
-      @can_invite = ::Invitations::Policy::STAFF_ISSUER_ROLES.include?(Current.membership.role_key)
+      @can_invite = Authorization::EffectivePermissions.allowed?(
+        membership: Current.membership,
+        permission_key: "team.invite"
+      )
 
       return unless @can_invite
 

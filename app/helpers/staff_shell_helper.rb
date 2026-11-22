@@ -17,7 +17,12 @@ module StaffShellHelper
   end
 
   def staff_can_invite?
-    ::Invitations::Policy::STAFF_ISSUER_ROLES.include?(Current.membership.role_key)
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "team.invite"
+    )
   end
 
   def staff_nav_active?(key)

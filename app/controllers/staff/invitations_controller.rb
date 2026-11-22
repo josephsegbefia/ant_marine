@@ -55,7 +55,10 @@ module Staff
     private
 
       def require_staff_invitation_access!
-        return if ::Invitations::Policy::STAFF_ISSUER_ROLES.include?(Current.membership.role_key)
+        return if Authorization::EffectivePermissions.allowed?(
+          membership: Current.membership,
+          permission_key: "team.invite"
+        )
 
         redirect_to staff_root_path, alert: "You do not have permission to manage invitations."
       end

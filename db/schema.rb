@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_103002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_120003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,45 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_103002) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "organizations_status_check"
   end
 
+  create_table "permission_overrides", force: :cascade do |t|
+    t.bigint "membership_id", null: false
+    t.bigint "permission_id", null: false
+    t.string "effect", null: false
+    t.bigint "granted_by_membership_id", null: false
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["granted_by_membership_id"], name: "index_permission_overrides_on_granted_by_membership_id"
+    t.index ["membership_id", "permission_id"], name: "index_permission_overrides_on_membership_id_and_permission_id", unique: true
+    t.index ["membership_id"], name: "index_permission_overrides_on_membership_id"
+    t.index ["permission_id"], name: "index_permission_overrides_on_permission_id"
+    t.check_constraint "effect::text = ANY (ARRAY['allow'::character varying::text, 'deny'::character varying::text])", name: "permission_overrides_effect_check"
+  end
+
+  create_table "permissions", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "display_name", null: false
+    t.text "description"
+    t.string "category", null: false
+    t.string "domain", null: false
+    t.string "override_rule", default: "yes", null: false
+    t.integer "catalogue_version", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_permissions_on_key", unique: true
+    t.check_constraint "override_rule::text = ANY (ARRAY['yes'::character varying::text, 'protected'::character varying::text, 'deny_only'::character varying::text])", name: "permissions_override_rule_check"
+  end
+
+  create_table "role_permissions", force: :cascade do |t|
+    t.string "role_key", null: false
+    t.bigint "permission_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
+    t.index ["role_key", "permission_id"], name: "index_role_permissions_on_role_key_and_permission_id", unique: true
+    t.index ["role_key"], name: "index_role_permissions_on_role_key"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "membership_id"
@@ -99,6 +138,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_103002) do
     t.datetime "last_active_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "permission_epoch_at_issue", default: 0, null: false
     t.index ["expires_at"], name: "index_sessions_on_expires_at"
     t.index ["membership_id"], name: "index_sessions_on_membership_id"
     t.index ["user_id", "revoked_at"], name: "index_sessions_on_user_id_and_revoked_at"
@@ -125,6 +165,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_103002) do
   add_foreign_key "invitations", "users", column: "accepted_by_user_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "permission_overrides", "memberships"
+  add_foreign_key "permission_overrides", "memberships", column: "granted_by_membership_id"
+  add_foreign_key "permission_overrides", "permissions"
+  add_foreign_key "role_permissions", "permissions"
   add_foreign_key "sessions", "memberships"
   add_foreign_key "sessions", "users"
 end

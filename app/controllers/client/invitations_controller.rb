@@ -54,7 +54,10 @@ module Client
     private
 
       def require_client_invitation_access!
-        return if ::Invitations::Policy::CLIENT_ISSUER_ROLES.include?(Current.membership.role_key)
+        return if Authorization::EffectivePermissions.allowed?(
+          membership: Current.membership,
+          permission_key: "team.invite"
+        )
 
         redirect_to client_root_path, alert: "You do not have permission to manage invitations."
       end

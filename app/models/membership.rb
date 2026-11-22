@@ -4,6 +4,7 @@ class Membership < ApplicationRecord
 
   belongs_to :user
   belongs_to :organization
+  has_many :permission_overrides, dependent: :destroy
 
   validates :role_key, inclusion: { in: RoleKeys::ALL }
   validates :status, inclusion: { in: STATUSES }
@@ -24,6 +25,10 @@ class Membership < ApplicationRecord
 
   def portal_access?
     PORTAL_ACCESS_STATUSES.include?(status)
+  end
+
+  def bump_permission_epoch!
+    increment!(:permission_epoch)
   end
 
   private

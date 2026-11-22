@@ -5,7 +5,7 @@
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
-| Phase 3 — foundation | **P3-A2 on GitHub main** | PO accepted; `8123f21`; CI [45018069479](https://github.com/josephsegbefia/ant_marine/actions/runs/45018069479); UX-D sidebar refinement local |
+| Phase 3 — foundation | **P3-A3 local on `main`** | RBAC catalogue + EffectivePermissions + Pundit + granter; 124 tests; **not pushed** |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -39,7 +39,8 @@
 | P3-A2 Design Studio A02/A03 | 2026-11-22 | **Substantially aligned** | Shared access layout, navy/teal panel, icon circle, notice, locked email, headings match studio intent; minor copy/CTA differences vs static HTML |
 | P3-A2 Security acceptance | 2026-11-22 | **Passed (automated + samples)** | Digest-only storage; GET non-consuming; resend revokes prior token (dev runner); policy matrix tests; `::Invitations` autoload fix for invitation controllers |
 | P3-A2 GitHub push & CI | 2026-11-22 | **Passed** | `main` @ `8123f21`; [CI 45018069479](https://github.com/josephsegbefia/ant_marine/actions/runs/45018069479); PO consolidated browser acceptance |
-| P3-A2-UX-D Staff sidebar refinement | 2026-11-22 | **Ready for PO sign-off — local only** | Removed org card; 272px / softer navy; studio SVG icons; mobile drawer/backdrop; **not pushed** |
+| P3-A2-UX-D Staff sidebar refinement | 2026-11-22 | **Accepted — on GitHub main** | Removed org card; 272px / softer navy; studio SVG icons; mobile drawer/backdrop; published with P3-A2 follow-up |
+| P3-A3 Authorization engine | 2026-11-22 | **Complete — local `main` only** | 71 permissions, 13 roles seeded; `EffectivePermissions`, `PermissionGranter`, Pundit, epoch freshness, audit; invitations unchanged or stricter; 124 tests / 507 assertions; docs `P3_A3_AUTHORIZATION.md`; **not pushed** |
 | P3-A2-UX-C Staff workspace shell | 2026-11-22 | **Accepted — on GitHub main** | Studio **S01** `staff_portal` layout; honest team-access card; workspace back/switch rule |
 | P3-A2-UX-B Back navigation | 2026-11-22 | **Ready for PO sign-off — local only** | `ant_back_link`; studio A05/P19–P21 outline+left; staff/client invitations + A05 password flows; see UI guide |
 | P3-A2-UX Shared UI & notifications | 2026-11-22 | **Accepted (local)** | `AntUiHelper`, `custom-select`, `toast-stack`, `form-submit`; studios A01/M08; **83 tests / 351 assertions**; see [`docs/ui/SHARED_UI_COMPONENTS.md`](ui/SHARED_UI_COMPONENTS.md) |

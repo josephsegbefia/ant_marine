@@ -41,6 +41,10 @@ module Invitations
     def issue_allowed?(organization:, role_key:)
       return false unless active_inviter?
       return false unless organization.active?
+      return false unless Authorization::EffectivePermissions.allowed?(
+        membership: @inviter_membership,
+        permission_key: "team.invite"
+      )
 
       if organization.ant_marine?
         staff_issue_to_ant_marine?(organization: organization, role_key: role_key)

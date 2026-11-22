@@ -1,8 +1,8 @@
 # P3-A2 invitation authority (interim policy)
 
-**Status:** Implemented for P3-A2. **Replaced by** effective permissions / Pundit policies in **P3-A3**.
+**Status:** Integrated in **P3-A3** — see [`P3_A3_AUTHORIZATION.md`](P3_A3_AUTHORIZATION.md). Ceiling and scope tables below remain authoritative for invitation **targets**; `team.invite` and `EffectivePermissions` gate **whether** issuance is allowed.
 
-This document describes the explicit server-side rules used until the permission engine exists.
+This document describes the explicit server-side rules that **persist as a second layer** on top of the catalogue.
 
 ## Expiry and tokens
 
