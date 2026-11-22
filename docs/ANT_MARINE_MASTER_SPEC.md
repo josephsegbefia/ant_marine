@@ -184,6 +184,7 @@ Deliverables:
 - State machines and guards: inquiry, quote, booking, job, task, document, report, invoice.
 - **Permission architecture:** staff and client role inventories, full permission catalogue, default role matrix, resolution hierarchy, project-level access rules, sensitive-operation safeguards, audit fields ([`docs/architecture/ROLE_PERMISSION_SPEC.md`](architecture/ROLE_PERMISSION_SPEC.md) and companions).
 - **Authentication & authorization (P2.2):** [`P2_2_AUTHENTICATION_ARCHITECTURE.md`](architecture/P2_2_AUTHENTICATION_ARCHITECTURE.md), [`P2_2_AUTHORIZATION_ARCHITECTURE.md`](architecture/P2_2_AUTHORIZATION_ARCHITECTURE.md), [`P2_2_SECURITY_THREAT_MODEL.md`](architecture/P2_2_SECURITY_THREAT_MODEL.md), [`P2_2_DATABASE_HANDOFF.md`](architecture/P2_2_DATABASE_HANDOFF.md).
+- **Database architecture (P2.3):** [`P2_3_DATABASE_ARCHITECTURE.md`](architecture/P2_3_DATABASE_ARCHITECTURE.md), [`P2_3_SCHEMA_CATALOGUE.md`](architecture/P2_3_SCHEMA_CATALOGUE.md), [`P2_3_RELATIONSHIP_DIAGRAMS.md`](architecture/P2_3_RELATIONSHIP_DIAGRAMS.md), [`P2_3_MIGRATION_PLAN.md`](architecture/P2_3_MIGRATION_PLAN.md), [`P2_3_DATA_INTEGRITY_SECURITY.md`](architecture/P2_3_DATA_INTEGRITY_SECURITY.md).
 - Threat model for privilege escalation and cross-organisation leakage.
 - Project structure, modules, navigation routes, view patterns, notification/event catalogue and job requirements.
 - Document storage security architecture, encryption feasibility proof-of-concept, backups and disaster-recovery assumptions.

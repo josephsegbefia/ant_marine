@@ -100,4 +100,4 @@ erDiagram
 | P2-OD-041 | Single `audit_events` STI vs separate `permission_change_events` |
 | P2-OD-042 | `access_scope` on `assignments` as string enum vs join table |
 
-Document answers in `P2_1_OPEN_DECISIONS.md` when resolved.
+**Superseded by P2.3:** [`P2_3_DATABASE_ARCHITECTURE.md`](P2_3_DATABASE_ARCHITECTURE.md) and companions. P2-OD-040–042 answered as PROPOSED in [`P2_1_OPEN_DECISIONS.md`](P2_1_OPEN_DECISIONS.md) §7.

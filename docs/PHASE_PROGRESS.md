@@ -4,7 +4,7 @@
 |---|---|---|
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
-| Phase 2 — architecture | **In progress** — P2.2 auth/authz designed; P2.1/P2.2 stakeholder approval pending | P2_2_* docs, catalogue refinements, threat model, DB handoff |
+| Phase 2 — architecture | **In progress** — P2.3 schema designed; stakeholder approval pending | P2_3_* catalogue, ERDs, migration plan, integrity |
 | Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
@@ -25,6 +25,7 @@
 |---|---|---|---|
 | P2.1 Domain architecture | 2026-11-22 | **Reconciled — awaiting stakeholder approval** | Tiered RBAC access, ADR proposed defaults, DCR awaiting approval |
 | P2.2 Auth & permissions architecture | 2026-11-22 | **Designed** | `docs/architecture/P2_2_*`; finance/confidential matrix refinements |
+| P2.3 Database architecture | 2026-11-22 | **Designed** | `docs/architecture/P2_3_*`; P2-OD-040–042 proposed |
 
 ## Local development quick reference
 

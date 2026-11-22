@@ -86,6 +86,18 @@ P2-OD-006 (Pundit) aligns with ADR-012. Client quote acceptance (P2-OD-021) shou
 
 ---
 
+## 7. P2.3 schema handoff (PROPOSED — not approved)
+
+| ID | Question | P2.3 recommendation | Tradeoff |
+|---|---|---|---|
+| P2-OD-040 | Session storage | **Encrypted cookie session** + `users.security_version`; optional `sessions` table only if compliance requires inventory | Cookie: simpler ops; DB session: easier forced logout audit |
+| P2-OD-041 | Audit events shape | **`audit_events` STI** with `type` discriminator | Single query surface; wide table rows |
+| P2-OD-042 | Assignment access_scope | **`varchar` column** with CHECK ∈ `delivery`, `review`, `collaborator` on `assignments` | Simpler than join table; extensibility via migration |
+
+Promote to ADR or APPROVED after stakeholder review. See [`P2_3_DATABASE_ARCHITECTURE.md`](P2_3_DATABASE_ARCHITECTURE.md).
+
+---
+
 ## 6. Sync with DECISIONS.md
 
 When stakeholders approve items above:
