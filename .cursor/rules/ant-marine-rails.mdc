@@ -1,0 +1,13 @@
+---
+description: Rails, database, services, jobs and tests conventions for ANT Marine
+globs: "app/**/*.rb,app/**/*.erb,config/**/*.rb,db/**/*.rb,test/**/*.rb,Gemfile,Dockerfile"
+alwaysApply: false
+---
+
+- Prefer standard Rails conventions, RESTful routing, ERB views, Turbo Streams/Frames, focused Stimulus controllers, `tailwindcss-rails`, Active Record and Active Job.
+- Model ownership and authorization explicitly: every project/document/report lookup is scoped to authorized organization and role/assignment; add denial tests.
+- Use database transactions and idempotency for quote acceptance, project creation, report release, invoice recording and outbound notifications.
+- Keep every report version immutable and ensure a released report refers to an approved exact version.
+- Implement a secure file lifecycle: temporary upload → scan/reject → available → review/approve → release; never assume Active Storage supplies business approvals.
+- Use descriptive domain names. Avoid generic base service frameworks, manual JS state machines and extra gems without demonstrated need.
+- Use Minitest, integration/system tests, RuboCop, Brakeman. Never suppress failing tests to report a pass.
