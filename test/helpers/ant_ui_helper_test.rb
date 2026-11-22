@@ -18,6 +18,11 @@ class AntUiHelperTest < ActionView::TestCase
     assert payload.any? { |m| m[:assertive] }
   end
 
+  test "ant_back_link rejects unsafe external paths" do
+    assert_raises(ArgumentError) { validate_back_path_for_test("https://evil.example/phish") }
+    assert_raises(ArgumentError) { validate_back_path_for_test("//evil.example/phish") }
+  end
+
   test "flash_toast_payload adds invitation action for staff invitation notices" do
     flash[:notice] = "Invitation sent to colleague@example.com."
 
@@ -25,4 +30,10 @@ class AntUiHelperTest < ActionView::TestCase
     assert_equal "View invitations", action[:action_label]
     assert_equal staff_invitations_path, action[:action_href]
   end
+
+  private
+
+    def validate_back_path_for_test(path)
+      send(:validate_back_path!, path)
+    end
 end

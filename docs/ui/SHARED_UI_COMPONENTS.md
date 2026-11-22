@@ -10,7 +10,19 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `ant_select` / `ant_collection_select` | [`_select.html.erb`](../../app/views/shared/ui/_select.html.erb) | Custom listbox synced to native `<select>` |
 | `toast-stack` | [`toast_stack_controller.js`](../../app/javascript/controllers/toast_stack_controller.js) | Global notifications |
 | `form-submit` | [`form_submit_controller.js`](../../app/javascript/controllers/form_submit_controller.js) | Submit loading / disable |
-| Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*` |
+| `ant_back_link` | [`_back_link.html.erb`](../../app/views/shared/ui/_back_link.html.erb) | Return navigation (studio **A05** outline + `left` icon) |
+| Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link` |
+
+## Back navigation
+
+```erb
+<%= ant_back_link label: "Back to invitations", path: staff_invitations_path %>
+```
+
+- Uses a normal `link_to` to an **application path** only (`validate_back_path!` rejects external URLs).
+- **Breadcrumbs** (`portal-topnav`) show hierarchy; **back links** provide a clear primary return action (both may appear on nested portal pages).
+- **When to skip:** do not add a back link if it would duplicate the only navigation affordance with no added clarity (e.g. top-level auth entry with no safe parent).
+- Studio reference: **A05** `btn outline` + **left** icon; **P19–P21** quote wizard back actions.
 
 ## Form fields
 

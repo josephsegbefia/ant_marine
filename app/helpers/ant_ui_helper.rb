@@ -56,6 +56,18 @@ module AntUiHelper
            }
   end
 
+  def ant_back_link(label:, path:, disabled: false, **html_options)
+    validated_path = validate_back_path!(path)
+
+    render partial: "shared/ui/back_link",
+           locals: {
+             label: label,
+             path: validated_path,
+             disabled: disabled,
+             html_options: html_options
+           }
+  end
+
   def ant_collection_select(form, method, collection, value_method, text_method, **options)
     choices = collection.map { |item| [ item.public_send(text_method), item.public_send(value_method) ] }
     selected = options.delete(:selected)
@@ -72,6 +84,14 @@ module AntUiHelper
   end
 
   private
+
+    def validate_back_path!(path)
+      string_path = path.to_s
+      raise ArgumentError, "Back navigation must use an application path" unless string_path.start_with?("/")
+      raise ArgumentError, "Back navigation cannot use external redirects" if string_path.start_with?("//")
+
+      string_path
+    end
 
     def flash_toast_actions(flash_key)
       message = flash[flash_key].to_s

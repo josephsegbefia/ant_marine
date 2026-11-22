@@ -1,0 +1,14 @@
+<% link_class = [ "ant-back-link", html_options[:class] ].compact.join(" ") %>
+<% link_options = html_options.except(:class) %>
+
+<% if disabled %>
+  <span class="<%= link_class %> ant-back-link--disabled" aria-disabled="true">
+    <%= render "shared/ui/back_link_icon" %>
+    <%= label %>
+  </span>
+<% else %>
+  <%= link_to path, { class: link_class }.merge(link_options) do %>
+    <%= render "shared/ui/back_link_icon" %>
+    <%= label %>
+  <% end %>
+<% end %>

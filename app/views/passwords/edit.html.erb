@@ -42,12 +42,7 @@
       <% end %>
 
       <div class="mt-5">
-        <%= link_to new_session_path, class: "ant-btn-outline" do %>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m15 6-6 6 6 6"></path>
-          </svg>
-          Back to sign in
-        <% end %>
+        <%= ant_back_link label: "Back to sign in", path: new_session_path %>
       </div>
     </div>
   </div>

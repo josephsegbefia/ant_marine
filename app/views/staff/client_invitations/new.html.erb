@@ -1,6 +1,10 @@
 <% content_for :title, "Invite client contact — ANT Marine" %>
 
 <div class="portal-shell">
+  <div class="portal-shell__back">
+    <%= ant_back_link label: "Back to invitations", path: staff_invitations_path %>
+  </div>
+
   <nav class="portal-topnav" aria-label="Staff">
     <%= link_to "Staff workspace", staff_root_path %>
     <span aria-hidden="true">/</span>

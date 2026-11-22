@@ -11,6 +11,6 @@ class ForgotPasswordPageTest < ActionDispatch::IntegrationTest
     assert_select "label", text: "Work email"
     assert_select "input[name=email]"
     assert_select "button[type=submit]", text: /Send reset link/
-    assert_select "a.ant-btn-outline[href=?]", new_session_path, text: /Back to sign in/
+    assert_select "a.ant-back-link[href=?]", new_session_path, text: /Back to sign in/
   end
 end
