@@ -208,6 +208,19 @@
     outline-offset: 2px;
   }
 
+  .ant-btn-outline {
+    @apply inline-flex w-full min-h-[43px] items-center justify-center gap-2 rounded-[11px] border border-[#bad0d9] bg-white px-4 py-2.5 text-xs font-bold text-ant-navy transition;
+  }
+
+  .ant-btn-outline:hover {
+    background: #eff8f8;
+  }
+
+  .ant-btn-outline:focus-visible {
+    outline: 3px solid var(--color-ant-teal);
+    outline-offset: 2px;
+  }
+
   .login-form__invite {
     @apply mt-6 text-[13px] leading-relaxed text-ant-muted;
   }
@@ -217,6 +230,13 @@
     background: var(--color-ant-bad-bg);
     border-color: var(--color-ant-bad-border);
     color: var(--color-ant-bad-text);
+  }
+
+  .login-notice {
+    @apply mb-5 rounded-[11px] border px-4 py-3 text-[11px] leading-relaxed;
+    background: #e1f6ec;
+    border-color: #b5e6cf;
+    color: #237b65;
   }
 
   @media (prefers-reduced-motion: reduce) {

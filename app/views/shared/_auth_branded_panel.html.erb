@@ -1,0 +1,8 @@
+<% heading_id = local_assigns.fetch(:heading_id, "auth-panel-heading") %>
+<aside class="login-panel" aria-labelledby="<%= heading_id %>">
+  <%= render "shared/ant_marine_brand" %>
+  <h1 id="<%= heading_id %>"><%= local_assigns.fetch(:headline, "Every marine project deserves a clearer journey.") %></h1>
+  <p class="login-panel__lede"><%= local_assigns.fetch(:lede, "A secure space to stay in touch, share documents and keep track of progress.") %></p>
+  <div class="login-panel__wave" aria-hidden="true"></div>
+  <p class="login-panel__foot">ANT Marine W.A. · Ghana &amp; West Africa</p>
+</aside>

@@ -1,23 +1,11 @@
 <% content_for :title, "Sign in — ANT Marine W.A." %>
 
 <div class="login-page">
-  <aside class="login-panel" aria-labelledby="login-panel-heading">
-    <%= render "shared/ant_marine_brand" %>
-    <h1 id="login-panel-heading">Every marine project deserves a clearer journey.</h1>
-    <p class="login-panel__lede">A secure space to stay in touch, share documents and keep track of progress.</p>
-    <div class="login-panel__wave" aria-hidden="true"></div>
-    <p class="login-panel__foot">ANT Marine W.A. · Ghana &amp; West Africa</p>
-  </aside>
+  <%= render "shared/auth_branded_panel", heading_id: "login-panel-heading" %>
 
   <div class="login-form-area">
     <div class="login-form">
-      <% if alert = flash[:alert] %>
-        <p class="login-alert" role="alert" id="alert"><%= alert %></p>
-      <% end %>
-
-      <% if notice = flash[:notice] %>
-        <p class="login-alert" role="status" id="notice"><%= notice %></p>
-      <% end %>
+      <%= render "shared/auth_flash" %>
 
       <h2>Welcome back.</h2>
       <p class="login-form__intro">Sign in to see your work with ANT Marine.</p>
