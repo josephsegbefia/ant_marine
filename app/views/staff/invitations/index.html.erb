@@ -17,8 +17,6 @@
     </div>
   </header>
 
-  <%= render "shared/auth_flash" %>
-
   <div class="portal-split">
     <section class="portal-card">
       <h3>Recent invitations</h3>
@@ -31,17 +29,27 @@
 
     <section class="portal-card">
       <h3>Invite someone</h3>
-      <%= form_with url: staff_invitations_path, class: "mt-5" do |form| %>
-        <div class="portal-field">
-          <%= form.label :email, "Email address" %>
-          <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "name@company.com", class: "portal-control" %>
-        </div>
-        <div class="portal-field">
-          <%= form.label :role_key, "What can they do?" %>
-          <%= form.select :role_key, options_for_select(RoleLabels.options_for_roles(@allowed_roles)), {}, class: "portal-control" %>
-        </div>
+      <%= form_with url: staff_invitations_path,
+            class: "mt-5",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Sending invitation..."
+            } do |form| %>
+        <%= ant_field form, :email,
+              type: :email,
+              label: "Email address",
+              context: :portal,
+              required: true,
+              autocomplete: "email",
+              placeholder: "name@company.com" %>
+        <%= ant_select form, :role_key,
+              choices: RoleLabels.options_for_roles(@allowed_roles),
+              label: "What can they do?",
+              context: :portal,
+              placeholder: "Choose access level" %>
         <p class="portal-notice mb-5">An invited person should only see the work and projects they have permission to access.</p>
-        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact" %>
+        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
       <% end %>
     </section>
   </div>

@@ -1,0 +1,27 @@
+<% field_id = html_options[:id] || [ form.object_name.presence, method ].compact.join("_") %>
+<% label_text = local_assigns[:label] || method.to_s.humanize %>
+<% input_class = ["ant-control", html_options[:class]].compact.join(" ") %>
+<% invalid = error.present? %>
+
+<div class="<%= context == :portal ? "ant-field ant-field--portal" : "ant-field field-wrap" %>">
+  <%= form.label method, label_text, class: "ant-field__label", for: field_id %>
+  <% field_html = html_options.except(:class) %>
+
+  <% case type %>
+  <% when :email %>
+    <%= form.email_field method, { id: field_id, class: input_class, aria: invalid ? { invalid: true, describedby: "#{field_id}-error" } : {} }.merge(field_html) %>
+  <% when :password %>
+    <%= form.password_field method, { id: field_id, class: input_class, aria: invalid ? { invalid: true, describedby: "#{field_id}-error" } : {} }.merge(field_html) %>
+  <% when :textarea %>
+    <%= form.text_area method, { id: field_id, class: input_class, aria: invalid ? { invalid: true, describedby: "#{field_id}-error" } : {} }.merge(field_html) %>
+  <% else %>
+    <%= form.text_field method, { id: field_id, class: input_class, aria: invalid ? { invalid: true, describedby: "#{field_id}-error" } : {} }.merge(field_html) %>
+  <% end %>
+
+  <% if hint.present? %>
+    <p class="ant-field__hint" id="<%= field_id %>-hint"><%= hint %></p>
+  <% end %>
+  <% if invalid %>
+    <p class="ant-field__error" id="<%= field_id %>-error" role="alert"><%= error %></p>
+  <% end %>
+</div>

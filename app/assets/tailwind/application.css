@@ -193,6 +193,193 @@
     box-shadow: 0 0 0 3px var(--color-ant-ring);
   }
 
+  .ant-field {
+    @apply mb-4 flex flex-col gap-1.5;
+  }
+
+  .ant-field--portal .ant-field__label {
+    @apply text-[11px] font-bold uppercase tracking-wide text-[#5f7d8c];
+  }
+
+  .ant-field__label {
+    @apply text-[11px] font-bold text-[#365063];
+  }
+
+  .ant-field__hint {
+    @apply text-[10px] leading-snug text-ant-subtle;
+  }
+
+  .ant-field__error {
+    @apply text-[11px] font-semibold text-ant-bad-text;
+  }
+
+  .ant-control {
+    @apply w-full min-h-[42px] rounded-[10px] border border-ant-field-border bg-white px-3.5 py-2.5 text-xs text-[#28485a];
+  }
+
+  .ant-control::placeholder {
+    color: #8da0a7;
+  }
+
+  .ant-control:hover:not(:disabled):not([aria-invalid="true"]) {
+    border-color: #b8ccd2;
+  }
+
+  .ant-control:focus {
+    outline: none;
+    border-color: #4ca79e;
+    box-shadow: 0 0 0 3px var(--color-ant-ring);
+  }
+
+  .ant-control:disabled {
+    @apply cursor-not-allowed bg-[#f4f7f8] opacity-70;
+  }
+
+  .ant-control[aria-invalid="true"] {
+    border-color: var(--color-ant-bad-border);
+    box-shadow: 0 0 0 3px rgb(155 75 85 / 0.12);
+  }
+
+  .field-wrap .control,
+  .portal-control {
+    @apply w-full min-h-[42px] rounded-[10px] border border-ant-field-border bg-white px-3.5 py-2.5 text-xs text-[#28485a];
+  }
+
+  .ant-select {
+    @apply relative w-full;
+  }
+
+  .ant-select__native--hidden {
+    @apply sr-only;
+  }
+
+  .ant-select--fallback .ant-select__native--hidden {
+    @apply not-sr-only block w-full;
+  }
+
+  .ant-select__trigger {
+    @apply flex min-h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] border border-ant-field-border bg-white px-3.5 py-2.5 text-left text-xs text-[#28485a];
+  }
+
+  .ant-select__trigger:disabled {
+    @apply cursor-not-allowed opacity-70;
+  }
+
+  .ant-select__value {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  .ant-select__value--placeholder {
+    @apply text-[#8da0a7];
+  }
+
+  .ant-select__chevron {
+    @apply size-4 shrink-0 text-ant-muted;
+  }
+
+  .ant-select__panel {
+    @apply absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-[10px] border border-ant-field-border bg-white py-1 shadow-[0_12px_36px_rgba(29,68,83,0.12)];
+  }
+
+  .ant-select__search {
+    @apply mx-2 mb-1 mt-1 block w-[calc(100%-1rem)] rounded-[9px] border border-ant-field-border px-3 py-2 text-xs;
+  }
+
+  .ant-select__option {
+    @apply flex min-h-[40px] cursor-pointer items-center justify-between gap-2 px-3.5 py-2 text-xs text-[#28485a] hover:bg-[#eff8f8];
+  }
+
+  .ant-select__option[aria-selected="true"] {
+    @apply bg-[#e8f6f8] font-semibold text-ant-teal-dark;
+  }
+
+  .ant-select__option--active {
+    @apply bg-[#eff8f8] outline-none ring-2 ring-inset ring-ant-teal;
+  }
+
+  .ant-select__option[aria-disabled="true"] {
+    @apply cursor-not-allowed opacity-50 hover:bg-transparent;
+  }
+
+  .ant-toast-stack {
+    @apply pointer-events-none fixed inset-x-3 top-3 z-[100] flex flex-col gap-2 sm:inset-x-auto sm:right-4 sm:top-4 sm:w-[min(100%,380px)];
+  }
+
+  .ant-toast {
+    @apply pointer-events-auto flex gap-3 rounded-[12px] border px-4 py-3 text-[11px] leading-relaxed shadow-[0_12px_36px_rgba(29,68,83,0.1)];
+  }
+
+  .ant-toast--success {
+    @apply border-[#b5e6cf] bg-[#e1f6ec] text-[#237b65];
+  }
+
+  .ant-toast--error {
+    background: var(--color-ant-bad-bg);
+    border-color: var(--color-ant-bad-border);
+    color: var(--color-ant-bad-text);
+  }
+
+  .ant-toast--warning {
+    @apply border-[#e8d4a8] bg-[#fff5e6] text-[#9a6b15];
+  }
+
+  .ant-toast--info {
+    @apply border-[#b3d9e5] bg-[#e5f5fa] text-ant-navy;
+  }
+
+  .ant-toast--loading,
+  .ant-toast--pending {
+    @apply border-ant-field-border bg-white text-ant-ink;
+  }
+
+  .ant-toast__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .ant-toast__title {
+    @apply font-extrabold;
+  }
+
+  .ant-toast__message {
+    @apply mt-0.5;
+  }
+
+  .ant-toast__actions {
+    @apply mt-2 flex flex-wrap gap-2;
+  }
+
+  .ant-toast__action {
+    @apply cursor-pointer rounded-[9px] border border-current bg-white/60 px-2 py-1 text-[10px] font-bold no-underline hover:bg-white;
+  }
+
+  .ant-toast__dismiss {
+    @apply shrink-0 cursor-pointer rounded-[8px] border-0 bg-transparent p-1 text-inherit opacity-70 hover:opacity-100;
+  }
+
+  .ant-toast-stack--assertive {
+    @apply fixed;
+  }
+
+  button,
+  .portal-btn-secondary,
+  .portal-btn-danger,
+  .ant-text-link,
+  .ant-select__trigger,
+  .ant-select__option,
+  .ant-toast__action,
+  .ant-toast__dismiss {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  .ant-btn-primary:disabled {
+    cursor: not-allowed;
+  }
+
+  a:not([class]) {
+    cursor: pointer;
+  }
+
   .ant-text-link {
     @apply border-0 bg-transparent text-[11px] font-extrabold text-ant-teal-dark cursor-pointer;
   }

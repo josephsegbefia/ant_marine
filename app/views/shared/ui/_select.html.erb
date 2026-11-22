@@ -1,0 +1,62 @@
+<% field_id = html_options[:id] || [ form.object_name.presence, method ].compact.join("_") %>
+<% label_text = local_assigns[:label] || method.to_s.humanize %>
+<% invalid = error.present? %>
+<% listbox_id = "#{field_id}_listbox" %>
+
+<div class="<%= context == :portal ? "ant-field ant-field--portal" : "ant-field field-wrap" %>"
+     data-controller="custom-select"
+     data-custom-select-searchable-value="<%= searchable %>"
+     data-custom-select-placeholder-value="<%= placeholder %>"
+     data-custom-select-fallback-value="false">
+  <%= form.label method, label_text, class: "ant-field__label", for: field_id %>
+
+  <div class="ant-select" data-custom-select-target="wrapper">
+    <%= form.select(
+          method,
+          choices,
+          select_options,
+          {
+            id: field_id,
+            class: "ant-select__native ant-select__native--hidden",
+            data: { custom_select_target: "native" },
+            aria: {
+              invalid: invalid,
+              describedby: [hint.present? ? "#{field_id}-hint" : nil, invalid ? "#{field_id}-error" : nil].compact.join(" ")
+            }.compact
+          }.merge(html_options)
+        ) %>
+
+    <button type="button"
+            class="ant-select__trigger"
+            data-custom-select-target="trigger"
+            data-action="click->custom-select#toggle"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="<%= listbox_id %>"
+            id="<%= field_id %>_trigger">
+      <span class="ant-select__value ant-select__value--placeholder" data-custom-select-target="value"><%= placeholder %></span>
+      <svg class="ant-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <div class="ant-select__panel hidden" data-custom-select-target="panel" role="presentation">
+      <% if searchable %>
+        <input type="search"
+               class="ant-select__search"
+               placeholder="Search..."
+               data-custom-select-target="search"
+               aria-label="Filter options"
+               autocomplete="off">
+      <% end %>
+      <ul class="ant-select__list" id="<%= listbox_id %>" role="listbox" data-custom-select-target="listbox" aria-labelledby="<%= field_id %>"></ul>
+    </div>
+  </div>
+
+  <% if hint.present? %>
+    <p class="ant-field__hint" id="<%= field_id %>-hint"><%= hint %></p>
+  <% end %>
+  <% if invalid %>
+    <p class="ant-field__error" id="<%= field_id %>-error" role="alert"><%= error %></p>
+  <% end %>
+</div>

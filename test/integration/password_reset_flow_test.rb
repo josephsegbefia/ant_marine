@@ -11,13 +11,15 @@ class PasswordResetFlowTest < ActionDispatch::IntegrationTest
     post passwords_path, params: { email: user.email }
     assert_redirected_to new_session_path
     follow_redirect!
-    assert_select ".login-notice", text: /if user with that email address exists/
+    assert_match(/if user with that email address exists/i, response.body)
+    assert_select "[data-toast-stack-flash-value*='success']"
 
     assert_no_difference -> { ActionMailer::Base.deliveries.size } do
       post passwords_path, params: { email: "unknown-#{SecureRandom.hex(4)}@example.com" }
     end
     follow_redirect!
-    assert_select ".login-notice", text: /if user with that email address exists/
+    assert_match(/if user with that email address exists/i, response.body)
+    assert_select "[data-toast-stack-flash-value*='success']"
   end
 
   test "edit reset page uses branded access shell" do
@@ -34,7 +36,8 @@ class PasswordResetFlowTest < ActionDispatch::IntegrationTest
     get edit_password_path("not-a-valid-token")
     assert_redirected_to new_password_path
     follow_redirect!
-    assert_select ".login-alert", text: /invalid or has expired/
+    assert_match(/invalid or has expired/i, response.body)
+    assert_select "[data-toast-stack-flash-value*='error']"
   end
 
   test "mismatched passwords render branded validation state" do
@@ -44,7 +47,7 @@ class PasswordResetFlowTest < ActionDispatch::IntegrationTest
     put password_path(token), params: { password: "new-password-12", password_confirmation: "different" }
     assert_response :unprocessable_entity
     assert_select ".login-page"
-    assert_select ".login-alert"
+    assert_select ".ant-field__error"
   end
 
   test "successful reset allows sign in with new password" do

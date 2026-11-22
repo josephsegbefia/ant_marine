@@ -1,7 +1,1 @@
-<% if alert = flash[:alert] %>
-  <p class="login-alert" role="alert" id="alert"><%= alert %></p>
-<% end %>
-
-<% if notice = flash[:notice] %>
-  <p class="login-notice" role="status" id="notice"><%= notice %></p>
-<% end %>
+<%# Flash messages are rendered as global toasts via toast-stack on access and portal layouts. %>

@@ -5,43 +5,35 @@
 
   <div class="login-form-area">
     <div class="login-form">
-      <%= render "shared/auth_flash" %>
-
       <h2>Choose a new password.</h2>
       <p class="login-form__intro">Choose a secure password to protect your account.</p>
 
-      <%= form_with url: password_path(params[:token]), method: :put, class: "contents" do |form| %>
-        <div class="field-wrap">
-          <%= form.label :password, "Password" %>
-          <%= form.password_field :password,
-                required: true,
-                autofocus: true,
-                autocomplete: "new-password",
-                placeholder: "Choose a secure password",
-                maxlength: 72,
-                class: "control",
-                aria: { describedby: (@user&.errors&.any? ? "password-errors" : nil) } %>
-        </div>
+      <%= form_with url: password_path(params[:token]), method: :put,
+            class: "contents",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Saving password..."
+            } do |form| %>
+        <%= ant_field form, :password,
+              type: :password,
+              label: "Password",
+              required: true,
+              autofocus: true,
+              autocomplete: "new-password",
+              placeholder: "Choose a secure password",
+              maxlength: 72,
+              error: @user&.errors&.full_messages_for(:password)&.first %>
+        <%= ant_field form, :password_confirmation,
+              type: :password,
+              label: "Confirm password",
+              required: true,
+              autocomplete: "new-password",
+              placeholder: "Enter password again",
+              maxlength: 72,
+              error: @user&.errors&.full_messages_for(:password_confirmation)&.first %>
 
-        <div class="field-wrap">
-          <%= form.label :password_confirmation, "Confirm password" %>
-          <%= form.password_field :password_confirmation,
-                required: true,
-                autocomplete: "new-password",
-                placeholder: "Enter password again",
-                maxlength: 72,
-                class: "control" %>
-        </div>
-
-        <% if @user&.errors&.any? %>
-          <div class="login-alert" role="alert" id="password-errors">
-            <% @user.errors.full_messages.each do |message| %>
-              <p><%= message %></p>
-            <% end %>
-          </div>
-        <% end %>
-
-        <%= form.button type: "submit", class: "ant-btn-primary" do %>
+        <%= form.button type: "submit", class: "ant-btn-primary", data: { form_submit_target: "submit" } do %>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m4 12 5 5L20 6"></path>
           </svg>

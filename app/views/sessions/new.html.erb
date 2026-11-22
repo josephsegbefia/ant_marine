@@ -5,38 +5,37 @@
 
   <div class="login-form-area">
     <div class="login-form">
-      <%= render "shared/auth_flash" %>
-
       <h2>Welcome back.</h2>
       <p class="login-form__intro">Sign in to see your work with ANT Marine.</p>
 
-      <%= form_with url: session_url, class: "contents" do |form| %>
-        <div class="field-wrap">
-          <%= form.label :email, "Work email" %>
-          <%= form.email_field :email,
-                required: true,
-                autofocus: true,
-                autocomplete: "username",
-                placeholder: "name@company.com",
-                value: params[:email],
-                class: "control" %>
-        </div>
-
-        <div class="field-wrap">
-          <%= form.label :password, "Password" %>
-          <%= form.password_field :password,
-                required: true,
-                autocomplete: "current-password",
-                placeholder: "Enter your password",
-                maxlength: 72,
-                class: "control" %>
-        </div>
+      <%= form_with url: session_url,
+            class: "contents",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Signing in..."
+            } do |form| %>
+        <%= ant_field form, :email,
+              type: :email,
+              label: "Work email",
+              required: true,
+              autofocus: true,
+              autocomplete: "username",
+              placeholder: "name@company.com",
+              value: params[:email] %>
+        <%= ant_field form, :password,
+              type: :password,
+              label: "Password",
+              required: true,
+              autocomplete: "current-password",
+              placeholder: "Enter your password",
+              maxlength: 72 %>
 
         <div class="mb-5 text-right">
           <%= link_to "Forgot password?", new_password_path, class: "ant-text-link" %>
         </div>
 
-        <%= form.button type: "submit", class: "ant-btn-primary" do %>
+        <%= form.button type: "submit", class: "ant-btn-primary", data: { form_submit_target: "submit" } do %>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="5" y="10" width="14" height="12" rx="2"></rect>
             <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>

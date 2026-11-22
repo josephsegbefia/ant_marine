@@ -14,6 +14,9 @@
     <%= javascript_importmap_tags %>
   </head>
   <body class="ant-portal-body">
-    <%= yield %>
+    <div data-controller="toast-stack" data-toast-stack-flash-value='<%= flash_toast_payload.to_json %>'>
+      <%= render "shared/ui/toast_stack" %>
+      <%= yield %>
+    </div>
   </body>
 </html>

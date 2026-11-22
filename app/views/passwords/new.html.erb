@@ -5,24 +5,26 @@
 
   <div class="login-form-area">
     <div class="login-form">
-      <%= render "shared/auth_flash" %>
-
       <h2>Reset your password.</h2>
       <p class="login-form__intro">Enter your email and we’ll send instructions to help you sign in again.</p>
 
-      <%= form_with url: passwords_path, class: "contents" do |form| %>
-        <div class="field-wrap">
-          <%= form.label :email, "Work email" %>
-          <%= form.email_field :email,
-                required: true,
-                autofocus: true,
-                autocomplete: "username",
-                placeholder: "name@company.com",
-                value: params[:email],
-                class: "control" %>
-        </div>
+      <%= form_with url: passwords_path,
+            class: "contents",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Sending instructions..."
+            } do |form| %>
+        <%= ant_field form, :email,
+              type: :email,
+              label: "Work email",
+              required: true,
+              autofocus: true,
+              autocomplete: "username",
+              placeholder: "name@company.com",
+              value: params[:email] %>
 
-        <%= form.button type: "submit", class: "ant-btn-primary" do %>
+        <%= form.button type: "submit", class: "ant-btn-primary", data: { form_submit_target: "submit" } do %>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="5" width="18" height="14" rx="2"></rect>
             <path d="m3 7 9 6 9-6"></path>

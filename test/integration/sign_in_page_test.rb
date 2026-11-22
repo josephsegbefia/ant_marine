@@ -25,6 +25,7 @@ class SignInPageTest < ActionDispatch::IntegrationTest
     post session_path, params: { email: "nobody@example.com", password: "wrong" }
     follow_redirect!
 
-    assert_select ".login-alert", text: /Try another email address or password/
+    assert_select "[data-toast-stack-flash-value]"
+    assert_match(/Try another email address or password/i, response.body)
   end
 end

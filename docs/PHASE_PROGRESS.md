@@ -5,7 +5,7 @@
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
-| Phase 3 — foundation | **P3-A2 UI correction (local main)** | Invitation management UI + data integrity; 77 tests; push/CI pending PO review |
+| Phase 3 — foundation | **P3-A2-UX shared UI (local main)** | Custom select, unified fields, global toasts; 83 tests; push/CI pending PO review |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -38,7 +38,8 @@
 | P3-A2 Browser acceptance | 2026-11-22 | **Partial — agent verified** | Browser: A02/A03 staff+client @390px; acceptance+replay screens; staff sign-in attempted. PO: full staff UI send flow + client owner portal invite |
 | P3-A2 Design Studio A02/A03 | 2026-11-22 | **Substantially aligned** | Shared access layout, navy/teal panel, icon circle, notice, locked email, headings match studio intent; minor copy/CTA differences vs static HTML |
 | P3-A2 Security acceptance | 2026-11-22 | **Passed (automated + samples)** | Digest-only storage; GET non-consuming; resend revokes prior token (dev runner); policy matrix tests; `::Invitations` autoload fix for invitation controllers |
-| P3-A2 UI & data integrity correction | 2026-11-22 | **Ready for PO sign-off — local only** | Design Studio **M08** split layout (recent list + invite form), **M07** admin nav pattern; portal layout for staff/client; `RoleLabels` for roles/statuses; dev cleanup of acceptance rows (4 invitations, 1 user, 1 org, 7 audit events); **77 tests / 299 assertions** |
+| P3-A2-UX Shared UI & notifications | 2026-11-22 | **Ready for PO sign-off — local only** | `AntUiHelper`, `custom-select`, `toast-stack`, `form-submit`; studios A01/M08; **83 tests / 351 assertions**; see [`docs/ui/SHARED_UI_COMPONENTS.md`](ui/SHARED_UI_COMPONENTS.md) |
+| P3-A2 UI & data integrity correction | 2026-11-22 | **Accepted (local)** | Design Studio **M08** split layout (recent list + invite form), **M07** admin nav pattern; portal layout for staff/client; `RoleLabels` for roles/statuses; dev cleanup of acceptance rows (4 invitations, 1 user, 1 org, 7 audit events); **77 tests / 299 assertions** |
 | P3-A2 Synthetic data finding | 2026-11-22 | **Resolved (dev)** | Test-looking rows were **development DB records** from P3-A2 `rails runner`/browser acceptance—not hardcoded views. Removed by ID after inventory. **Retained:** `elsegbefia@gmail.com`, `browser-test@example.com`, `you@example.com` super admins (not removed without PO direction). |
 | P3-A2 Browser acceptance (correction) | 2026-11-22 | **Partial** | Integration tests cover HTML labels/empty state; live browser @1440/390 requires PO/super-admin sign-in (credentials not in repo). Restart `bin/dev` after pull for new Tailwind. |
 | P3-A2 GitHub push | — | **NO-GO until PO** | Recommend push after PO confirms empty invitation list and staff invite flow in browser |

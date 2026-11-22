@@ -16,8 +16,6 @@
     </div>
   </header>
 
-  <%= render "shared/auth_flash" %>
-
   <section class="portal-card max-w-xl">
     <% if @client_organizations.empty? %>
       <div class="portal-empty">
@@ -25,21 +23,33 @@
         <p>Client organisations must exist before you can send a client invitation.</p>
       </div>
     <% else %>
-      <%= form_with url: staff_client_invitations_path, class: "mt-2" do |form| %>
-        <div class="portal-field">
-          <%= form.label :organization_id, "Client organisation" %>
-          <%= form.collection_select :organization_id, @client_organizations, :id, :name, { selected: @organization&.id }, class: "portal-control" %>
-        </div>
-        <div class="portal-field">
-          <%= form.label :email, "Email address" %>
-          <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "name@company.com", class: "portal-control" %>
-        </div>
-        <div class="portal-field">
-          <%= form.label :role_key, "What can they do?" %>
-          <%= form.select :role_key, options_for_select(RoleLabels.options_for_roles(@allowed_roles)), {}, class: "portal-control" %>
-        </div>
+      <%= form_with url: staff_client_invitations_path,
+            class: "mt-2",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Sending invitation..."
+            } do |form| %>
+        <%= ant_collection_select form, :organization_id, @client_organizations, :id, :name,
+              label: "Client organisation",
+              context: :portal,
+              searchable: true,
+              placeholder: "Choose client organisation",
+              selected: @organization&.id %>
+        <%= ant_field form, :email,
+              type: :email,
+              label: "Email address",
+              context: :portal,
+              required: true,
+              autocomplete: "email",
+              placeholder: "name@company.com" %>
+        <%= ant_select form, :role_key,
+              choices: RoleLabels.options_for_roles(@allowed_roles),
+              label: "What can they do?",
+              context: :portal,
+              placeholder: "Choose access level" %>
         <p class="portal-notice mb-5">The invitation is limited to the selected client organisation and role.</p>
-        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact" %>
+        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
       <% end %>
     <% end %>
   </section>
