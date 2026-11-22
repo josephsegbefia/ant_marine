@@ -91,6 +91,7 @@ data: {
 - **Icons:** inline SVG (`shared/staff/_nav_icon.html.erb`), studio stroke `1.65` — `home` (Overview), `mail` (Invitations), `switch` (workspace change), `menu` (mobile toggle).
 - **Workspace switch:** footer link when `portal_eligible_memberships.size > 1`; header back link unchanged.
 - **Mobile drawer:** fixed panel `min(272px, 88vw)`, backdrop dismiss, `Escape` close, body scroll lock (`staff_shell_controller.js`).
+- **Profile footer:** pinned to sidebar bottom via flex column (`staff-app-side__inner` + `flex-1` nav scroll region); scrollable nav body on small drawers.
 
 ## Limitations (continued)
 

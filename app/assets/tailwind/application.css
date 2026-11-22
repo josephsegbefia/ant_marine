@@ -640,7 +640,7 @@
   }
 
   .staff-app-side__inner {
-    @apply flex flex-1 flex-col p-3 sm:p-4 lg:px-3 lg:pb-6 lg:pt-5;
+    @apply flex flex-1 flex-col p-3 sm:p-4 lg:min-h-dvh lg:px-3 lg:pb-0 lg:pt-5;
   }
 
   .staff-side-brand {
@@ -689,7 +689,7 @@
   }
 
   .staff-bottom-user {
-    @apply mt-auto border-t border-[#3a6d84] px-3 py-4 text-[11px] text-[#c5d8e0];
+    @apply shrink-0 border-t border-[#3a6d84] px-3 py-4 text-[11px] text-[#c5d8e0] lg:mt-auto;
   }
 
   .staff-bottom-user__name {
@@ -749,11 +749,19 @@
   }
 
   .staff-app-side__nav {
-    @apply hidden flex-col lg:flex lg:static lg:z-auto lg:w-auto lg:shadow-none;
+    @apply hidden min-h-0 flex-col lg:flex lg:min-h-0 lg:flex-1 lg:static lg:z-auto lg:w-auto lg:shadow-none;
+  }
+
+  .staff-app-side__nav-scroll {
+    @apply min-h-0 flex-1 overflow-y-auto;
   }
 
   .staff-app-side__nav--open {
-    @apply fixed bottom-0 left-0 top-0 z-40 flex w-[min(272px,88vw)] flex-col overflow-y-auto bg-[#164f67] px-3 pb-6 pt-4 shadow-xl;
+    @apply fixed bottom-0 left-0 top-0 z-40 flex h-dvh max-h-dvh w-[min(272px,88vw)] flex-col overflow-hidden bg-[#164f67] px-3 pb-4 pt-4 shadow-xl;
+  }
+
+  .staff-app-side__nav--open .staff-app-side__nav-scroll {
+    @apply flex-1 overflow-y-auto overscroll-contain;
   }
 
   .staff-shell-backdrop {
