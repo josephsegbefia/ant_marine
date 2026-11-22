@@ -9,7 +9,13 @@ class DeliverInvitationEmailJob < ApplicationJob
   self.log_arguments = false
 
   retry_on Net::SMTPServerBusy, Net::SMTPUnknownError, wait: :polynomially_longer, attempts: 5
-  discard_on Net::SMTPFatalError, Net::SMTPSyntaxError
+
+  discard_on Net::SMTPFatalError, Net::SMTPSyntaxError, report: true do |job, error|
+    invitation_id = job.arguments.first
+    Rails.logger.error(
+      "[DeliverInvitationEmailJob] permanent_smtp_discard invitation_id=#{invitation_id} error=#{error.class.name}"
+    )
+  end
 
   def perform(invitation_id, sealed_token)
     Notifications::MailDelivery.ensure_ready!

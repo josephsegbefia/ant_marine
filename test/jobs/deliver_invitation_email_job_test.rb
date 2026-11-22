@@ -102,4 +102,44 @@ class DeliverInvitationEmailJobTest < ActiveJob::TestCase
     assert_includes names, "Net::SMTPServerBusy"
     assert_includes names, "Net::SMTPFatalError"
   end
+
+  test "permanent smtp failure is discarded with instrumentation and without leaking the token" do
+    smtp_error = Net::SMTPFatalError.new("550 permanent")
+    failing_mail = Class.new do
+      define_method(:deliver_now) { raise smtp_error }
+    end.new
+
+    discard_events = []
+    callback = lambda do |*args|
+      discard_events << ActiveSupport::Notifications::Event.new(*args)
+    end
+
+    log = StringIO.new
+    old_logger = Rails.logger
+    Rails.logger = Logger.new(log)
+
+    original_invite = InvitationsMailer.method(:invite)
+
+    begin
+      InvitationsMailer.define_singleton_method(:invite) { |*_args| failing_mail }
+      ActiveSupport::Notifications.subscribed(callback, "discard.active_job") do
+        assert_nothing_raised do
+          DeliverInvitationEmailJob.perform_now(@invitation.id, @sealed)
+        end
+      end
+    ensure
+      InvitationsMailer.define_singleton_method(:invite, original_invite)
+      Rails.logger = old_logger
+    end
+
+    assert_equal 1, discard_events.size
+    assert_equal "pending", @invitation.reload.status
+
+    payload_json = discard_events.first.payload.to_json
+    assert_not_includes payload_json, @raw_token
+    assert_not_includes log.string, @sealed
+    assert_includes log.string, "permanent_smtp_discard"
+    assert_includes log.string, "invitation_id=#{@invitation.id}"
+    assert_not_includes log.string, @raw_token
+  end
 end

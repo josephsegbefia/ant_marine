@@ -12,7 +12,7 @@
 
 `config/queue.yml` runs one worker process (`JOB_CONCURRENCY`, default 1) with 3 threads on the `mail` and `default` queues. Finished jobs are cleared hourly in production via `config/recurring.yml`.
 
-Web and worker are separate processes. `bin/dev` starts `bin/jobs`. Do **not** set `SOLID_QUEUE_IN_PUMA` at the same time, or two workers will share the development queue. Puma only loads Solid Queue when that variable is set, which is for a later single-container deploy.
+Web and worker are separate processes. `bin/dev` starts `bin/jobs`. Do **not** set `SOLID_QUEUE_IN_PUMA` at the same time, or two workers will share the development queue. Puma loads Solid Queue only when `SOLID_QUEUE_IN_PUMA` is present **and non-blank** (`config/puma.rb`), which is for a later single-container deploy.
 
 ## Local commands
 
@@ -25,7 +25,7 @@ bin/jobs                        # worker only, if bin/dev is not already running
 
 Stop the worker with SIGTERM (Ctrl-C). Solid Queue finishes the current job and exits.
 
-Failed jobs stay in `solid_queue_failed_executions` on the queue database. Inspect them from a Rails console in development:
+Unhandled job exceptions stay in `solid_queue_failed_executions` on the queue database. Inspect them from a Rails console in development:
 
 ```ruby
 SolidQueue::FailedExecution.order(:id).last&.exception_class
@@ -94,7 +94,9 @@ Password reset still uses `PasswordsMailer` with the user id only. The reset tok
 
 ## Retries
 
-Transient timeouts, deadlocks, and `Net::SMTPServerBusy` / `Net::SMTPUnknownError` retry up to 5 times with polynomial backoff. Permanent SMTP failures (`Net::SMTPFatalError`, `Net::SMTPSyntaxError`) are discarded. Missing records are discarded.
+Transient timeouts, deadlocks, and `Net::SMTPServerBusy` / `Net::SMTPUnknownError` retry up to 5 times with polynomial backoff. Permanent SMTP failures (`Net::SMTPFatalError`, `Net::SMTPSyntaxError`) are **discarded inside ActiveJob** (`report: true` + redacted `permanent_smtp_discard` log line with `invitation_id` only). They do **not** create `solid_queue_failed_executions` rows because the exception is handled before the queue marks the job failed. Missing records are discarded.
+
+Operators identify permanent SMTP discards via Rails logs, `discard.active_job` instrumentation, and the error reporter — not via the failed-executions table.
 
 ## Notifications
 
