@@ -10,9 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_120003) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_224000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
 
   create_table "audit_events", force: :cascade do |t|
     t.bigint "organization_id"
@@ -145,6 +173,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120003) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "storage_assets", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "uploaded_by_membership_id", null: false
+    t.string "scan_status", default: "pending_upload", null: false
+    t.string "classification", default: "standard", null: false
+    t.string "filename", null: false
+    t.string "content_type", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum_sha256", null: false
+    t.string "storage_key", null: false
+    t.integer "encryption_key_version", null: false
+    t.bigint "active_storage_blob_id"
+    t.string "scan_result"
+    t.datetime "scanned_at"
+    t.string "rejected_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active_storage_blob_id"], name: "index_storage_assets_on_active_storage_blob_id"
+    t.index ["organization_id"], name: "index_storage_assets_on_organization_id"
+    t.index ["scan_status"], name: "index_storage_assets_on_scan_status"
+    t.index ["storage_key"], name: "index_storage_assets_on_storage_key", unique: true
+    t.index ["uploaded_by_membership_id"], name: "index_storage_assets_on_uploaded_by_membership_id"
+    t.check_constraint "classification::text = ANY (ARRAY['standard'::character varying, 'confidential'::character varying]::text[])", name: "storage_assets_classification_check"
+    t.check_constraint "scan_status::text = ANY (ARRAY['pending_upload'::character varying, 'scanning'::character varying, 'available'::character varying, 'rejected'::character varying]::text[])", name: "storage_assets_scan_status_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
@@ -158,6 +212,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120003) do
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'suspended'::character varying]::text[])", name: "users_status_check"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "audit_events", "memberships", column: "actor_membership_id"
   add_foreign_key "audit_events", "organizations"
   add_foreign_key "invitations", "memberships", column: "invited_by_membership_id"
@@ -171,4 +227,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120003) do
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "sessions", "memberships"
   add_foreign_key "sessions", "users"
+  add_foreign_key "storage_assets", "active_storage_blobs"
+  add_foreign_key "storage_assets", "memberships", column: "uploaded_by_membership_id"
+  add_foreign_key "storage_assets", "organizations"
 end

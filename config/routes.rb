@@ -16,6 +16,10 @@ Rails.application.routes.draw do
 
   namespace :staff do
     root to: "home#show"
+    namespace :storage do
+      resources :proof_uploads, only: :create
+      resources :proof_downloads, only: :show
+    end
     resources :invitations, only: %i[index create destroy] do
       member do
         post :resend

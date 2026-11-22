@@ -1,5 +1,16 @@
 #!/usr/bin/env sh
 
+# Foreman children need DB credentials before Rails boots (see docs/PHASE_PROGRESS.md).
+if [ -f .env.local ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ./.env.local
+  set +a
+elif [ -z "${ANT_MARINE_DB_PASSWORD:-}" ]; then
+  echo "Missing ANT_MARINE_DB_PASSWORD. Copy .env.example to .env.local and source it, or export the variable." >&2
+  exit 1
+fi
+
 if ! gem list foreman -i --silent; then
   echo "Installing foreman..."
   gem install foreman

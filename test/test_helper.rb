@@ -1,8 +1,11 @@
 ENV["RAILS_ENV"] ||= "test"
+ENV["STORAGE_ENCRYPTION_KEY"] ||= "test-only-storage-encryption-secret"
+ENV["STORAGE_MAX_UPLOAD_BYTES"] ||= (5 * 1024 * 1024).to_s
 require_relative "../config/environment"
 require "rails/test_help"
 require_relative "test_helpers/session_test_helper"
 require_relative "test_helpers/invitation_test_helper"
+require_relative "test_helpers/storage_test_helper"
 
 module ActiveSupport
   class TestCase
