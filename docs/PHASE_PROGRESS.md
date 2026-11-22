@@ -5,7 +5,7 @@
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
-| Phase 3 — foundation | **P3-A1 locally accepted — awaiting PO merge approval** | Branch `feat/p3-a1-auth-organizations` @ `635f1d4` |
+| Phase 3 — foundation | **P3-A1 merged to main (local)** | Auth, orgs, memberships, access UI A01/A05/A06; P3-A2+ pending |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -30,8 +30,9 @@
 | P2.5 Final architecture review | 2026-11-22 | **Complete — partial approval** | `docs/architecture/P2_5_*` |
 | P2.5A Stakeholder decisions | 2026-11-22 | **Enumerated ADRs approved** | Commit `08a5423`; `P2_5A_STAKEHOLDER_DECISION_RECORD.md` |
 | P2.5B Phase 2 exit prep | 2026-11-22 | **P2-OD-040–042 approved** | Product owner 2026-11-22; Phase 1 sign-off checklist still open |
-| P3-A1 Auth & organisations | 2026-11-22 | **Locally accepted** | `635f1d4`; 46 tests green; A01/A05/A06 + reset edit aligned; A02–A04 deferred |
-| P3-A1 Acceptance | 2026-11-22 | **Passed (agent checkpoint)** | Automated + integration journeys; restart stale Puma on :3000 before manual QA |
+| P3-A1 Auth & organisations | 2026-11-22 | **Accepted — merged to `main`** | Super Admin sign-in + staff workspace verified by PO; 46 tests; invitations/RBAC deferred |
+| P3-A1 Browser acceptance | 2026-11-22 | **Partial** | **PO verified:** sign-in, staff workspace. **Not agent-verified:** full reset mailbox flow, mobile screenshots, dual-org switch, client portal in browser |
+| P3-A1 Gates unchanged | — | **Open** | Phase 1 final design sign-off; ADR-010 confidential storage PoC; A02–A04 invitation UI |
 
 ## Local development quick reference
 
