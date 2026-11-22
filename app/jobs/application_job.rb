@@ -1,7 +1,9 @@
 class ApplicationJob < ActiveJob::Base
-  # Automatically retry jobs that encountered a deadlock
-  # retry_on ActiveRecord::Deadlocked
+  # Wait until the surrounding database transaction commits before the job is visible.
+  self.enqueue_after_transaction_commit = true
 
-  # Most jobs are safe to ignore if the underlying records are no longer available
-  # discard_on ActiveJob::DeserializationError
+  retry_on ActiveRecord::Deadlocked, wait: :polynomially_longer, attempts: 5
+  retry_on Timeout::Error, Net::OpenTimeout, Net::ReadTimeout, wait: :polynomially_longer, attempts: 5
+
+  discard_on ActiveJob::DeserializationError
 end

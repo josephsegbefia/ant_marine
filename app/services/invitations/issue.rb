@@ -36,7 +36,7 @@ module Invitations
         )
       end
 
-      InvitationsMailer.invite(invitation, raw_token).deliver_later
+      Notifications::Dispatch.invitation!(invitation: invitation, raw_token: raw_token)
       InvitationAudit.issued(invitation: invitation, actor_membership: @inviter_membership)
 
       Result.new(invitation: invitation, raw_token: raw_token)

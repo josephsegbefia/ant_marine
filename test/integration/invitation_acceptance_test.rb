@@ -78,7 +78,7 @@ class InvitationAcceptanceTest < ActionDispatch::IntegrationTest
   end
 
   test "mailer enqueues on issue" do
-    assert_enqueued_emails 1 do
+    assert_enqueued_jobs 1, only: DeliverInvitationEmailJob do
       issue_invitation!(
         inviter_membership: memberships(:super_admin_membership),
         organization: organizations(:ant_marine),
