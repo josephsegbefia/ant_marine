@@ -183,6 +183,7 @@ Deliverables:
 - Entity relationship map, primary/foreign keys, tenancy strategy, unique constraints, soft delete/retention rules and PostgreSQL migration sequence.
 - State machines and guards: inquiry, quote, booking, job, task, document, report, invoice.
 - **Permission architecture:** staff and client role inventories, full permission catalogue, default role matrix, resolution hierarchy, project-level access rules, sensitive-operation safeguards, audit fields ([`docs/architecture/ROLE_PERMISSION_SPEC.md`](architecture/ROLE_PERMISSION_SPEC.md) and companions).
+- **Authentication & authorization (P2.2):** [`P2_2_AUTHENTICATION_ARCHITECTURE.md`](architecture/P2_2_AUTHENTICATION_ARCHITECTURE.md), [`P2_2_AUTHORIZATION_ARCHITECTURE.md`](architecture/P2_2_AUTHORIZATION_ARCHITECTURE.md), [`P2_2_SECURITY_THREAT_MODEL.md`](architecture/P2_2_SECURITY_THREAT_MODEL.md), [`P2_2_DATABASE_HANDOFF.md`](architecture/P2_2_DATABASE_HANDOFF.md).
 - Threat model for privilege escalation and cross-organisation leakage.
 - Project structure, modules, navigation routes, view patterns, notification/event catalogue and job requirements.
 - Document storage security architecture, encryption feasibility proof-of-concept, backups and disaster-recovery assumptions.

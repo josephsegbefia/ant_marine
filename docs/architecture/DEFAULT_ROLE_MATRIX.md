@@ -5,6 +5,8 @@
 **Catalogue:** [`PERMISSION_CATALOGUE.md`](PERMISSION_CATALOGUE.md)
 **P2.1 reconciliation:** 22 November 2026 — reviewer assignment-only; finance tightened project visibility.
 
+**P2.2 refinements:** `billing.view_all` for finance; Ops Manager confidential removed from default; reviewer `access_scope` in authorization architecture.
+
 Abbreviations in tables: **Y** = granted by default, **—** = not granted (may grant if `Override: yes`).
 
 ---
@@ -21,11 +23,13 @@ Abbreviations in tables: **Y** = granted by default, **—** = not granted (may 
 
 ### `staff.operations_manager` — Operations Manager
 
-Org-wide project oversight (`projects.view_all`). Default `documents.access_confidential` is intentional for operations oversight.
+Org-wide project oversight (`projects.view_all`). Confidential documents require explicit grant (not default).
 
 | Permission keys |
 |---|
-| `inquiries.view_all`, `inquiries.qualify`, `quotes.view_all`, `quotes.create`, `quotes.send`, `quotes.withdraw`, `bookings.view_all`, `bookings.confirm`, `projects.view_all`, `projects.create`, `projects.manage`, `projects.assign`, `vessels.view_all`, `vessels.manage`, `inspections.view`, `documents.manage`, `documents.request_upload`, `documents.download`, `documents.preview`, `documents.access_confidential`, `reports.review`, `reports.release`, `reports.view_draft_staff`, `billing.view`, `billing.manage`, `messages.view`, `messages.send`, `analytics.view_business`, `analytics.export`, `team.view`, `team.invite`, `team.suspend`, `audit.view_staff`, `company.settings_manage_staff` |
+| `inquiries.view_all`, `inquiries.qualify`, `quotes.view_all`, `quotes.create`, `quotes.send`, `quotes.withdraw`, `bookings.view_all`, `bookings.confirm`, `projects.view_all`, `projects.create`, `projects.manage`, `projects.assign`, `vessels.view_all`, `vessels.manage`, `inspections.view`, `documents.manage`, `documents.request_upload`, `documents.download`, `documents.preview`, `reports.review`, `reports.release`, `reports.view_draft_staff`, `billing.view`, `billing.manage`, `messages.view`, `messages.send`, `analytics.view_business`, `analytics.export`, `team.view`, `team.invite`, `team.suspend`, `audit.view_staff`, `company.settings_manage_staff` |
+
+Not default: `documents.access_confidential` (grant when justified).
 
 Not default: `team.manage_staff_roles`, `team.manage_staff_permissions`, `reports.approve` (unless granted), `content.publish`.
 
@@ -45,7 +49,7 @@ Not default: `reports.approve`, `reports.release`, `quotes.send`.
 
 ### `staff.technical_reviewer` — Technical Reviewer
 
-Assignment-only project access — requires `Assignment` with kind `technical_reviewer` (or equivalent).
+Assignment-only — `Assignment` with `access_scope: review` (report-focused scope per P2_2 authorization architecture).
 
 | Permission keys |
 |---|
@@ -55,13 +59,13 @@ Not default: `projects.view_all`, `reports.release`, `reports.draft` (unless als
 
 ### `staff.finance_officer` — Finance Officer
 
-Billing-first; projects via assignment only (minimal project fields in policies). Org-wide `projects.view_all` may be granted by Super Administrator when needed.
+Billing-first via `billing.view_all` — no project assignment required for invoice work; policies expose minimal project reference fields only.
 
 | Permission keys |
 |---|
-| `projects.view_assigned`, `billing.view`, `billing.manage`, `billing.record_payment`, `billing.adjust`, `documents.download` (invoice attachments only via policy), `team.view`, `notifications.manage_preferences` |
+| `billing.view_all`, `billing.view`, `billing.manage`, `billing.record_payment`, `billing.adjust`, `documents.download` (invoice attachments only via policy), `team.view`, `notifications.manage_preferences` |
 
-Not default: `projects.view_all`, `documents.access_confidential`.
+Not default: `projects.view_all`, `projects.view_assigned`, `documents.access_confidential`.
 
 ### `staff.content_manager` — Content Manager
 

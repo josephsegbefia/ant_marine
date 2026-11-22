@@ -79,7 +79,7 @@ Legend:
 | `documents.download` | Download documents | Download files you are allowed to see | documents | staff, client | yes | broad staff / all client | Policy per classification |
 | `documents.preview` | Preview documents | View allowed previews in the browser | documents | staff, client | yes | broad staff / all client | Scan must pass |
 | `documents.manage` | Manage document records | Change categories, workflow state, internal metadata | documents | staff | yes | coordinator, surveyor, super_admin | |
-| `documents.access_confidential` | View confidential documents | Access highly restricted file classifications | documents | staff, client | deny_only | super_admin, ops_mgr / owner | Required in addition to download/preview; see §5 confidential path |
+| `documents.access_confidential` | View confidential documents | Access highly restricted file classifications | documents | staff, client | deny_only | super_admin / owner | Ops manager via explicit grant only (P2.2 least privilege); see §5 confidential path |
 | `documents.request_upload` | Request files from client | Ask the client to upload specific materials | documents | staff | yes | coordinator, surveyor | |
 
 ## Reports
@@ -97,7 +97,8 @@ Legend:
 
 | Key | Display name | Explanation | Category | Domain | Override | Default roles | Restrictions |
 |---|---|---|---|---|---|---|---|
-| `billing.view` | View invoices | See invoices for accessible projects or org | billing | staff, client | yes | finance_officer, ops_mgr / owner, client_finance, manager | Minimal project detail for finance |
+| `billing.view` | View invoices | See invoices for accessible projects or org | billing | staff, client | yes | coordinator, ops_mgr / owner, client_finance, manager | Project-scoped; minimal detail |
+| `billing.view_all` | View company billing | List and view invoices across client organisations | billing | staff | yes | finance_officer, super_admin | No project assignment required; see P2_2 §5.1 |
 | `billing.manage` | Manage invoices | Create and edit invoice records | billing | staff | yes | finance_officer, super_admin | |
 | `billing.adjust` | Adjust issued invoices | Change amounts or status after issue | billing | staff | protected | finance_officer, super_admin | Reauth + reason |
 | `billing.record_payment` | Record payments | Log payment received against an invoice | billing | staff | yes | finance_officer | |

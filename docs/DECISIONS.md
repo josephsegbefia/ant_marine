@@ -18,7 +18,8 @@
 | ADR-014 | Public commercial intake | Anonymous quotation and inquiry requests without portal account | PROPOSED default (pending stakeholder approval) | Aligns with master spec §2.1–2.2 |
 | ADR-015 | Ownership privileges | Protected role keys, `team.transfer_ownership`, last active Owner / Super Admin safeguards | PROPOSED default (pending stakeholder approval) | ROLE_PERMISSION_SPEC §6 |
 | ADR-016 | Custom roles | Defer user-defined custom roles beyond initial release — fixed catalogue roles + per-user overrides only | PROPOSED default (pending stakeholder approval) | P2-OD-032 |
+| ADR-017 | Authentication stack | Rails 8 `authentication` generator + app-owned invitation/session extensions | PROPOSED default (pending stakeholder approval) | See `docs/architecture/P2_2_AUTHENTICATION_ARCHITECTURE.md`; Devise fallback documented |
 
 Only mark a decision `APPROVED` when the user or authorized stakeholder clearly confirms it. Keep history when decisions change.
 
-**Phase 2.1 domain review:** Proposed and open items are catalogued in [`docs/architecture/P2_1_OPEN_DECISIONS.md`](architecture/P2_1_OPEN_DECISIONS.md). Promote entries here after stakeholder approval.
+**Phase 2 architecture:** P2.2 auth/authz docs in `docs/architecture/P2_2_*`. P2.1 proposed items remain in [`P2_1_OPEN_DECISIONS.md`](architecture/P2_1_OPEN_DECISIONS.md). Promote entries here after stakeholder approval.

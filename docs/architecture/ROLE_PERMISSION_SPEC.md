@@ -96,7 +96,8 @@ Feature permission **does not** imply access to all projects or files.
 |---|---|---|---|
 | **Org-wide staff oversight** | Operations Manager, Project Coordinator, Super Administrator | `projects.view_all`, related `*_view_all` list permissions | Project belongs to a client org; staff act from `ant_marine` membership; queries never blend client org data across tenants without explicit staff authority |
 | **Assigned delivery** | Surveyor, General Staff | `projects.view_assigned`, `assignments.participate` | Active `Assignment` on the project (e.g. `lead_surveyor`, `surveyor`) |
-| **Explicit review / collaboration** | Technical Reviewer, ad-hoc staff | `projects.view_assigned`, `reports.review` (and related) | `Assignment` with role `technical_reviewer`, `collaborator`, or equivalent; optional `DocumentAccessGrant` for narrow file-level access beyond defaults |
+| **Explicit review / collaboration** | Technical Reviewer, ad-hoc staff | `projects.view_assigned`, `reports.review` (and related) | `Assignment` with `access_scope: review` or kind `technical_reviewer` / `collaborator`; report-focused artefact scope (P2_2); optional `DocumentAccessGrant` |
+| **Billing without delivery assignment** | Finance Officer | `billing.view_all`, `billing.manage` | Invoice scoped by `organization_id`; minimal project fields — no `projects.view_assigned` required (P2_2) |
 | **Client organisation scope** | All client roles | `projects.view_org`, org-scoped document keys | `project.organization_id` equals the user’s current client organisation; optional future per-project participant list |
 | **Confidential classification** | Staff or client with extra grant | `documents.download` / `documents.preview` plus **`documents.access_confidential`** where required | Document `classification`, scan/workflow state, org/project match; cannot bypass report approve/release gates |
 
@@ -257,3 +258,7 @@ Enforcement:
 | [`PERMISSION_CATALOGUE.md`](PERMISSION_CATALOGUE.md) | All permission keys, labels, categories, domains, defaults |
 | [`DEFAULT_ROLE_MATRIX.md`](DEFAULT_ROLE_MATRIX.md) | Role → permission mapping |
 | [`P2_1_DOMAIN_ARCHITECTURE.md`](P2_1_DOMAIN_ARCHITECTURE.md) | Domain entities and org boundary |
+| [`P2_2_AUTHENTICATION_ARCHITECTURE.md`](P2_2_AUTHENTICATION_ARCHITECTURE.md) | Identity and sessions |
+| [`P2_2_AUTHORIZATION_ARCHITECTURE.md`](P2_2_AUTHORIZATION_ARCHITECTURE.md) | Engine, portals, UI contract |
+| [`P2_2_SECURITY_THREAT_MODEL.md`](P2_2_SECURITY_THREAT_MODEL.md) | Threats and acceptance tests |
+| [`P2_2_DATABASE_HANDOFF.md`](P2_2_DATABASE_HANDOFF.md) | P2.3 migration candidates |
