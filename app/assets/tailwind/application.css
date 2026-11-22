@@ -154,6 +154,14 @@
     @apply w-full max-w-[450px];
   }
 
+  .login-form--wide {
+    max-width: 520px;
+  }
+
+  .login-form__hint {
+    @apply mt-6 text-[12px] leading-relaxed text-ant-muted;
+  }
+
   .login-form h2 {
     @apply text-[32px] tracking-tight text-ant-ink;
     margin-bottom: 0.5rem;
@@ -208,6 +216,10 @@
     outline-offset: 2px;
   }
 
+  .ant-btn-primary--compact {
+    @apply w-auto min-h-[34px] px-3 py-2 text-[11px];
+  }
+
   .ant-btn-outline {
     @apply inline-flex w-full min-h-[43px] items-center justify-center gap-2 rounded-[11px] border border-[#bad0d9] bg-white px-4 py-2.5 text-xs font-bold text-ant-navy transition;
   }
@@ -237,6 +249,49 @@
     background: #e1f6ec;
     border-color: #b5e6cf;
     color: #237b65;
+  }
+
+  .workspace-list {
+    @apply mb-2 divide-y divide-[#edf1f3];
+  }
+
+  .workspace-item {
+    @apply flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-3;
+  }
+
+  .workspace-icon {
+    @apply grid size-9 shrink-0 place-items-center rounded-[11px] text-ant-teal;
+    background: #ebf6f5;
+  }
+
+  .workspace-item__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .workspace-item__title {
+    @apply text-xs font-bold text-[#243f50];
+  }
+
+  .workspace-item__meta {
+    @apply mt-1 text-[10px] leading-snug text-[#8799a3];
+  }
+
+  .workspace-item__action {
+    @apply shrink-0 sm:ml-auto;
+  }
+
+  .ant-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-bold whitespace-nowrap;
+  }
+
+  .ant-badge--blue {
+    background: #e6f3f8;
+    color: #39728e;
+  }
+
+  .ant-badge--teal {
+    background: #e2f5f2;
+    color: #187870;
   }
 
   @media (prefers-reduced-motion: reduce) {

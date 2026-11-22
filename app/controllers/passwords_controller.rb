@@ -1,5 +1,5 @@
 class PasswordsController < ApplicationController
-  layout "access", only: :new
+  layout "access", only: %i[ new edit ]
 
   allow_unauthenticated_access
   before_action :set_user_by_token, only: %i[ edit update ]
@@ -25,7 +25,8 @@ class PasswordsController < ApplicationController
       @user.sessions.where(revoked_at: nil).find_each(&:revoke!)
       redirect_to new_session_path, notice: "Password has been reset."
     else
-      redirect_to edit_password_path(params[:token]), alert: "Passwords did not match."
+      flash.now[:alert] = "Please check your password and try again."
+      render :edit, status: :unprocessable_entity
     end
   end
 

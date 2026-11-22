@@ -32,4 +32,12 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
     assert @user.reload.authenticate("new-password-12")
   end
+
+  test "update with mismatched passwords renders edit" do
+    token = @user.password_reset_token
+    put password_path(token), params: { password: "new-password-12", password_confirmation: "other" }
+
+    assert_response :unprocessable_entity
+    assert_select "h2", text: "Choose a new password."
+  end
 end

@@ -1,4 +1,6 @@
 class WorkspaceSelectionsController < ApplicationController
+  layout "access"
+
   def show
     @memberships = Current.user.portal_eligible_memberships.includes(:organization).order("organizations.name")
   end
