@@ -1,0 +1,31 @@
+<% if invitations.any? %>
+  <ul class="invitation-list" role="list">
+    <% invitations.each do |invitation| %>
+      <li class="invitation-row">
+        <div class="min-w-0">
+          <div class="invitation-row__title"><%= invitation.email %></div>
+          <div class="invitation-row__meta">
+            <% if show_organization %>
+              <%= invitation.organization.name %> ·
+            <% end %>
+            <%= invitation_sent_summary(invitation) %>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <% display_status = invitation.public_state %>
+          <span class="ant-badge <%= invitation_status_badge_class(display_status) %>">
+            <%= invitation_status_label(display_status) %>
+          </span>
+          <% if invitation.usable? %>
+            <div class="invitation-row__actions">
+              <%= button_to "Cancel", cancel_path.call(invitation), method: :delete, class: "portal-btn-danger", form: { class: "inline" } %>
+              <%= button_to "Resend", resend_path.call(invitation), method: :post, class: "portal-btn-secondary", form: { class: "inline" } %>
+            </div>
+          <% end %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <%= render "shared/invitations/empty" %>
+<% end %>

@@ -1,21 +1,46 @@
-<div class="mx-auto max-w-xl py-12 px-4">
-  <h1 class="text-2xl font-semibold text-gray-900">Invite a client contact</h1>
+<% content_for :title, "Invite client contact — ANT Marine" %>
 
-  <%= form_with url: staff_client_invitations_path, class: "mt-8 space-y-4 rounded-xl border border-gray-200 bg-white p-6" do |form| %>
-    <div>
-      <%= form.label :organization_id, "Client organisation", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.collection_select :organization_id, @client_organizations, :id, :name, { selected: @organization&.id }, class: "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" %>
-    </div>
-    <div>
-      <%= form.label :email, "Email address", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.email_field :email, required: true, class: "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" %>
-    </div>
-    <div>
-      <%= form.label :role_key, "Role", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.select :role_key, options_for_select(@allowed_roles.map { |r| [r.humanize, r] }), {}, class: "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" %>
-    </div>
-    <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact" %>
-  <% end %>
+<div class="portal-shell">
+  <nav class="portal-topnav" aria-label="Staff">
+    <%= link_to "Staff workspace", staff_root_path %>
+    <span aria-hidden="true">/</span>
+    <%= link_to "Invitations", staff_invitations_path %>
+    <span aria-hidden="true">/</span>
+    <span>Client contact</span>
+  </nav>
 
-  <%= link_to "Back", staff_invitations_path, class: "mt-6 inline-block text-sm text-blue-700 underline" %>
+  <header class="portal-head">
+    <div>
+      <h1>Invite a client contact</h1>
+      <p>Send an invitation to someone joining a client organisation you are authorized to support.</p>
+    </div>
+  </header>
+
+  <%= render "shared/auth_flash" %>
+
+  <section class="portal-card max-w-xl">
+    <% if @client_organizations.empty? %>
+      <div class="portal-empty">
+        <h3>No client organisations available</h3>
+        <p>Client organisations must exist before you can send a client invitation.</p>
+      </div>
+    <% else %>
+      <%= form_with url: staff_client_invitations_path, class: "mt-2" do |form| %>
+        <div class="portal-field">
+          <%= form.label :organization_id, "Client organisation" %>
+          <%= form.collection_select :organization_id, @client_organizations, :id, :name, { selected: @organization&.id }, class: "portal-control" %>
+        </div>
+        <div class="portal-field">
+          <%= form.label :email, "Email address" %>
+          <%= form.email_field :email, required: true, autocomplete: "email", placeholder: "name@company.com", class: "portal-control" %>
+        </div>
+        <div class="portal-field">
+          <%= form.label :role_key, "What can they do?" %>
+          <%= form.select :role_key, options_for_select(RoleLabels.options_for_roles(@allowed_roles)), {}, class: "portal-control" %>
+        </div>
+        <p class="portal-notice mb-5">The invitation is limited to the selected client organisation and role.</p>
+        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact" %>
+      <% end %>
+    <% end %>
+  </section>
 </div>

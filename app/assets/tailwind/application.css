@@ -306,6 +306,119 @@
     color: #187870;
   }
 
+  .ant-badge--warn {
+    background: #fff5e6;
+    color: #9a6b15;
+  }
+
+  .ant-badge--good {
+    background: #e1f6ec;
+    color: #237b65;
+  }
+
+  .ant-badge--muted {
+    background: #eef2f4;
+    color: #5f6f78;
+  }
+
+  .ant-portal-body {
+    @apply min-h-dvh bg-[#f4f7f8] text-[#243f50];
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .portal-shell {
+    @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8;
+  }
+
+  .portal-topnav {
+    @apply mb-6 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#5f7d8c];
+  }
+
+  .portal-topnav a {
+    @apply text-[#2f6f89] no-underline hover:underline;
+  }
+
+  .portal-head {
+    @apply mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between;
+  }
+
+  .portal-head h1 {
+    @apply text-2xl font-extrabold tracking-tight text-[#173244] sm:text-[1.65rem];
+  }
+
+  .portal-head p {
+    @apply mt-2 max-w-2xl text-sm leading-relaxed text-[#5f7d8c];
+  }
+
+  .portal-split {
+    @apply grid gap-5 lg:grid-cols-2;
+  }
+
+  .portal-card {
+    @apply rounded-[14px] border border-[#e2eaeb] bg-white p-5 shadow-sm sm:p-6;
+  }
+
+  .portal-card h2,
+  .portal-card h3 {
+    @apply text-sm font-extrabold text-[#173244];
+  }
+
+  .portal-field {
+    @apply mb-4;
+  }
+
+  .portal-field label {
+    @apply mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#5f7d8c];
+  }
+
+  .portal-control {
+    @apply w-full rounded-[11px] border border-[#cfdfe3] bg-white px-3 py-2.5 text-sm text-[#243f50];
+  }
+
+  .portal-notice {
+    @apply rounded-[11px] border border-[#c5dfe8] bg-[#eaf6fa] px-4 py-3 text-xs leading-relaxed text-[#2a5368];
+  }
+
+  .invitation-list {
+    @apply mt-4 divide-y divide-[#edf1f3];
+  }
+
+  .invitation-row {
+    @apply flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .invitation-row__title {
+    @apply text-sm font-bold text-[#243f50];
+  }
+
+  .invitation-row__meta {
+    @apply mt-1 text-xs text-[#8799a3];
+  }
+
+  .invitation-row__actions {
+    @apply flex flex-wrap gap-2 sm:shrink-0;
+  }
+
+  .portal-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-[11px] border border-[#bad0d9] bg-white px-3 py-2 text-xs font-bold text-[#173244] no-underline hover:bg-[#eff8f8];
+  }
+
+  .portal-btn-danger {
+    @apply inline-flex items-center justify-center rounded-[11px] border border-[#f0c5c5] bg-white px-3 py-2 text-xs font-bold text-[#a53b3b] hover:bg-[#fff5f5];
+  }
+
+  .portal-empty {
+    @apply rounded-[14px] border border-dashed border-[#cfdfe3] bg-white px-6 py-10 text-center;
+  }
+
+  .portal-empty h3 {
+    @apply text-sm font-bold text-[#243f50];
+  }
+
+  .portal-empty p {
+    @apply mt-2 text-sm text-[#8799a3];
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .ant-btn-primary:hover {
       transform: none;

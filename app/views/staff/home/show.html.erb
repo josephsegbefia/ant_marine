@@ -1,12 +1,25 @@
-<div class="mx-auto max-w-xl py-12 px-4">
-  <h1 class="text-2xl font-semibold text-gray-900">Staff workspace</h1>
-  <p class="mt-2 text-gray-700">Signed in as <%= Current.user.email %> — <%= Current.membership.role_key %> at <%= Current.membership.organization.name %>.</p>
-  <p class="mt-4 text-sm text-gray-600">This is a temporary staff landing page for P3-A1.</p>
-  <p class="mt-4 text-sm">
-    <%= link_to "Manage invitations", staff_invitations_path, class: "text-blue-700 underline" %>
-  </p>
-  <div class="mt-6 flex gap-3 text-sm">
-    <%= link_to "Switch workspace", workspace_selection_path, class: "underline text-blue-700" %>
-    <%= button_to "Sign out", session_path, method: :delete, class: "underline text-blue-700" %>
-  </div>
+<% content_for :title, "Staff workspace — ANT Marine" %>
+
+<div class="portal-shell max-w-xl">
+  <header class="portal-head">
+    <div>
+      <h1>Staff workspace</h1>
+      <p>
+        Signed in as <%= Current.user.email %> ·
+        <%= RoleLabels.label(Current.membership.role_key) %> ·
+        <%= Current.membership.organization.name %>
+      </p>
+    </div>
+  </header>
+
+  <section class="portal-card">
+    <p class="text-sm text-[#5f7d8c]">Manage team access and invitations from here.</p>
+    <p class="mt-4">
+      <%= link_to "Invitations", staff_invitations_path, class: "portal-btn-secondary" %>
+    </p>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <%= link_to "Switch workspace", workspace_selection_path, class: "portal-btn-secondary" %>
+      <%= button_to "Sign out", session_path, method: :delete, class: "portal-btn-secondary", form: { class: "inline" } %>
+    </div>
+  </section>
 </div>

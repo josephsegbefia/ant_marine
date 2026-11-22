@@ -4,6 +4,6 @@ module Staff
 
     before_action :require_staff_portal_access
 
-    layout "application"
+    layout "portal"
   end
 end
