@@ -5,7 +5,7 @@
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
-| Phase 3 — foundation | **P3-A1 complete — auth UI audited (awaiting PO sign-off)** | Auth foundation + Design Studio access screens A01/A05/A06 + reset edit |
+| Phase 3 — foundation | **P3-A1 locally accepted — awaiting PO merge approval** | Branch `feat/p3-a1-auth-organizations` @ `635f1d4` |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -30,7 +30,8 @@
 | P2.5 Final architecture review | 2026-11-22 | **Complete — partial approval** | `docs/architecture/P2_5_*` |
 | P2.5A Stakeholder decisions | 2026-11-22 | **Enumerated ADRs approved** | Commit `08a5423`; `P2_5A_STAKEHOLDER_DECISION_RECORD.md` |
 | P2.5B Phase 2 exit prep | 2026-11-22 | **P2-OD-040–042 approved** | Product owner 2026-11-22; Phase 1 sign-off checklist still open |
-| P3-A1 Auth & organisations | 2026-11-22 | **Implemented — UI complete, awaiting PO sign-off** | Commits `53206e3`–`ac1f63d`+; access shell A01/A05/A06; deferred A02–A04 invitations |
+| P3-A1 Auth & organisations | 2026-11-22 | **Locally accepted** | `635f1d4`; 46 tests green; A01/A05/A06 + reset edit aligned; A02–A04 deferred |
+| P3-A1 Acceptance | 2026-11-22 | **Passed (agent checkpoint)** | Automated + integration journeys; restart stale Puma on :3000 before manual QA |
 
 ## Local development quick reference
 
