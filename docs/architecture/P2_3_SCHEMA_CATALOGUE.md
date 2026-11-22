@@ -243,6 +243,7 @@ Column types use PostgreSQL. `?` = nullable unless stated.
 | user_id | bigint | FK users | NOT NULL |
 | assignment_kind | varchar | NOT NULL | lead_surveyor, surveyor, coordinator, technical_reviewer, collaborator |
 | access_scope | varchar | NOT NULL | CHECK ∈ delivery, review, collaborator (P2-OD-042) |
+| acknowledged_at | timestamptz | NULL | Optional surveyor ack (P2-OD-045 proposed) |
 | active | boolean | NOT NULL | Default true |
 | created_at, updated_at | timestamptz | NOT NULL | |
 
