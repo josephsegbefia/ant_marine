@@ -2,8 +2,8 @@
 
 | Gate | Status | Evidence required |
 |---|---|---|
-| Phase 1 — UI/UX | Delivered; approval pending | Approved studio review export, corrected design HTML and signed-off wording |
-| Preflight B0 — toolchain | **B0.0–B0.2 passed** (2026-11-22) | Ruby 3.4.13, Rails 8.1.4.1, OrbStack PostgreSQL 17 on 127.0.0.1:5433, `verify_foundation.sh`, browser root 200 |
+| Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
+| Preflight B0 — toolchain | **B0.0–B0.1B passed**; **B0.2 pending** | Ruby/Rails versions, Rails boot, `verify_foundation.sh`; B0.2: local Postgres up, `db:prepare`, tests |
 | Phase 2 — architecture | Not started | Reviewed domain map, state transitions, permissions, decisions, implementation slices |
 | Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
@@ -13,19 +13,19 @@
 
 | Checkpoint | Date | Result | Notes |
 |---|---|---|---|
-| B0.0 Environment audit | — | Passed (prior session) | — |
-| B0.1A Prerequisites | — | Passed (prior session) | mise Ruby 3.4.13, Rails 8.1.4.1 |
+| B0.0 Environment audit | — | **Passed** | Toolchain and workspace audit |
+| B0.1A Prerequisites | — | **Passed** | mise Ruby 3.4.13, Rails 8.1.4.1 |
 | B0.1B Rails application | 2026-11-22 | **Passed** | Commit `c448c4c`, module `AntMarine` |
-| B0.2 Local PostgreSQL | 2026-11-22 | **Passed** | Container `ant_marine_postgres_dev`, volume `ant_marine_local_pg`, databases `ant_marine_development` / `ant_marine_test` |
+| B0.2 Local PostgreSQL | — | **Pending** | `templates/compose.dev.yml` → root `compose.dev.yml`, env-backed `config/database.yml`, `db:prepare`, foundation script |
 
-## Local development quick reference
+## B0.2 — local PostgreSQL (pending verification)
 
-Paths assume project root `~/Desktop/ant_marine`. Credentials live in **gitignored** `.env.local` (not committed).
+Procedure after starter integration audit (see `docs/SETUP_AND_BOOTSTRAP.md` §5). Paths below assume project root containing `Gemfile` (e.g. `~/Desktop/elorm/appsentrix/ant_marine`). Credentials live in **gitignored** `.env.local` (not committed).
 
 ### Start PostgreSQL
 
 ```bash
-cd ~/Desktop/ant_marine
+cd /path/to/ant_marine
 docker compose --env-file .env.local -f compose.dev.yml up -d db
 docker inspect -f 'health={{.State.Health.Status}}' ant_marine_postgres_dev
 ```

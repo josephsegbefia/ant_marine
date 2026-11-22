@@ -184,3 +184,15 @@
 - Reviewers export the studio JSON record and store the agreed version with the implementation plan.
 
 **Important:** This HTML is an interactive UX prototype, not a functioning production application. Build the agreed screens and transitions in Rails; do not treat demo buttons as evidence that backend processes exist.
+
+## Source-of-truth references
+
+| Document | Role |
+|---|---|
+| `docs/ANT_MARINE_MASTER_SPEC.md` | Master product and engineering specification, five-phase roadmap, B0 preflight |
+| `design/ANT_Marine_Design_Studio_Phase_1.html` | Interactive Phase 1 screen studio (this handoff maps screen IDs to journeys) |
+| `design/ORIGINAL_QUESTIONNAIRE.docx` | Client-stated business objectives, audiences and service catalogue |
+| `AGENTS.md` and `.cursor/rules/` | Agent engineering conventions and safety boundaries |
+| `docs/DECISIONS.md` | Architecture decision register (approve entries in Phase 2) |
+| `docs/PHASE_PROGRESS.md` | Gate status and checkpoint evidence |
+| `docs/SETUP_AND_BOOTSTRAP.md` | Local Rails and PostgreSQL setup (B0) |

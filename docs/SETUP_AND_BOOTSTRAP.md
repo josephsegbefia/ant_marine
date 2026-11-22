@@ -4,7 +4,7 @@
 
 ## 1. Confirm source and working directory
 
-Create an empty workspace/repository location, e.g. `~/Desktop/ant-marine`, or select the correct existing Git repository. **Do not run `rails new` in an unrelated or populated repository.** Use the repo name `ant_marine` for Rails application paths and avoid exposing private project docs publicly. Copy `AGENTS.md`, `.cursor/rules/`, `docs/` and `design/` from the handoff archive into the new app after scaffold generation.
+Create an empty workspace/repository location, e.g. `~/Desktop/elorm/appsentrix/ant_marine`, or select the correct existing Git repository. **Do not run `rails new` in an unrelated or populated repository.** Use the repo name `ant_marine` for Rails application paths and avoid exposing private project docs publicly. Copy `AGENTS.md`, `.cursor/rules/`, `docs/` and `design/` from the handoff archive into the new app after scaffold generation.
 
 ## 2. Prerequisites to install before scaffolding
 
@@ -60,8 +60,15 @@ The supplied `templates/compose.dev.yml` is for **local only**. Copy it into the
 
 ```bash
 cp templates/compose.dev.yml compose.dev.yml
-docker compose -f compose.dev.yml up -d db
 ```
+
+Create a private `.env.local` (gitignored) with `ANT_MARINE_DB_PASSWORD` matching your local choice, then start PostgreSQL:
+
+```bash
+docker compose --env-file .env.local -f compose.dev.yml up -d db
+```
+
+The integrated `compose.dev.yml` uses `${ANT_MARINE_DB_PASSWORD}` instead of a committed placeholder; keep `templates/compose.dev.yml` as the copy-from template with a documented example password.
 
 Cursor must adjust **only the development/test connection sections** of the Rails-generated `config/database.yml` to use these variables while preserving Rails 8 production, queue/cache/cable database settings:
 

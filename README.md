@@ -25,4 +25,4 @@ Things you may want to cover:
 
 ---
 
-ANT Marine W.A. — see `AGENTS.md`, `docs/ANT_MARINE_MASTER_SPEC.md`, and `design/PHASE_1_DESIGN_HANDOFF.md` for project instructions and Phase 1 design contract.
+ANT Marine W.A. — see `AGENTS.md`, `docs/ANT_MARINE_MASTER_SPEC.md`, `design/PHASE_1_DESIGN_HANDOFF.md`, `docs/SETUP_AND_BOOTSTRAP.md` (local Rails/PostgreSQL), and `docs/PHASE_PROGRESS.md` (checkpoint status).

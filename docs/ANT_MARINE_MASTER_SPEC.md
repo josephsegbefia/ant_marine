@@ -255,7 +255,7 @@ No live ship telemetry/remote monitoring dashboard, automatic professional engin
 - Phase 1 interactive HTML: `design/ANT_Marine_Design_Studio_Phase_1.html`.
 - Screen inventory and journeys: `design/PHASE_1_DESIGN_HANDOFF.md`.
 - Setup instructions: `docs/SETUP_AND_BOOTSTRAP.md`.
-- Final engineering decisions: `docs/DECISIONS.md` (create before Phase 2 begins).
+- Architecture decision register: `docs/DECISIONS.md` (starter ADRs present; mark `APPROVED` during Phase 2).
 
 External technology references (re-check before implementation):
 - Rails guides: https://guides.rubyonrails.org/
