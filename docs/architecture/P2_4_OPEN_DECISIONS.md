@@ -9,7 +9,7 @@
 
 | ID | Question | Recommendation | Reasoning |
 |---|---|---|---|
-| P2-OD-043 | One accepted `quote_revision` → multiple `projects`? | **1:1 for MVP** — keep UNIQUE `quote_revision_id`; multi-phase = new quote or formal change order entity in later phase | Prevents duplicate jobs; simplifies C04; aligns P2.3 |
+| P2-OD-043 | One accepted `quote_revision` → multiple `projects`? | **PROPOSED default (not approved):** 1:1 — UNIQUE `projects.quote_revision_id`; multi-phase via new quote/change order | Prevents duplicate jobs; stakeholder may require 1:N |
 | P2-OD-044 | Quote internal review before send | **Optional checklist** — no extra DB state; coordinator marks ready in notes; optional second staff user audit flag in metadata | Avoid scope creep; S05 covers send |
 | P2-OD-045 | Surveyor assignment acceptance | **Informational only** — `assignments.acknowledged_at` optional; no blocking state | Field teams may not use portal immediately |
 | P2-OD-046 | Report amendment after client release | **New version + new release**; client sees latest release pointer | Immutable history |
@@ -38,7 +38,7 @@
 | A. role_key + role_permissions | Sufficient for 13 roles | None |
 | B. Sessions + suspension | `permission_epoch` + `security_version` | None |
 | C. Audit STI | Adequate for workflow transitions | Metadata `transition_key` required |
-| D. quote_revision_id unique | **Confirmed for MVP** (P2-OD-043) | Document only — no P2.3 file edit |
+| D. quote_revision_id unique | **PROPOSED** pending P2-OD-043 approval (aligns P2.3 schema if approved) | Do not treat as locked until stakeholder signs off |
 | E. Overrides per membership | Confirmed | None |
 | F. Finance without assignment | `billing.view_all` | Confirmed |
 

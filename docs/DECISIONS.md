@@ -22,4 +22,4 @@
 
 Only mark a decision `APPROVED` when the user or authorized stakeholder clearly confirms it. Keep history when decisions change.
 
-**Phase 2 architecture:** P2.2 auth/authz docs in `docs/architecture/P2_2_*`. P2.1 proposed items remain in [`P2_1_OPEN_DECISIONS.md`](architecture/P2_1_OPEN_DECISIONS.md). Promote entries here after stakeholder approval.
+**Phase 2 architecture:** Review package [`P2_5_STAKEHOLDER_APPROVAL_PACK.md`](architecture/P2_5_STAKEHOLDER_APPROVAL_PACK.md) and [`P2_5_FINAL_ARCHITECTURE_REVIEW.md`](architecture/P2_5_FINAL_ARCHITECTURE_REVIEW.md). P2-OD-043 (quote→project 1:1) remains **PROPOSED** until confirmed. Promote ADR entries to APPROVED only after explicit stakeholder sign-off.

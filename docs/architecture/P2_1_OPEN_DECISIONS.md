@@ -31,7 +31,7 @@ Legend:
 | P2-OD-001 | Inquiry aggregate name | Use `ServiceInquiry` as single funnel for P19–P22 and logged-in C02 “new request” | Renaming touches routes and copy |
 | P2-OD-002 | Contact form P18 | Model general contact as `ServiceInquiry` with `channel: contact_form` rather than separate `ContactMessage` | One intake queue for staff S02 |
 | P2-OD-003 | Quote revisions | Immutable `QuoteRevision` rows; never edit sent revision in place | Migration and PDF generation |
-| P2-OD-004 | Project creation | One `Project` per accepted `QuoteRevision` (unique FK) | Prevents duplicate jobs from double-click |
+| P2-OD-004 | Project creation | **PROPOSED default:** one `Project` per accepted `QuoteRevision` (unique FK); see P2-OD-043 | Prevents duplicate jobs; subject to stakeholder approval |
 | P2-OD-005 | Report vs Document | Separate `Report` AR sharing version pattern with `Document`; optional `document_id` link for unified preview | Simpler policies if merged; clearer if split |
 | P2-OD-006 | Authorization gem | Pundit with explicit policy per AR (master spec proposed) | Alternative: manual policy modules |
 | P2-OD-007 | CMS modelling | Separate tables `Article`, `CaseStudy`, `TrainingOffering` vs STI under `ContentPage` | STI fewer tables; separate clearer for M01–M07 |
