@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "ready" => "readiness#show", as: :readiness_check
 
   root "home#index"
 

@@ -1,3 +1,3 @@
 web: bin/rails server
 css: bin/rails tailwindcss:watch
-jobs: bin/jobs
+jobs: env SOLID_QUEUE_SUPERVISOR_MODE=${SOLID_QUEUE_SUPERVISOR_MODE:-async} RUBY_DEBUG_OPEN= RUBY_DEBUG_LAZY= bin/jobs

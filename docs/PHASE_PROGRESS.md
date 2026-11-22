@@ -47,6 +47,7 @@
 | P3-A5 Final security acceptance | 2026-11-22 | **Published** | 4 commits above `b74363c`; permanent SMTP discard via logs + error reporter (not `failed_executions`); **local `bin/jobs` stable run not verified** in agent session (pg segfault) |
 | P3-A6 Secure storage PoC | 2026-11-22 | **Complete — local `main` only** | Active Storage + `EncryptedDisk`; app-side AES-GCM; quarantine scan job; staff proof upload/download; recovery test; `docs/architecture/P3_A6_SECURE_STORAGE.md`; **not pushed** |
 | P3-A6 Final security acceptance | 2026-11-22 | **GO — local automated** | Production gate blocks plain `private_s3`/disk; extra storage security tests; **193 tests / 721 assertions**; live ClamAV + live `bin/jobs` **NOT VERIFIED**; ADR-010 production **BLOCKED**; GitHub **NO-GO** until PO |
+| P3-A7 Phase 3 exit (local) | 2026-11-22 | **CONDITIONAL GO** | Fork+pg worker mitigations; `/ready` endpoint; `docs/architecture/P3_A7_PHASE_3_EXIT.md`; **195 tests / 729 assertions**; ClamAV/S3/MinIO + full browser matrix **NOT VERIFIED**; **not pushed** |
 | P3-A4 Browser acceptance | — | **Open** | Authenticated C01 + staff shell browser QA still outstanding |
 | P3-A2-UX-C Staff workspace shell | 2026-11-22 | **Accepted — on GitHub main** | Studio **S01** `staff_portal` layout; honest team-access card; workspace back/switch rule |
 | P3-A2-UX-B Back navigation | 2026-11-22 | **Ready for PO sign-off — local only** | `ant_back_link`; studio A05/P19–P21 outline+left; staff/client invitations + A05 password flows; see UI guide |
