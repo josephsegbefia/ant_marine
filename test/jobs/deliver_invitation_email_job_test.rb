@@ -30,6 +30,34 @@ class DeliverInvitationEmailJobTest < ActiveJob::TestCase
     assert_not DeliverInvitationEmailJob.log_arguments
   end
 
+  test "serialized job payload does not expose the raw token" do
+    assert_enqueued_jobs 1, only: DeliverInvitationEmailJob do
+      Notifications::Dispatch.invitation!(invitation: @invitation, raw_token: @raw_token)
+    end
+
+    serialized = enqueued_jobs.last[:args].to_json
+    assert_not_includes serialized, @raw_token
+  end
+
+  test "perform does not enqueue a second mail delivery job bearing the token" do
+    assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+      DeliverInvitationEmailJob.perform_now(@invitation.id, @sealed)
+    end
+  end
+
+  test "stale sealed token for a revoked invitation does not send mail" do
+    Invitations::Resend.call(
+      inviter_membership: memberships(:super_admin_membership),
+      invitation: @invitation
+    )
+
+    assert_no_emails do
+      DeliverInvitationEmailJob.perform_now(@invitation.id, @sealed)
+    end
+
+    assert_equal "revoked", @invitation.reload.status
+  end
+
   test "revoked invitation is not emailed" do
     @invitation.revoke!
 

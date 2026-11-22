@@ -73,8 +73,9 @@ Rails.application.configure do
       read_timeout: 10
     }.compact
   else
+    # No SMTP: mail must not leave the app. Dispatch and interceptors fail closed.
     config.action_mailer.delivery_method = :test
-    config.action_mailer.raise_delivery_errors = false
+    config.action_mailer.raise_delivery_errors = true
   end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

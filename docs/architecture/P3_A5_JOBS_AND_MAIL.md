@@ -1,6 +1,6 @@
 # P3-A5 — Background jobs, email and notification delivery
 
-**Status:** Local foundation. No live SMTP. No inbox, SMS, or product reminders.
+**Status:** Local foundation with acceptance hardening. No live SMTP. No inbox, SMS, or product reminders.
 
 ## Queue
 
@@ -21,6 +21,8 @@ bin/dev                         # web, Tailwind, and one worker
 bin/jobs                        # worker only, if bin/dev is not already running it
 ```
 
+`Procfile.dev` processes: `web` (`SOLID_QUEUE_IN_PUMA=` so Puma does not embed a worker), `css`, `jobs`.
+
 Stop the worker with SIGTERM (Ctrl-C). Solid Queue finishes the current job and exits.
 
 Failed jobs stay in `solid_queue_failed_executions` on the queue database. Inspect them from a Rails console in development:
@@ -30,7 +32,7 @@ SolidQueue::FailedExecution.order(:id).last&.exception_class
 SolidQueue::FailedExecution.last.retry
 ```
 
-There is no public queue dashboard.
+There is no public queue dashboard. `DeliverInvitationEmailJob` sets `log_arguments = false`, so failed rows do not repeat the sealed envelope in routine logs.
 
 ## Mail
 
@@ -38,7 +40,30 @@ There is no public queue dashboard.
 |-------------|----------|
 | Development | `:file` under `tmp/mails`. No SMTP password. |
 | Test | `:test` (`ActionMailer::Base.deliveries`) |
-| Production | SMTP only when `SMTP_ADDRESS` is set. Otherwise mail is not sent. |
+| Production | SMTP when `SMTP_ADDRESS` is set **and** `delivery_method` is `:smtp`. Otherwise outbound mail is **not** ready. |
+
+### Production readiness (fail closed)
+
+Check before deploy or when debugging mail:
+
+```ruby
+Notifications::MailDelivery.configured?   # => true/false
+Notifications::MailDelivery.readiness_label  # => "ready" | "missing_smtp"
+```
+
+Required for production send:
+
+- `SMTP_ADDRESS` (and usual `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` as needed)
+- `MAIL_FROM`, `APP_HOST`, `APP_PROTOCOL` for correct links
+
+When `SMTP_ADDRESS` is absent in production:
+
+- `action_mailer.delivery_method` stays `:test` (no accidental network delivery).
+- `raise_delivery_errors` is **true**.
+- `Notifications::Dispatch` and `Notifications::MailDelivery.ensure_ready!` raise `Notifications::MailDelivery::NotConfigured` — invitations are **not** enqueued and password reset does **not** queue.
+- An Action Mailer interceptor runs the same guard on any `deliver_*` path.
+
+Development and test skip the guard.
 
 Optional environment variables, none of which are committed:
 
@@ -52,9 +77,16 @@ No email provider is chosen in this slice. Do not send real mail until the produ
 
 `Invitations::Issue` commits the invitation, then `Notifications::Dispatch.invitation!` enqueues `DeliverInvitationEmailJob`.
 
-The job argument is a signed envelope (`Notifications::InvitationTokenSeal`), not the raw token. `log_arguments` is false, so routine enqueue logs omit it. The envelope expires with the invitation. A worker that has `secret_key_base` can still open the envelope. That is the same trust boundary as the application secret. The queue row does not contain the raw token in plaintext.
+The job argument is an **encrypted** envelope (`Notifications::InvitationTokenSeal`), not the raw token:
 
-Before sending, the job reloads the invitation. Revoked, expired, accepted, or missing invitations are skipped. A retry cannot revive them. Sending does not change invitation status. Provider delivery is at-least-once: a retry after a timeout can send a second copy of the same link. Exactly-once delivery is not claimed.
+- AES-256-GCM via `ActiveSupport::MessageEncryptor` and a purpose-specific key from `key_generator`.
+- Authenticated encryption: tampered ciphertext is rejected; envelope honours `expires_at` with the invitation.
+- Queue rows and job logs must not contain the raw token (`log_arguments = false`).
+- Anyone with `secret_key_base` can decrypt (same trust boundary as the app). Base64 inspection of the envelope does not reveal the token.
+
+Before sending, the job reloads the invitation. Revoked, expired, accepted, or missing invitations are skipped. Resend revokes the prior pending row; a delayed job for the old id cannot email. A retry cannot revive them. Sending does not change invitation status. Provider delivery is at-least-once: a retry after a timeout can send a second copy of the same link. Exactly-once delivery is not claimed.
+
+The job calls `InvitationsMailer.invite(...).deliver_now` — it does **not** enqueue a second `MailDeliveryJob` bearing the token.
 
 Jobs wait for the surrounding transaction to commit (`enqueue_after_transaction_commit`). A rolled-back invitation is not emailed.
 
@@ -68,10 +100,23 @@ Transient timeouts, deadlocks, and `Net::SMTPServerBusy` / `Net::SMTPUnknownErro
 
 `Notifications::Events` lists the two access emails that exist today: `invitation.issued` and `password.reset_requested`. There is no notifications table, inbox, preference screen, or product event yet. The approved inbox table stays deferred until the first in-app notification slice.
 
+## Acceptance evidence (P3-A5 final)
+
+| Area | Evidence |
+|------|----------|
+| Token encryption | `test/lib/notifications/invitation_token_seal_test.rb` |
+| Queue confidentiality | `test/jobs/deliver_invitation_email_job_test.rb` |
+| Production mail guard | `test/lib/notifications/mail_delivery_test.rb` |
+| Transaction / resend | Rollback enqueue test; resend + stale seal test in job tests |
+| Quality | `verify_foundation.sh`, Brakeman, bundler-audit after acceptance commit |
+
+Worker smoke: `Procfile.dev` verified in repo; live `jobs.1` foreman output **not re-verified** in this acceptance session (prior `bin/dev` log showed `web.1` and `css.1` only).
+
 ## Deployment order
 
 1. Migrate the primary database.
 2. Prepare the queue database (`db/queue_schema.rb` via the `queue` connection).
 3. Seed the permission catalogue before serving permission-gated traffic.
-4. Start the web process and a separate `bin/jobs` process.
-5. Set SMTP variables only after provider approval.
+4. Confirm `Notifications::MailDelivery.configured?` before enabling invitation traffic in production.
+5. Start the web process and a separate `bin/jobs` process.
+6. Set SMTP variables only after provider approval.

@@ -12,6 +12,8 @@ class DeliverInvitationEmailJob < ApplicationJob
   discard_on Net::SMTPFatalError, Net::SMTPSyntaxError
 
   def perform(invitation_id, sealed_token)
+    Notifications::MailDelivery.ensure_ready!
+
     invitation = Invitation.find_by(id: invitation_id)
     return unless invitation&.usable?
 
