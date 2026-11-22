@@ -1,0 +1,33 @@
+<aside class="client-app-side" aria-label="Client workspace">
+  <div class="client-app-side__inner">
+    <div class="client-side-brand">
+      <%= render "shared/ant_marine_brand" %>
+    </div>
+
+    <div class="client-org-card">
+      <div class="client-org-card__avatar" aria-hidden="true"><%= client_org_initials %></div>
+      <div>
+        <b><%= Current.membership.organization.name %></b>
+        <small>Client account</small>
+      </div>
+    </div>
+
+    <button type="button"
+            class="client-mobile-nav-toggle"
+            data-client-shell-target="toggle"
+            data-action="client-shell#toggle"
+            aria-expanded="false"
+            aria-controls="client-workspace-nav">
+      <span>Menu</span>
+      <%= render "shared/staff/nav_icon", name: "menu", size: 16 %>
+    </button>
+
+    <div id="client-workspace-nav" class="client-app-side__nav" data-client-shell-target="nav">
+      <div class="client-app-side__nav-scroll">
+        <p class="client-side-label">MY WORK</p>
+        <%= render "shared/client/sidebar_nav" %>
+      </div>
+      <%= render "shared/client/user_footer" %>
+    </div>
+  </div>
+</aside>

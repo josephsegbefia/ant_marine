@@ -1,0 +1,18 @@
+<nav class="client-side-nav" aria-label="Client workspace navigation">
+  <%= link_to client_root_path,
+        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:home)}" do %>
+    <%= render "shared/staff/nav_icon", name: "home" %>
+    <span>Home</span>
+  <% end %>
+
+  <% if client_can_invite? %>
+    <%= link_to client_invitations_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:invitations)}" do %>
+      <%= render "shared/staff/nav_icon", name: "mail" %>
+      <span>Team invitations</span>
+    <% end %>
+  <% end %>
+
+  <p class="client-side-label client-side-label--spaced">COMING LATER</p>
+  <p class="client-nav-note">Requests, projects, documents, reports and billing will appear here when those features are ready.</p>
+</nav>

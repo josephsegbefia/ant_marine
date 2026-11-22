@@ -1,25 +1,41 @@
-<% content_for :title, "Client workspace" %>
+<% content_for :title, "Client home — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Home" %>
+<% content_for :client_nav, "home" %>
 
-<div class="portal-shell max-w-xl">
-  <header class="portal-head">
-    <div>
-      <h1>Client workspace</h1>
-      <p>
-        Signed in as <%= Current.user.email %> ·
-        <%= RoleLabels.label(Current.membership.role_key) %> ·
-        <%= Current.membership.organization.name %>
-      </p>
-    </div>
-  </header>
-
-  <section class="portal-card">
-    <p class="text-sm text-[#5f7d8c]">Invite colleagues and review team access for your organisation.</p>
-    <p class="mt-4">
-      <%= link_to "Team invitations", client_invitations_path, class: "portal-btn-secondary" %>
-    </p>
-    <div class="mt-6 flex flex-wrap gap-3">
-      <%= link_to "Switch workspace", workspace_selection_path, class: "portal-btn-secondary" %>
-      <%= button_to "Sign out", session_path, method: :delete, class: "portal-btn-secondary", form: { class: "inline" } %>
-    </div>
-  </section>
+<div class="client-page-head">
+  <h1>Hello, <%= client_greeting_name %>.</h1>
+  <p>Welcome to your client workspace for <%= Current.membership.organization.name %>.</p>
 </div>
+
+<section class="client-welcome-banner">
+  <div>
+    <p class="public-eyebrow public-eyebrow--on-dark">YOUR MARINE WORK, IN ONE PLACE</p>
+    <h2>Welcome to your client portal.</h2>
+    <p>When service requests and projects are available, you will see them here. For now, manage team access and your account settings.</p>
+  </div>
+</section>
+
+<% if client_can_invite? %>
+  <section class="portal-card mt-6 max-w-2xl">
+    <h2 class="text-base font-extrabold text-[#173244]">Team invitations</h2>
+    <p class="mt-2 text-sm text-[#5f7d8c]">Invite colleagues who are authorised to work with ANT Marine on behalf of your organisation.</p>
+    <p class="mt-4">
+      <%= link_to "Manage invitations", client_invitations_path, class: "portal-btn-secondary" %>
+    </p>
+  </section>
+<% end %>
+
+<section class="portal-card mt-4 max-w-2xl">
+  <h2 class="text-base font-extrabold text-[#173244]">Service requests and projects</h2>
+  <p class="mt-2 text-sm text-[#5f7d8c]">
+    Request tracking, projects, documents, reports and billing are not available in this release.
+    Your ANT Marine contact will share updates through the usual channels until those tools are added.
+  </p>
+</section>
+
+<section class="portal-card mt-4 max-w-2xl">
+  <h2 class="text-base font-extrabold text-[#173244]">Your account</h2>
+  <p class="mt-2 text-sm text-[#5f7d8c]">
+    Signed in as <%= Current.user.email %> · <%= RoleLabels.label(Current.membership.role_key) %>
+  </p>
+</section>

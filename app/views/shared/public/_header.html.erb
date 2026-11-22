@@ -1,0 +1,28 @@
+<header class="public-header">
+  <%= link_to root_path, class: "public-header__brand" do %>
+    <span class="public-header__brand-icon" aria-hidden="true">≈</span>
+    <span>
+      <strong>ANT Marine W.A.</strong>
+      <small>Marine Consulting</small>
+    </span>
+  <% end %>
+
+  <button type="button"
+          class="public-header__menu-toggle"
+          data-public-nav-target="toggle"
+          data-action="public-nav#toggle"
+          aria-expanded="false"
+          aria-controls="public-primary-nav">
+    <span>Menu</span>
+  </button>
+
+  <nav id="public-primary-nav"
+       class="public-header__nav"
+       aria-label="Website"
+       data-public-nav-target="nav">
+    <%= link_to "Home", root_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:home)}" %>
+    <a href="<%= root_path %>#services" class="public-header__link">Services</a>
+    <a href="<%= root_path %>#contact" class="public-header__link">Contact</a>
+    <%= link_to "Sign in", new_session_path, class: "public-header__cta" %>
+  </nav>
+</header>

@@ -1,57 +1,42 @@
 <% content_for :title, "Team invitations — #{@organization.name}" %>
+<% content_for :client_page_title, "Team invitations" %>
+<% content_for :client_nav, "invitations" %>
 
-<div class="portal-shell">
-  <div class="portal-shell__back">
-    <%= ant_back_link label: "Back to client workspace", path: client_root_path %>
-  </div>
+<%= ant_back_link label: "Back to client workspace", path: client_root_path %>
 
-  <nav class="portal-topnav" aria-label="Client">
-    <%= link_to "Client workspace", client_root_path %>
-    <span aria-hidden="true">/</span>
-    <span>Team invitations</span>
-  </nav>
+<div class="portal-split mt-4">
+  <section class="portal-card">
+    <h3>Recent invitations</h3>
+    <%= render "shared/invitations/list",
+          invitations: @invitations,
+          show_organization: false,
+          cancel_path: ->(invitation) { client_invitation_path(invitation) },
+          resend_path: ->(invitation) { resend_client_invitation_path(invitation) } %>
+  </section>
 
-  <header class="portal-head">
-    <div>
-      <h1>Team invitations</h1>
-      <p>Invite colleagues to <%= @organization.name %> and manage pending invitations for your organisation.</p>
-    </div>
-  </header>
-
-  <div class="portal-split">
-    <section class="portal-card">
-      <h3>Recent invitations</h3>
-      <%= render "shared/invitations/list",
-            invitations: @invitations,
-            show_organization: false,
-            cancel_path: ->(invitation) { client_invitation_path(invitation) },
-            resend_path: ->(invitation) { resend_client_invitation_path(invitation) } %>
-    </section>
-
-    <section class="portal-card">
-      <h3>Invite a colleague</h3>
-      <%= form_with url: client_invitations_path,
-            class: "mt-5",
-            data: {
-              controller: "form-submit",
-              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
-              form_submit_loading_message_value: "Sending invitation..."
-            } do |form| %>
-        <%= ant_field form, :email,
-              type: :email,
-              label: "Email address",
-              context: :portal,
-              required: true,
-              autocomplete: "email",
-              placeholder: "name@company.com" %>
-        <%= ant_select form, :role_key,
-              choices: RoleLabels.options_for_roles(@allowed_roles),
-              label: "What can they do?",
-              context: :portal,
-              placeholder: "Choose access level" %>
-        <p class="portal-notice mb-5">Invited people only see work and files your organisation has shared with them.</p>
-        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
-      <% end %>
-    </section>
-  </div>
+  <section class="portal-card">
+    <h3>Invite a colleague</h3>
+    <%= form_with url: client_invitations_path,
+          class: "mt-5",
+          data: {
+            controller: "form-submit",
+            action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+            form_submit_loading_message_value: "Sending invitation..."
+          } do |form| %>
+      <%= ant_field form, :email,
+            type: :email,
+            label: "Email address",
+            context: :portal,
+            required: true,
+            autocomplete: "email",
+            placeholder: "name@company.com" %>
+      <%= ant_select form, :role_key,
+            choices: RoleLabels.options_for_roles(@allowed_roles),
+            label: "What can they do?",
+            context: :portal,
+            placeholder: "Choose access level" %>
+      <p class="portal-notice mb-5">Invited people only see work and files your organisation has shared with them.</p>
+      <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
+    <% end %>
+  </section>
 </div>

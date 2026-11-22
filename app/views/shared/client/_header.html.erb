@@ -1,0 +1,10 @@
+<header class="client-app-top">
+  <div class="client-app-bread">
+    <span>My account</span>
+    <span aria-hidden="true">›</span>
+    <strong><%= content_for?(:client_page_title) ? content_for(:client_page_title) : "Home" %></strong>
+  </div>
+  <% if client_multiple_workspaces? %>
+    <%= ant_back_link(label: "Back to workspaces", path: workspace_selection_path) %>
+  <% end %>
+</header>

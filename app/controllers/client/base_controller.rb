@@ -4,6 +4,6 @@ module Client
 
     before_action :require_client_portal_access
 
-    layout "portal"
+    layout "client_portal"
   end
 end

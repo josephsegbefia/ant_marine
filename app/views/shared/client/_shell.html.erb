@@ -1,0 +1,13 @@
+<div class="client-app" data-controller="client-shell">
+  <div class="client-shell-backdrop"
+       hidden
+       data-client-shell-target="backdrop"
+       data-action="click->client-shell#close"
+       aria-hidden="true"></div>
+  <%= render "shared/client/sidebar" %>
+
+  <div class="client-app-main">
+    <%= render "shared/client/header" %>
+    <%= yield %>
+  </div>
+</div>

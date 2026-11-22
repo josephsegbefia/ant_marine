@@ -1,0 +1,13 @@
+<div class="client-bottom-user">
+  <span class="client-bottom-user__name"><%= client_display_name %></span>
+  <small class="client-bottom-user__role"><%= RoleLabels.label(Current.membership.role_key) %></small>
+  <div class="client-bottom-user__actions">
+    <% if client_multiple_workspaces? %>
+      <%= link_to workspace_selection_path, class: "client-bottom-user__link client-bottom-user__link--row" do %>
+        <%= render "shared/staff/nav_icon", name: "switch", size: 14 %>
+        <span>Switch workspace</span>
+      <% end %>
+    <% end %>
+    <%= link_to "Sign out", session_path, data: { turbo_method: :delete }, class: "client-bottom-user__link" %>
+  </div>
+</div>

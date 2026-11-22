@@ -12,6 +12,8 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `form-submit` | [`form_submit_controller.js`](../../app/javascript/controllers/form_submit_controller.js) | Submit loading / disable |
 | `ant_back_link` | [`_back_link.html.erb`](../../app/views/shared/ui/_back_link.html.erb) | Return navigation (studio **A05** outline + `left` icon) |
 | Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
+| Client workspace shell | [`layouts/client_portal.html.erb`](../../app/views/layouts/client_portal.html.erb), [`shared/client/*`](../../app/views/shared/client/) | Studio **C01** sidebar + header (client routes) |
+| Public site shell | [`layouts/public_site.html.erb`](../../app/views/layouts/public_site.html.erb), [`shared/public/*`](../../app/views/shared/public/) | Studio **P01** header/footer + homepage entry |
 | Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link`, `.staff-*` |
 
 ## Back navigation
