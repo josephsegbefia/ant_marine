@@ -47,6 +47,7 @@ Full threat IDs: [`P2_2_SECURITY_THREAT_MODEL.md`](P2_2_SECURITY_THREAT_MODEL.md
 
 | Topic | Status |
 |---|---|
+| Security objective + P3-STORAGE-01 plan | **APPROVED** 2026-11-22 (ADR-010 partial, P2.5A) |
 | Active Storage + private object store | **Designed** (ADR-004 proposed) |
 | Hetzner default encryption at rest | **Not verified** — master spec caveat |
 | SSE-C / client-side encryption | **OPEN** — requires PoC |

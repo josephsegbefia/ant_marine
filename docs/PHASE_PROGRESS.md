@@ -4,8 +4,8 @@
 |---|---|---|
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
-| Phase 2 — architecture | **Package complete — exit approval pending** | P2.5 review pack; stakeholder sign-off required |
-| Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
+| Phase 2 — architecture | **Partial exit — P2.5A ADRs approved; full exit pending** | See P2_5A; ADR-010 impl, P2-OD-040–042, Phase 1 sign-off open |
+| Phase 3 — foundation | **Wave A cleared to start** | ADR-005,006,008,012–017,010 PoC plan; begin P3-A1 |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -27,7 +27,8 @@
 | P2.2 Auth & permissions architecture | 2026-11-22 | **Designed** | `docs/architecture/P2_2_*`; finance/confidential matrix refinements |
 | P2.3 Database architecture | 2026-11-22 | **Designed** | `docs/architecture/P2_3_*`; P2-OD-040–042 proposed |
 | P2.4 Workflow architecture | 2026-11-22 | **Designed** | `docs/architecture/P2_4_*`; P2-OD-043–048 proposed |
-| P2.5 Final architecture review | 2026-11-22 | **Complete — not approved** | `docs/architecture/P2_5_*`; CONDITIONAL GO Phase 3 |
+| P2.5 Final architecture review | 2026-11-22 | **Complete — partial approval** | `docs/architecture/P2_5_*` |
+| P2.5A Stakeholder decisions | 2026-11-22 | **Enumerated ADRs approved** | `docs/architecture/P2_5A_STAKEHOLDER_DECISION_RECORD.md` |
 
 ## Local development quick reference
 

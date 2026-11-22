@@ -2,7 +2,7 @@
 
 **Audience:** Product owner / authorized stakeholders  
 **Date:** 22 November 2026  
-**Instruction:** Confirm, reject, or defer each item; mark `APPROVED` in `docs/DECISIONS.md` only after explicit confirmation.
+**P2.5A update:** Enumerated decisions reconciled 2026-11-22 — see [`P2_5A_STAKEHOLDER_DECISION_RECORD.md`](P2_5A_STAKEHOLDER_DECISION_RECORD.md). Items below not in P2.5A list remain pending unless noted.
 
 ---
 
@@ -155,7 +155,7 @@
 | | |
 |---|---|
 | **Plain English** | When a client accepts a quote, how many projects can that acceptance create? |
-| **Recommended (PROPOSED — not approved)** | **One project per accepted revision** (unique FK); multi-phase work = new quote |
+| **APPROVED 2026-11-22 (P2.5A)** | **One project per accepted revision** (unique FK); multi-phase work = new quote / future design |
 | **Alternatives** | Multiple projects per acceptance |
 | **Business impact** | Simpler client portal; may need change orders later |
 | **Technical impact** | UNIQUE `projects.quote_revision_id` |
@@ -192,14 +192,15 @@ Align quote acceptance actor with ADR-006 approval.
 
 ---
 
-## Sign-off record (to be completed by stakeholders)
+## Sign-off record
 
 | Area | Name | Date | Decision |
 |---|---|---|---|
-| Architecture package P2.1–P2.4 | | | Pending |
-| Stakeholder pack (this doc) | | | Pending |
-| Phase 2 exit → Phase 3 start | | | **Pending** |
-| Phase 1 design HTML | | | Pending |
+| Enumerated ADRs + P2-OD-043/004 (P2.5A) | Product owner | 2026-11-22 | **APPROVED** (conversational go-ahead) |
+| Full Phase 2 exit | — | — | **Pending** (ADR-010 impl, P2-OD-040–042, etc.) |
+| Phase 3 Wave A start | Product owner | 2026-11-22 | **GO** |
+| Phase 1 design HTML (full studio) | — | — | **Pending** |
+| Team & Permissions DCR | Product owner | 2026-11-22 | **APPROVED** (HTML update not yet done) |
 
 ---
 

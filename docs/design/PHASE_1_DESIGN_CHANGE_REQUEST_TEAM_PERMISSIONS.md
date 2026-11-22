@@ -1,6 +1,6 @@
 # Phase 1 Design Change Request — Team & Permissions
 
-**Status:** **Awaiting stakeholder approval** — **do not edit** [`ANT_Marine_Design_Studio_Phase_1.html`](ANT_Marine_Design_Studio_Phase_1.html) until this DCR is signed off
+**Status:** **Change request APPROVED** 2026-11-22 (ADR-013 / P2.5A) — **do not edit** [`ANT_Marine_Design_Studio_Phase_1.html`](ANT_Marine_Design_Studio_Phase_1.html) until a separate scheduled HTML update; **final screen designs not yet approved**
 **Date:** 22 November 2026  
 **Driver:** Product requirement for configurable RBAC ([`../architecture/ROLE_PERMISSION_SPEC.md`](../architecture/ROLE_PERMISSION_SPEC.md))
 
@@ -95,6 +95,7 @@ States: same as staff; copy in everyday English.
 
 ## Approval
 
-- [ ] Product owner accepts new screen IDs and navigation  
-- [ ] Updated HTML studio export scheduled after approval  
-- [ ] Phase 4 slice for permission UI references this document
+- [x] Product owner accepts new screen IDs and navigation (2026-11-22 P2.5A)
+- [ ] Updated HTML studio export scheduled (pending design task)
+- [ ] Phase 4 slice F4-04b references this document after HTML update
+- [ ] Final pixel/copy review of new screens
