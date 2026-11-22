@@ -34,8 +34,11 @@
 | P3-A1 Browser acceptance | 2026-11-22 | **Partial** | **PO verified:** sign-in, staff workspace. **Not agent-verified:** full reset mailbox flow, mobile screenshots, dual-org switch, client portal in browser |
 | P3-A1 Gates unchanged | — | **Open** | Phase 1 final design sign-off; ADR-010 confidential storage PoC; A02–A04 invitation UI |
 | P3-A1 GitHub push & CI | 2026-11-22 | **Passed** | `main` → `origin/main` at `6328294`; [CI run 45010728775](https://github.com/josephsegbefia/ant_marine/actions/runs/45010728775) (`verify` + `scan_js` success) |
-| P3-A2 Invitations & verification | 2026-11-22 | **Accepted — local `main` only** | Staff/client invite, mailer, A02/A03, audit_events, interim `Invitations::Policy`; 70 tests / 256 assertions; **not pushed** |
-| P3-A2 Browser acceptance | 2026-11-22 | **Partial** | Integration coverage; manual A02/A03 vs studio + mobile spot-check recommended before push |
+| P3-A2 Invitations & verification | 2026-11-22 | **Accepted — local `main` only** | Staff/client invite, mailer, A02/A03, audit_events, interim `Invitations::Policy`; 70 tests / 258 assertions; **not pushed** |
+| P3-A2 Browser acceptance | 2026-11-22 | **Partial — agent verified** | Browser: A02/A03 staff+client @390px; acceptance+replay screens; staff sign-in attempted. PO: full staff UI send flow + client owner portal invite |
+| P3-A2 Design Studio A02/A03 | 2026-11-22 | **Substantially aligned** | Shared access layout, navy/teal panel, icon circle, notice, locked email, headings match studio intent; minor copy/CTA differences vs static HTML |
+| P3-A2 Security acceptance | 2026-11-22 | **Passed (automated + samples)** | Digest-only storage; GET non-consuming; resend revokes prior token (dev runner); policy matrix tests; `::Invitations` autoload fix for invitation controllers |
+| P3-A2 GitHub push | — | **NO-GO until PO** | Recommend push after PO repeats staff “Manage invitations” path on restarted `bin/dev` |
 | P3-A2 Gates unchanged | — | **Open** | Phase 1 sign-off; ADR-010 storage; MFA A04; full M08; production SMTP |
 
 ## Local development quick reference

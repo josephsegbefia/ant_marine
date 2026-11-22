@@ -39,7 +39,7 @@ class InvitationsController < ApplicationController
     existing = User.find_by(email: @invitation.email)
     new_user_params = existing ? nil : setup_params
 
-    result = Invitations::Accept.call(
+    result = ::Invitations::Accept.call(
       invitation: @invitation,
       actor_user: actor,
       new_user_params: new_user_params
@@ -53,7 +53,7 @@ class InvitationsController < ApplicationController
       assign_session_membership!(result.membership)
       redirect_to after_acceptance_path(result.membership), notice: "Your account is ready. Welcome to ANT Marine."
     end
-  rescue Invitations::Accept::Error => e
+  rescue ::Invitations::Accept::Error => e
     flash.now[:alert] = e.message
     @existing_user = User.find_by(email: @invitation.email)
     @portal_label = portal_label_for(@invitation)
@@ -63,7 +63,7 @@ class InvitationsController < ApplicationController
   private
 
     def set_invitation
-      digest = Invitations::Token.digest(params[:token].to_s)
+      digest = ::Invitations::Token.digest(params[:token].to_s)
       @invitation = Invitation.find_by(token_digest: digest)
 
       unless @invitation

@@ -8,6 +8,7 @@ class InvitationAcceptanceTest < ActionDispatch::IntegrationTest
   test "GET show does not consume invitation" do
     get invitation_path(FIXTURE_STAFF_TOKEN)
     assert_response :success
+    assert_select "h2", text: /invited/i
     assert_equal "pending", invitations(:pending_staff_invite).reload.status
   end
 
