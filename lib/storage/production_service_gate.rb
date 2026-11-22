@@ -4,7 +4,7 @@ module Storage
   module ProductionServiceGate
     class Blocked < StandardError; end
 
-    ENCRYPTED_SERVICES = %i[local_encrypted].freeze
+    ENCRYPTED_SERVICES = %i[local_encrypted encrypted_s3].freeze
     PLAIN_S3_SERVICE = :private_s3
 
     module_function

@@ -1,0 +1,14 @@
+# Isolated ClamAV for malware scanner PoC — NOT production AV operations.
+# Usage: docker compose -f compose.clamav-poc.yml up -d
+# First start may take minutes to load signature database.
+services:
+  clamav:
+    image: clamav/clamav:1.4
+    container_name: ant_marine_clamav_poc
+    ports:
+      - "127.0.0.1:3310:3310"
+    volumes:
+      - clamav_db:/var/lib/clamav
+
+volumes:
+  clamav_db:

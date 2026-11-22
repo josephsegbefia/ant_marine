@@ -12,6 +12,14 @@ class StorageProductionServiceGateTest < ActiveSupport::TestCase
     end
   end
 
+  test "encrypted_s3 is permitted in production config check" do
+    with_production_env do
+      assert_nothing_raised do
+        Storage::ProductionServiceGate.verify!(service_name: :encrypted_s3)
+      end
+    end
+  end
+
   test "local_encrypted is permitted in production" do
     with_production_env do
       assert_nothing_raised do

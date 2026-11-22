@@ -35,8 +35,9 @@ Staff routes `staff/storage/proof_*` are **technical proof endpoints only** — 
 | Service name | Adapter | Encryption at rest | Production |
 |--------------|---------|-------------------|------------|
 | `test` / `local_encrypted` | `EncryptedDisk` | App-side AES-GCM | **Allowed** (default prod default name is `local_encrypted` until object store wired) |
+| `encrypted_s3` | `EncryptedS3` | App-side AES-GCM before S3 PUT | **Allowed in gate**; **verified only when `MINIO_POC_ENABLED=1`** (local MinIO) |
 | `local` | `Disk` | None | **Blocked** in production (`Storage::ProductionServiceGate`) |
-| `private_s3` | `S3` (plain) | **None** — ACL private only | **Blocked** in production until `EncryptedS3Service` exists |
+| `private_s3` | `S3` (plain) | **None** — ACL private only | **Blocked** in production until PoC encrypted adapter selected |
 
 - `config.active_storage.draw_routes = false` — `/rails/active_storage/*` returns **404** in tests.
 - Custom service: `lib/active_storage/service/encrypted_disk_service.rb` (manual require path; `autoload_lib` ignores `active_storage/`).
