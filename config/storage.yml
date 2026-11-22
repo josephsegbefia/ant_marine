@@ -10,6 +10,9 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# Plain S3 — does NOT apply application-side encryption. Confidential production
+# files must use an encrypted adapter (future EncryptedS3Service) or local_encrypted.
+# Boot is blocked in production when this service is selected (see Storage::ProductionServiceGate).
 private_s3:
   service: S3
   access_key_id: <%= ENV["STORAGE_S3_ACCESS_KEY_ID"] %>

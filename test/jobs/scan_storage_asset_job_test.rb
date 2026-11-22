@@ -4,7 +4,7 @@ require "test_helper"
 
 class ScanStorageAssetJobTest < ActiveJob::TestCase
   test "job completes scan after upload" do
-  asset = nil
+    asset = nil
     perform_enqueued_jobs only: ScanStorageAssetJob do
       asset = Storage::ProofUpload.call(
         membership: memberships(:super_admin_membership),

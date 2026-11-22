@@ -39,6 +39,17 @@ class StorageProofUploadTest < ActiveSupport::TestCase
     end
   end
 
+  test "empty file is rejected" do
+    assert_raises ActiveRecord::RecordInvalid do
+      Storage::ProofUpload.call(
+        membership: @membership,
+        organization: @membership.organization,
+        filename: "empty.txt",
+        io: StringIO.new("")
+      )
+    end
+  end
+
   test "path traversal filename is rejected" do
     assert_raises Storage::ContentValidator::FilenameInvalid do
       Storage::ProofUpload.call(

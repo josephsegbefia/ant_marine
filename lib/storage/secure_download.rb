@@ -10,7 +10,11 @@ module Storage
       raise Error, "asset not available" unless asset.downloadable?
       raise Error, "blob missing" unless asset.active_storage_blob
 
-      plaintext = asset.active_storage_blob.download
+      plaintext = begin
+        asset.active_storage_blob.download
+      rescue ActiveStorage::IntegrityError
+        raise Error, "decryption failed"
+      end
       raise Error, "decryption failed" if plaintext.blank?
 
       expected = Digest::SHA256.hexdigest(plaintext)

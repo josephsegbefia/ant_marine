@@ -11,6 +11,7 @@ module Staff
         ::Storage::Audit.download_allowed(asset: asset, actor_membership: Current.membership)
 
         response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
         send_data payload.plaintext,
           filename: payload.filename,
           type: payload.content_type,

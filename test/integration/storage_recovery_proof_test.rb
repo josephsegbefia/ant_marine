@@ -44,4 +44,23 @@ class StorageRecoveryProofTest < ActiveSupport::TestCase
   ensure
     FileUtils.rm_rf(Rails.root.join("tmp/storage_recovery_proof"))
   end
+
+  test "wrong encryption key cannot decrypt restored bytes" do
+    membership = memberships(:super_admin_membership)
+    bytes = "Key custody proof"
+    asset = upload_storage_proof!(membership: membership, bytes: bytes)
+    path = asset.active_storage_blob.service.send(:path_for, asset.storage_key)
+    ciphertext = File.binread(path)
+    original_key = ENV["STORAGE_ENCRYPTION_KEY"]
+    ENV["STORAGE_ENCRYPTION_KEY"] = "wrong-recovery-secret"
+
+    begin
+      assert_nil Storage::Encryption.decrypt(ciphertext)
+      assert_raises Storage::SecureDownload::Error do
+        Storage::SecureDownload.call(asset: asset)
+      end
+    ensure
+      ENV["STORAGE_ENCRYPTION_KEY"] = original_key
+    end
+  end
 end

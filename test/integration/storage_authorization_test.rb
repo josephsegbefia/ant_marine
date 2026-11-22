@@ -23,6 +23,24 @@ class StorageAuthorizationTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Hello PoC"
     assert_equal "no-store", response.headers["Cache-Control"]
+    assert_equal "nosniff", response.headers["X-Content-Type-Options"]
+    assert_match(/attachment/, response.headers["Content-Disposition"].to_s)
+  end
+
+  test "client portal cannot reach staff proof download" do
+    sign_in_as users(:client_only), membership: memberships(:client_membership)
+    get staff_storage_proof_download_path(@asset)
+
+    assert_redirected_to root_path
+  end
+
+  test "suspended staff membership cannot download" do
+    memberships(:staff_membership).update!(status: "suspended")
+    sign_in_as users(:staff_only), membership: memberships(:staff_membership)
+
+    get staff_storage_proof_download_path(@asset)
+
+    assert_redirected_to workspace_selection_path
   end
 
   test "cross organization staff download is denied" do

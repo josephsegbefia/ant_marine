@@ -19,8 +19,20 @@ class ScanStorageAssetJob < ApplicationJob
     return asset.mark_rejected!(reason: "missing_blob") unless blob
 
     result = nil
-    blob.open do |file|
-      result = Storage::MalwareScanner.scan(file)
+    begin
+      blob.open do |file|
+        result = Storage::MalwareScanner.scan(file)
+      end
+    rescue ActiveStorage::IntegrityError, ActiveStorage::FileNotFoundError
+      asset.mark_rejected!(reason: "blob_unreadable")
+      Storage::Audit.scan_rejected(asset: asset)
+      return
+    end
+
+    unless result
+      asset.mark_rejected!(reason: "scan_no_result")
+      Storage::Audit.scan_rejected(asset: asset)
+      return
     end
 
     case result.status
