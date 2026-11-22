@@ -1,7 +1,8 @@
 # ANT Marine — Role & Permission Architecture Specification
 
-**Status:** Product requirement (Phase 2 design) — implementation in Phase 3 foundation, before dependent business features  
-**Version:** 1.0 — 22 November 2026  
+**Status:** Product requirement (Phase 2 design) — implementation in Phase 3 foundation, before dependent business features
+
+**Version:** 1.1 — 22 November 2026 (P2.1 reconciliation)
 **Related:** [`PERMISSION_CATALOGUE.md`](PERMISSION_CATALOGUE.md), [`DEFAULT_ROLE_MATRIX.md`](DEFAULT_ROLE_MATRIX.md), [`../ANT_MARINE_MASTER_SPEC.md`](../ANT_MARINE_MASTER_SPEC.md)
 
 ---
@@ -44,7 +45,7 @@ Membership rows bind `user_id` + `organization_id` + **domain-specific role** + 
 | `staff.operations_manager` | Operations Manager | Cross-team operations, assignments, scheduling oversight |
 | `staff.project_coordinator` | Project Coordinator | Inquiries, quotes, projects, client coordination |
 | `staff.surveyor` | Surveyor / Consultant | Assigned field work, drafts, uploads; no self-approval |
-| `staff.technical_reviewer` | Technical Reviewer | Report technical review; not sole release authority |
+| `staff.technical_reviewer` | Technical Reviewer | Report technical review on assigned projects; not sole release authority |
 | `staff.finance_officer` | Finance Officer | Invoices and payment records; minimal project detail |
 | `staff.content_manager` | Content Manager | Public content draft/review/publish |
 | `staff.general_staff` | General Staff | Limited read/participate on assigned work |
@@ -56,7 +57,7 @@ Membership rows bind `user_id` + `organization_id` + **domain-specific role** + 
 | `client.org_owner` | Organisation Owner | Highest client authority; team and permission management for own org |
 | `client.org_administrator` | Organisation Administrator | Delegated admin within limits; cannot create owners |
 | `client.client_manager` | Client Manager | Quotes, team invites (if granted), project oversight |
-| `client.client_member` | Client Member | Projects, uploads, messages per assignment |
+| `client.client_member` | Client Member | Org-scoped projects, uploads, messages |
 | `client.client_finance` | Client Finance | Invoices and payment visibility |
 
 Default permission sets: [`DEFAULT_ROLE_MATRIX.md`](DEFAULT_ROLE_MATRIX.md).
@@ -67,8 +68,8 @@ Default permission sets: [`DEFAULT_ROLE_MATRIX.md`](DEFAULT_ROLE_MATRIX.md).
 
 Effective permission for action `A` on resource `R` in organisation context `O`:
 
-1. **Protected security restrictions** — cannot be overridden (e.g. client cannot gain `staff.*`; no cross-org grants; separation of duties on report approve/release).
-2. **Organisation and resource boundaries** — user must belong to `O`; project/document must belong to `O`; staff must have assignment or elevated staff permission for client data.
+1. **Protected security restrictions** — cannot be overridden (e.g. client cannot gain `staff.*`; no cross-org grants; separation of duties on report approve/release; permission grants cannot bypass report workflow or confidential classification gates).
+2. **Organisation and resource boundaries** — user must belong to `O`; project/document must belong to `O`; staff need feature permission **and** a valid resource path (§5); clients are scoped to their organisation’s projects.
 3. **Explicit user denial** — `PermissionOverride` with `effect: deny` on eligible permission.
 4. **Explicit user grant** — `PermissionOverride` with `effect: allow` on eligible permission.
 5. **Default role permissions** — union of permissions linked to the user’s role in `O`.
@@ -82,15 +83,41 @@ Effective permission for action `A` on resource `R` in organisation context `O`:
 
 ## 5. Project-level and resource-level access
 
-Feature permission **does not** imply access to all projects.
+Authorization is **two layers**. Both must pass.
 
-| Layer | Rule |
+1. **Feature permission** — does the user’s effective permissions include the catalogue key for this *class* of action?
+2. **Resource scope** — does the specific project, document, or report row fall within allowed boundaries for that user?
+
+Feature permission **does not** imply access to all projects or files.
+
+### 5.1 Access paths
+
+| Path | Who | Feature keys (examples) | Resource scope |
+|---|---|---|---|
+| **Org-wide staff oversight** | Operations Manager, Project Coordinator, Super Administrator | `projects.view_all`, related `*_view_all` list permissions | Project belongs to a client org; staff act from `ant_marine` membership; queries never blend client org data across tenants without explicit staff authority |
+| **Assigned delivery** | Surveyor, General Staff | `projects.view_assigned`, `assignments.participate` | Active `Assignment` on the project (e.g. `lead_surveyor`, `surveyor`) |
+| **Explicit review / collaboration** | Technical Reviewer, ad-hoc staff | `projects.view_assigned`, `reports.review` (and related) | `Assignment` with role `technical_reviewer`, `collaborator`, or equivalent; optional `DocumentAccessGrant` for narrow file-level access beyond defaults |
+| **Client organisation scope** | All client roles | `projects.view_org`, org-scoped document keys | `project.organization_id` equals the user’s current client organisation; optional future per-project participant list |
+| **Confidential classification** | Staff or client with extra grant | `documents.download` / `documents.preview` plus **`documents.access_confidential`** where required | Document `classification`, scan/workflow state, org/project match; cannot bypass report approve/release gates |
+
+**Assignment kinds (proposed):** `lead_surveyor`, `surveyor`, `coordinator`, `technical_reviewer`, `collaborator` — stored on `Assignment`; policies match kind to role defaults.
+
+### 5.2 Cross-organisation rule
+
+No user may access another client organisation’s information without a **legitimate authorised path**:
+
+- **Client user:** active `Membership` in that client org + org-scoped feature permissions + resource belongs to that org.
+- **Staff user:** active staff `Membership` in `ant_marine` + staff feature permission + either `projects.view_all` (or equivalent) for that client’s projects **or** an `Assignment` (or explicit grant) on the resource.
+
+Direct object URLs, guessed IDs, and stale sessions must fail policy checks.
+
+### 5.3 Documents and reports
+
+| Resource | Additional gates |
 |---|---|
-| Client | `projects.view` + membership in client org + project belongs to org |
-| Client (optional tighten) | Project participant list if enabled |
-| Staff | `projects.view` + (`projects.view_all` **or** `Assignment` on project) |
-| Documents | Policy checks classification + workflow state + org/project match |
-| Reports | Client sees version only if `ReportRelease` exists; staff by role + assignment |
+| Documents | Org/project match; scan `available`; workflow state; confidential requires `documents.access_confidential` |
+| Reports (client) | Only versions with a `ReportRelease` for that client org |
+| Reports (staff) | Feature keys + assignment or org-wide project access; approve (`reports.approve`) and release (`reports.release`) are separate protected steps |
 
 Multi-org users: `Current.organization_id` selects tenant; queries always scoped; switching org (A06) reloads context.
 
@@ -100,22 +127,28 @@ Multi-org users: `Current.organization_id` selects tenant; queries always scoped
 
 ### 6.1 ANT Marine staff
 
-- Only users with `team.manage_staff_roles` / `team.manage_staff_permissions` (typically Super Administrator; Operations Manager with delegation) may change **staff** roles and overrides.
+- Only users with `team.manage_staff_roles` / `team.manage_staff_permissions` may change **staff** roles and overrides.
+- **`team.manage_staff_permissions`** is **protected** and defaults to Super Administrator only; other staff (including Operations Manager) receive it only via an explicit, auditable grant.
 - Cannot modify **client** org memberships from staff UI except invitations/workflows defined in product (separate permissions).
 
 ### 6.2 Client organisations
 
 - **Organisation Owner** manages roles and permissions for users in **their** org only.
-- **Organisation Administrator** may manage team with subset of permissions if owner grants `team.manage_team_delegated`.
-- Cannot grant staff-domain permissions; cannot elevate users to Owner without `team.transfer_ownership` safeguard flow.
+- **`team.manage_roles`** and **`team.manage_permissions`** are **protected** and default to Owner only.
+- **Organisation Administrator** may manage team with a subset of permissions when the owner grants `team.manage_team_delegated` — but **cannot** assign `client.org_owner` (ownership only via `team.transfer_ownership`).
+- Cannot grant staff-domain permissions; cannot elevate users to Owner through role picker or permission editor.
 
 ### 6.3 Prohibited actions (enforced in application layer + tests)
 
 - Cross-organisation permission changes.
 - Client acquiring staff access.
-- Self-promotion to Super Administrator or Organisation Owner via permission editor.
+- Self-promotion to Super Administrator or Organisation Owner via permission editor or invite role picker.
+- Organisation Administrator (including delegated) creating or inviting a new Organisation Owner.
+- Granting a permission the granter does not hold (or is not eligible to delegate).
+- Granting **protected** staff permissions without `team.manage_staff_permissions`.
 - Removing last active Super Administrator or last active Organisation Owner without succession flow.
 - Bulk permission changes without `team.bulk_permission_change` + confirmation.
+- Using permission overrides to bypass report approval, client release, or confidential document rules.
 
 ### 6.4 Ownership transfer and recovery
 
@@ -124,6 +157,18 @@ Multi-org users: `Current.organization_id` selects tenant; queries always scoped
 | Transfer client org ownership | Current owner initiates; nominee accepts; audit; cannot leave zero owners |
 | Transfer / add Super Admin | Existing Super Admin + reauthentication; audit; minimum one remains |
 | Locked out owner | Documented break-glass: support procedure + audit (business process, not bypass in code) |
+
+### 6.5 Delegation bounds
+
+When user **G** grants permission **P** or role **R** to user **T** within organisation **O**:
+
+- **G** must hold **P** (or the administrative right that covers **P**) in **O**, unless **P** is a protected key managed only by Super Administrator (`team.manage_staff_*`).
+- **G** cannot grant permissions in the **staff** domain to a client membership or vice versa.
+- **G** cannot grant role keys above **G**’s own authority (e.g. delegated org admin cannot assign Owner).
+- The permission UI and `PermissionOverride` service reject ineligible targets before commit.
+- Revocations take effect server-side on the **next request** after cache/version bump (see §4).
+
+**Tests (Phase 5):** last-owner removal, cross-org URL denial, revoke-then-GET denied, grant-beyond-authority rejected, org admin cannot set Owner role.
 
 ---
 
@@ -159,9 +204,9 @@ Every role or permission change writes `PermissionChangeEvent` (or `AuditEvent` 
 
 Enforcement:
 
-- Pundit-style policy per resource; `authorize` in controllers and service objects.
+- Pundit-style policy per resource; `authorize` in controllers and service objects; **central** `Authorization::EffectivePermissions` implements §4 before policies apply resource scope (§5).
 - Signed/expiring URLs for downloads **after** policy pass.
-- Denial tests in CI for cross-org URLs, direct ID guessing, and revoked permissions.
+- Denial tests in CI for cross-org URLs, direct ID guessing, and **revoked permissions on the next request** after membership/override change.
 
 ---
 
@@ -177,7 +222,8 @@ Enforcement:
 | User overrides | `PermissionOverride` (`membership_id`, `permission_key`, `effect`, `granted_by`) |
 | Effective permissions | `Authorization::EffectivePermissions` service; memoized per request |
 | Resource auth | `ApplicationPolicy` subclasses + `Scope` |
-| Project assignment | `Assignment` gates staff project access |
+| Project assignment | `Assignment` (`assignment_kind`) gates staff project access when `projects.view_assigned` applies |
+| Narrow file access | `DocumentAccessGrant` optional beyond assignment |
 | Permission versioning | `permissions_catalog_version` for cache busting |
 
 **Avoid:** single giant role enum in code without catalogue; external permission SaaS; hardcoded checks scattered in views.

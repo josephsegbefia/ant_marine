@@ -1,7 +1,9 @@
 # ANT Marine — Default Role Permission Matrix
 
-**Status:** Phase 2 — default at role assignment; overrides per [`ROLE_PERMISSION_SPEC.md`](ROLE_PERMISSION_SPEC.md)  
+**Status:** Phase 2 — default at role assignment; overrides per [`ROLE_PERMISSION_SPEC.md`](ROLE_PERMISSION_SPEC.md)
+
 **Catalogue:** [`PERMISSION_CATALOGUE.md`](PERMISSION_CATALOGUE.md)
+**P2.1 reconciliation:** 22 November 2026 — reviewer assignment-only; finance tightened project visibility.
 
 Abbreviations in tables: **Y** = granted by default, **—** = not granted (may grant if `Override: yes`).
 
@@ -18,6 +20,8 @@ Abbreviations in tables: **Y** = granted by default, **—** = not granted (may 
 | Typical deny override | None for protected keys |
 
 ### `staff.operations_manager` — Operations Manager
+
+Org-wide project oversight (`projects.view_all`). Default `documents.access_confidential` is intentional for operations oversight.
 
 | Permission keys |
 |---|
@@ -41,19 +45,23 @@ Not default: `reports.approve`, `reports.release`, `quotes.send`.
 
 ### `staff.technical_reviewer` — Technical Reviewer
 
+Assignment-only project access — requires `Assignment` with kind `technical_reviewer` (or equivalent).
+
 | Permission keys |
 |---|
-| `projects.view_assigned`, `projects.view_all` (optional grant), `inspections.view`, `documents.download`, `documents.preview`, `reports.review`, `reports.approve`, `reports.view_draft_staff`, `messages.view`, `team.view`, `notifications.manage_preferences` |
+| `projects.view_assigned`, `inspections.view`, `documents.download`, `documents.preview`, `reports.review`, `reports.approve`, `reports.view_draft_staff`, `messages.view`, `team.view`, `notifications.manage_preferences` |
 
-Not default: `reports.release`, `reports.draft` (unless also surveyor).
+Not default: `projects.view_all`, `reports.release`, `reports.draft` (unless also surveyor).
 
 ### `staff.finance_officer` — Finance Officer
 
+Billing-first; projects via assignment only (minimal project fields in policies). Org-wide `projects.view_all` may be granted by Super Administrator when needed.
+
 | Permission keys |
 |---|
-| `projects.view_assigned`, `projects.view_all` (often granted), `billing.view`, `billing.manage`, `billing.record_payment`, `billing.adjust`, `documents.download` (invoice attachments only via policy), `team.view`, `notifications.manage_preferences` |
+| `projects.view_assigned`, `billing.view`, `billing.manage`, `billing.record_payment`, `billing.adjust`, `documents.download` (invoice attachments only via policy), `team.view`, `notifications.manage_preferences` |
 
-Minimal project fields exposed in policies.
+Not default: `projects.view_all`, `documents.access_confidential`.
 
 ### `staff.content_manager` — Content Manager
 

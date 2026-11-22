@@ -4,7 +4,7 @@
 |---|---|---|
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
-| Phase 2 — architecture | **In progress** — P2.1 designed, awaiting review | Reviewed domain map, state transitions, permissions, decisions, implementation slices |
+| Phase 2 — architecture | **In progress** — P2.1 reconciled with RBAC; stakeholder approval pending | Reviewed domain map, tiered project access, permissions, ADR proposed defaults, DCR |
 | Phase 3 — foundation | Not started | Rails baseline, auth/policies, design shells, CI/tests, secure file PoC |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
@@ -23,7 +23,7 @@
 
 | Checkpoint | Date | Result | Notes |
 |---|---|---|---|
-| P2.1 Domain architecture | 2026-11-22 | **Designed — awaiting review** | `docs/architecture/P2_1_*`; RBAC: `ROLE_PERMISSION_SPEC.md`, `PERMISSION_CATALOGUE.md`, `DEFAULT_ROLE_MATRIX.md` |
+| P2.1 Domain architecture | 2026-11-22 | **Reconciled — awaiting stakeholder approval** | Tiered RBAC access, ADR proposed defaults, DCR awaiting approval; see `git log -1` on main |
 
 ## Local development quick reference
 

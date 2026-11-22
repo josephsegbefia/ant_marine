@@ -48,8 +48,8 @@ Legend:
 
 | ID | Question | Options | P2.1 recommendation | Blocks |
 |---|---|---|---|---|
-| P2-OD-020 | Client signup (ADR-005) | Invite-only after qualified work vs self-registration | **Invite-only** after qualification aligns with A02–A03 | Portal launch |
-| P2-OD-021 | Quote acceptance actor (ADR-006) | Client manager only vs any client member vs staff-on-behalf | **Client manager** accepts; member can view | C04 policy |
+| P2-OD-020 | Client signup (ADR-005) | Invite-only after qualified work vs self-registration | **PROPOSED default:** invitation-based portal onboarding after qualified engagement (ADR-005) | Portal launch |
+| P2-OD-021 | Quote acceptance actor (ADR-006) | Owner only vs manager vs any member vs staff-on-behalf | **PROPOSED default:** Organisation Owner or member with explicit `quotes.accept` (default owner + manager; member via override only) | C04 policy |
 | P2-OD-022 | Booking vs quote date | Single preferred date on inquiry vs separate booking AR | **Both**: VO on inquiry + `BookingRequest` for P23 | S06 scheduling |
 | P2-OD-023 | Deposits / live payment (ADR-008) | Invoice record only vs integrated PSP | **Records only** for MVP | Finance slice |
 | P2-OD-024 | Vessel registry MVP | Phase 4 slice vs MVP | **Phase 4 follow-on** unless client requests; schema nullable in P2.2 | C vessel screens |
@@ -57,8 +57,10 @@ Legend:
 | P2-OD-026 | Email provider (ADR-009) | SMTP provider TBD | Document in Phase 3; domain has `Notification` | Mail deliverability |
 | P2-OD-027 | Storage encryption (ADR-010) | SSE-C / client-side / alternate host | **No confidential production files** until PoC approved | File go-live |
 | P2-OD-028 | Retention / legal hold | Per category rules in `DocumentRule` | Admin-configurable periods; default TBD with counsel | M09, compliance |
-| P2-OD-029 | Staff partial access | Assignment-only vs all staff see all clients | **Assignment + coordinator/admin** see broader queue | S01 security tests |
+| P2-OD-029 | Staff partial access | Assignment-only vs tiered org-wide | **PROPOSED default:** tiered model in ROLE_PERMISSION_SPEC §5 — org-wide (`projects.view_all`), assignment-based delivery, explicit reviewer/collaborator assignment | S01 security tests |
 | P2-OD-030 | Multi-org client groups | Parent holding company with subsidiaries | **Single org per client company** initially; link later if needed | Enterprise clients |
+| P2-OD-031 | Public quote without account | Account required vs anonymous inquiry only | **PROPOSED default:** public can submit inquiries/quote requests without login (master §2.1–2.2); portal remains invite-based (ADR-014) | P19–P22 |
+| P2-OD-032 | Custom roles in UI | User-defined roles vs fixed catalogue | **PROPOSED default:** defer custom role creation beyond initial release — fixed roles + per-user overrides only (ADR-016) | F4-04b |
 
 ---
 
@@ -66,8 +68,8 @@ Legend:
 
 | ID | Must approve before first business migration? | Safe default for planning |
 |---|---|---|
-| P2-OD-020 | Yes (auth design) | Invite-only |
-| P2-OD-021 | Yes (quote accept policy) | Client manager |
+| P2-OD-020 | Yes (auth design) | Invitation-based onboarding (proposed) |
+| P2-OD-021 | Yes (quote accept policy) | Owner or member with `quotes.accept` (proposed) |
 | P2-OD-027 | Yes before real client files in production | Dev/staging only until PoC |
 | P2-OD-024 | No | Vessels optional FK |
 | P2-OD-023 | No | Invoice without PSP |

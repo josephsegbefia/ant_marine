@@ -1,6 +1,6 @@
 # Phase 1 Design Change Request — Team & Permissions
 
-**Status:** Recorded for stakeholder review — **do not edit** [`ANT_Marine_Design_Studio_Phase_1.html`](ANT_Marine_Design_Studio_Phase_1.html) until approved  
+**Status:** **Awaiting stakeholder approval** — **do not edit** [`ANT_Marine_Design_Studio_Phase_1.html`](ANT_Marine_Design_Studio_Phase_1.html) until this DCR is signed off
 **Date:** 22 November 2026  
 **Driver:** Product requirement for configurable RBAC ([`../architecture/ROLE_PERMISSION_SPEC.md`](../architecture/ROLE_PERMISSION_SPEC.md))
 
@@ -53,6 +53,23 @@ Extends **C15**:
 | `C15j` | Permission history | Org-scoped |
 
 States: same as staff; copy in everyday English.
+
+**Responsive:** Desktop and mobile layouts follow Phase 1 handoff patterns (`design/PHASE_1_DESIGN_HANDOFF.md`); touch targets and reduced-motion respected on M07a–j and C15a–j.
+
+---
+
+## Coverage confirmation (P2.1 reconciliation)
+
+| Requirement | Staff (M07a–j) | Client (C15a–j) |
+|---|---|---|
+| Permission / team management (list, invite, role change) | M07a, M07b, M07d, M07h | C15a, C15b, C15d, C15h |
+| Permission categories and switches | M07e | C15e |
+| User effective permissions | M07f, M07c summary | C15f, C15c summary |
+| Role defaults and overrides | M07e, M07g | C15e, C15g |
+| Ownership protection | M07j (sensitive staff changes) | C15i transfer ownership; C15d role bounds |
+| Permission history | M07i | C15j |
+| Confirmation and error states | M07j; shared success/validation/denied | C15i confirm; shared success/validation/denied |
+| Desktop and mobile | All proposed IDs | All proposed IDs |
 
 ---
 

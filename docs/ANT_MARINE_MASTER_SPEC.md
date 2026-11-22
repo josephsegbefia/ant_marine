@@ -68,11 +68,11 @@ Primary focus: Ghana and West Africa; clients include oil and gas operators, shi
 - Quotation: scope, deliverables, exclusions, proposed fee/currency, validity, revisions, send/withdraw, accept/decline with time and authorized actor.
 - Booking: requested date is **not** a confirmed appointment; staff explicitly confirms availability, project scope and assignment.
 - Accepted quotes turn into projects **only** after configured approvals and verification; prevent duplicates from retries or repeated button clicks.
-- [OPEN] Payment/deposit policy, company signup mechanism, delegation of quote acceptance and cancellation/rescheduling rules.
+- [OPEN] Payment/deposit policy, cancellation/rescheduling rules. **Proposed defaults (pending approval):** ADR-014 public inquiry without account; ADR-005 invitation-based portal; ADR-006 quote acceptance by owner or authorised member (`quotes.accept`).
 
 ### 2.3 Client portal [REQUIRED]
 
-- Invitation-led initial access [PROPOSED; confirm]; authentication, account recovery, secure sessions and extra verification for sensitive actions.
+- Invitation-led initial access [PROPOSED default — ADR-005; pending approval]; authentication, account recovery, secure sessions and extra verification for sensitive actions.
 - Dashboard showing requests, projects, action-needed items, reports and helpful notifications.
 - Readable project status timeline: `Received → Planning → Site work → Review → Report ready`; internal stages may be more precise, but public labels remain simple.
 - Secure upload requests with requested file type and reason; file lists and previews; project messages; outstanding actions.
@@ -154,7 +154,7 @@ A Client Organisation Owner is **never** equivalent to a Super Administrator. Cl
 
 **UI [REQUIRED]:** Dedicated **Team & Permissions** pages in staff and client portals (Phase 4); Phase 1 design change request in [`docs/design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md`](design/PHASE_1_DESIGN_CHANGE_REQUEST_TEAM_PERMISSIONS.md) — **do not** alter the approved HTML studio until that request is signed off.
 
-**Enforcement:** Server-side on every action; feature permission does not grant all projects; assignment and org scope still apply. Denial tests are required for cross-organisation access, direct URLs, report approve/release separation, and permission revocation.
+**Enforcement:** Server-side on every action. **Two layers:** feature permission (catalogue key) **and** resource scope (org-wide staff oversight, project `Assignment`, client org boundary, confidential classification, report release). See [`ROLE_PERMISSION_SPEC.md`](architecture/ROLE_PERMISSION_SPEC.md) §5. Denial tests are required for cross-organisation access, direct URLs, report approve/release separation, and permission revocation on the next request.
 
 **Public visitors** have no membership; they may only access published content and anonymous inquiry endpoints.
 
@@ -177,7 +177,7 @@ Responsibilities: interactive design system, public/client/staff/admin screens, 
 **Exit:** Stakeholders approve essential journeys and language; reconcile screen changes; save approved HTML snapshot and review JSON. Reference `design/PHASE_1_DESIGN_HANDOFF.md`.
 
 ### PHASE 2 — Domain, Database, Workflow & Authorization Architecture
-**Status:** In progress (P2.1 domain + RBAC spec). **Owner:** Rails architecture agent; product owner approves decisions.
+**Status:** In progress — P2.1 domain + RBAC **reconciled**; stakeholder approval pending on ADR proposed defaults and Team & Permissions DCR. **Owner:** Rails architecture agent; product owner approves decisions.
 
 Deliverables:
 - Entity relationship map, primary/foreign keys, tenancy strategy, unique constraints, soft delete/retention rules and PostgreSQL migration sequence.
@@ -255,7 +255,7 @@ No live ship telemetry/remote monitoring dashboard, automatic professional engin
 
 ## 7. Open decisions to resolve in Phase 2
 
-- Client accounts invitation-only or self-signup; which roles may accept quotes and add colleagues.
+- Client accounts invitation-only or self-signup; which roles may accept quotes and add colleagues — **see ADR-005, ADR-006, ADR-014, ADR-016 (proposed defaults, not approved)**.
 - Roles for technical approval versus report release; escalation/delegation and audit expectations.
 - Official service catalogue/detail wording; publication rights for names, images and accreditation claims.
 - Preferred-date booking policy, quotation validity/currency, deposits, payments, cancellation/refunds.

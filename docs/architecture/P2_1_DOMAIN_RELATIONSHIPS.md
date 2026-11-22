@@ -15,7 +15,7 @@ This document defines cardinalities, ownership, uniqueness, archival rules, and 
 |---|---|
 | Client isolation | Every client-facing AR carries `client_organization_id` (or derives it through `Project`) |
 | Staff home org | Staff `Membership` rows attach to `Organization` where `kind = ant_marine` |
-| Cross-tenant staff access | Allowed only via `Assignment` on a project **or** global staff roles (coordinator, admin) with explicit policy |
+| Cross-tenant staff access | Staff `ant_marine` membership + feature permission + (`projects.view_all` / related `*_view_all` **or** `Assignment` **or** `DocumentAccessGrant`); see ROLE_PERMISSION_SPEC §5 |
 | Public data | CMS entities have no client org; published content is global |
 | Pre-tenant inquiries | `ServiceInquiry.client_organization_id` NULL until qualification links/creates client org |
 
@@ -157,7 +157,11 @@ erDiagram
 | Project → Inspection | 1:N | Multiple site visits per project |
 | Assignment uniqueness | — | Unique `(project_id, user_id, role)` or single lead per role |
 
-**Staff visibility:** Surveyor sees projects where `assignments.user_id = self` unless coordinator/admin policy expands.
+**Staff visibility (tiered):**
+
+1. **Org-wide** — roles with `projects.view_all` (coordinator, operations manager, super administrator) see active client projects per policy scope.
+2. **Assignment-based** — surveyor, general staff, finance (default), technical reviewer see projects where `assignments.user_id = self`.
+3. **Explicit grant** — `DocumentAccessGrant` or assignment kind `technical_reviewer` / `collaborator` for narrow access without org-wide list rights.
 
 **Deletion:** Projects `archived`; assignments kept for audit.
 

@@ -171,7 +171,7 @@ Not every product noun is its own table; consolidations below are intentional.
 | Name | Class | Purpose |
 |---|---|---|
 | `Project` | AR | Client job; org, service, quote_revision_id, client-visible status label, internal status |
-| `Assignment` | ENT | Staff user on project with role (`lead_surveyor`, `coordinator`, etc.) |
+| `Assignment` | ENT | Staff user on project with `assignment_kind` (`lead_surveyor`, `surveyor`, `coordinator`, `technical_reviewer`, `collaborator`) — gates `projects.view_assigned` per ROLE_PERMISSION_SPEC §5 |
 | `Task` | ENT | Deadlines, checklist linkage, assignee |
 | `Vessel` | AR | Client-owned asset; org-scoped |
 | `ProjectVessel` | ENT | Join: many vessels per project |
@@ -185,7 +185,7 @@ Not every product noun is its own table; consolidations below are intentional.
 |---|---|---|
 | `Document` | AR | Business file record; category, classification, project/org scope |
 | `DocumentVersion` | ENT | Immutable version; checksum, uploader, Active Storage blob reference |
-| `DocumentAccessGrant` | ENT | Optional explicit grant beyond role defaults |
+| `DocumentAccessGrant` | ENT | Optional explicit file/project grant beyond role defaults (reviewers, collaborators) |
 | `UploadRequest` | ENT | Staff request for client upload (C07): type, reason, due date |
 
 **Scan workflow (logical states):** `pending_upload` → `scanning` → `available` | `rejected`  
@@ -273,7 +273,7 @@ Detailed cardinalities live in [`P2_1_DOMAIN_RELATIONSHIPS.md`](P2_1_DOMAIN_RELA
 | Key attributes | Quote: `reference_number`, org; Revision: `version`, `amount_cents`, `currency`, `valid_until`, scope text fields |
 | Ownership | Client organization |
 | Lifecycle | Quote: `draft` → `sent` → `accepted` \| `declined` \| `withdrawn` \| `expired` |
-| Access | Staff create/send; client manager may accept per policy |
+| Access | Staff create/send; client accept per ADR-006 proposed default (owner or member with `quotes.accept`) |
 | Validations | Only one `sent` revision active; accept must reference revision ID |
 | Audit | Send, withdraw, each client response |
 
@@ -285,7 +285,7 @@ Detailed cardinalities live in [`P2_1_DOMAIN_RELATIONSHIPS.md`](P2_1_DOMAIN_RELA
 | Key attributes | `reference_number`, `client_status` (simple), `internal_status`, dates |
 | Ownership | Client organization |
 | Lifecycle | `planning` → `site_work` → `review` → `report_ready` → `closed` → `archived` |
-| Access | Client org members; staff via assignment or coordinator role |
+| Access | Client org members (`projects.view_org`); staff via org-wide roles (`projects.view_all`), `Assignment`, or `DocumentAccessGrant` — see ROLE_PERMISSION_SPEC §5 |
 | Validations | Unique quote_revision → project mapping (one project per acceptance) |
 | Audit | Status, assignment changes |
 

@@ -47,7 +47,7 @@ Legend:
 | Key | Display name | Explanation | Category | Domain | Override | Default roles | Restrictions |
 |---|---|---|---|---|---|---|---|
 | `projects.view_all` | View all projects | Browse every active client project | projects | staff | yes | ops_mgr, coordinator, super_admin | |
-| `projects.view_assigned` | View assigned projects | See projects you are assigned to | projects | staff | yes | surveyor, reviewer, finance, general_staff | Requires assignment unless view_all |
+| `projects.view_assigned` | View assigned projects | See projects you are assigned to | projects | staff | yes | surveyor, reviewer, finance, general_staff | Requires `Assignment` (or org-wide `projects.view_all`); see ROLE_PERMISSION_SPEC §5 |
 | `projects.create` | Create projects | Open a new project after quote acceptance | projects | staff | yes | coordinator, ops_mgr, super_admin | Idempotent guard on quote |
 | `projects.manage` | Update project details | Edit internal and client-visible status and dates | projects | staff | yes | coordinator, ops_mgr, super_admin | |
 | `projects.assign` | Assign team members | Add or change staff on a project | projects | staff | yes | coordinator, ops_mgr, super_admin | |
@@ -79,7 +79,7 @@ Legend:
 | `documents.download` | Download documents | Download files you are allowed to see | documents | staff, client | yes | broad staff / all client | Policy per classification |
 | `documents.preview` | Preview documents | View allowed previews in the browser | documents | staff, client | yes | broad staff / all client | Scan must pass |
 | `documents.manage` | Manage document records | Change categories, workflow state, internal metadata | documents | staff | yes | coordinator, surveyor, super_admin | |
-| `documents.access_confidential` | View confidential documents | Access highly restricted file classifications | documents | staff, client | deny_only | super_admin, ops_mgr / owner | Extra gate |
+| `documents.access_confidential` | View confidential documents | Access highly restricted file classifications | documents | staff, client | deny_only | super_admin, ops_mgr / owner | Required in addition to download/preview; see §5 confidential path |
 | `documents.request_upload` | Request files from client | Ask the client to upload specific materials | documents | staff | yes | coordinator, surveyor | |
 
 ## Reports
@@ -136,7 +136,7 @@ Legend:
 | `team.manage_staff_roles` | Change staff roles | Set ANT Marine staff roles | team | staff | protected | super_admin | |
 | `team.manage_permissions` | Manage team permissions | Grant or remove individual permissions | team | client | protected | owner | |
 | `team.manage_staff_permissions` | Manage staff permissions | Grant or remove staff permissions | team | staff | protected | super_admin | |
-| `team.manage_team_delegated` | Manage team (delegated) | Limited team admin on behalf of owner | team | client | yes | org_admin | Cannot create owner |
+| `team.manage_team_delegated` | Manage team (delegated) | Limited team admin on behalf of owner | team | client | yes | org_admin | Cannot assign `client.org_owner`; use transfer flow only |
 | `team.suspend` | Suspend team members | Temporarily disable a member’s access | team | staff, client | yes | super_admin, ops_mgr / owner, org_admin | |
 | `team.transfer_ownership` | Transfer organisation ownership | Hand highest client authority to another member | team | client | protected | owner | Confirmation flow |
 | `team.bulk_permission_change` | Bulk permission changes | Apply permission changes to many users at once | team | staff, client | protected | super_admin / owner | Reauth |
