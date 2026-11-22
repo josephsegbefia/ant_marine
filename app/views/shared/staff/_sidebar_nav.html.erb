@@ -1,0 +1,15 @@
+<nav class="mb-4" aria-label="Workspace">
+  <%= link_to staff_root_path,
+        class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:overview)}" do %>
+    <span aria-hidden="true">◉</span>
+    <span>Overview</span>
+  <% end %>
+
+  <% if staff_can_invite? %>
+    <%= link_to staff_invitations_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:invitations)}" do %>
+      <span aria-hidden="true">✉</span>
+      <span>Invitations</span>
+    <% end %>
+  <% end %>
+</nav>

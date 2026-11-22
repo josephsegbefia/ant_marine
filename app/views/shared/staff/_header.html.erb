@@ -1,0 +1,10 @@
+<header class="staff-app-top">
+  <div class="staff-app-bread">
+    <span>Team workspace</span>
+    <span aria-hidden="true">›</span>
+    <strong><%= content_for?(:staff_page_title) ? content_for(:staff_page_title) : "Overview" %></strong>
+  </div>
+  <% if staff_multiple_workspaces? %>
+    <%= ant_back_link(label: "Back to workspaces", path: workspace_selection_path) %>
+  <% end %>
+</header>

@@ -631,6 +631,115 @@
     @apply mt-2 text-sm text-[#8799a3];
   }
 
+  .staff-app {
+    @apply flex min-h-dvh flex-col bg-[#f4f7f8] lg:flex-row;
+  }
+
+  .staff-app-side {
+    @apply flex shrink-0 flex-col bg-[#10324a] text-white lg:w-[236px] lg:min-h-dvh;
+  }
+
+  .staff-app-side__inner {
+    @apply flex flex-1 flex-col p-3 sm:p-4 lg:px-3 lg:py-6;
+  }
+
+  .staff-app-side .ant-brand__title,
+  .staff-app-side .ant-brand__tagline {
+    @apply text-white;
+  }
+
+  .staff-app-side .ant-brand__tagline {
+    color: #a5c6d4;
+  }
+
+  .staff-org-card {
+    @apply mx-1.5 mb-5 mt-4 flex items-center gap-2.5 rounded-[11px] border border-[#3c6174] bg-[#20485d] p-3;
+  }
+
+  .staff-org-card__avatar {
+    @apply grid size-9 shrink-0 place-items-center rounded-full bg-[#2b6674] text-xs font-extrabold text-white;
+  }
+
+  .staff-org-card__name {
+    @apply text-[11px] font-bold text-white;
+  }
+
+  .staff-org-card__meta {
+    @apply mt-1 block text-[10px] text-[#a1c3cf];
+  }
+
+  .staff-org-card__switch {
+    @apply mt-1 text-[10px] font-bold text-[#8fd4cc] no-underline hover:underline;
+  }
+
+  .staff-side-label {
+    @apply mx-3 mb-2 text-[10px] font-extrabold tracking-wide text-[#8aafbd];
+  }
+
+  .staff-nav-button {
+    @apply mb-0.5 flex w-full items-center gap-2.5 rounded-[9px] border-0 bg-transparent px-3 py-2.5 text-left text-xs font-semibold text-[#b3ced7] no-underline hover:bg-[#1a4a5e];
+  }
+
+  .staff-nav-button--active {
+    @apply bg-[#2b6674] text-white;
+  }
+
+  .staff-bottom-user {
+    @apply mt-auto border-t border-[#2a5165] px-3 py-4 text-[11px] text-[#b3ced7];
+  }
+
+  .staff-bottom-user__name {
+    @apply font-bold text-white;
+  }
+
+  .staff-bottom-user__role {
+    @apply mt-0.5 block text-[10px] text-[#a1c3cf];
+  }
+
+  .staff-bottom-user__actions {
+    @apply mt-3 flex flex-col gap-2;
+  }
+
+  .staff-bottom-user__link {
+    @apply text-[10px] font-bold text-[#8fd4cc] no-underline hover:underline;
+  }
+
+  .staff-app-main {
+    @apply min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-7;
+  }
+
+  .staff-app-top {
+    @apply mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#e2eaeb] pb-4;
+  }
+
+  .staff-app-bread {
+    @apply flex flex-wrap items-center gap-2 text-xs font-semibold text-[#5f7d8c];
+  }
+
+  .staff-app-bread strong {
+    @apply text-[#173244];
+  }
+
+  .staff-overview-head h1 {
+    @apply text-2xl font-extrabold tracking-tight text-[#173244];
+  }
+
+  .staff-overview-head p {
+    @apply mt-2 max-w-2xl text-sm leading-relaxed text-[#5f7d8c];
+  }
+
+  .staff-mobile-nav-toggle {
+    @apply mb-3 flex w-full items-center justify-between rounded-[9px] border border-[#3c6174] bg-[#20485d] px-3 py-2 text-xs font-bold text-white lg:hidden;
+  }
+
+  .staff-app-side__nav {
+    @apply hidden flex-col lg:flex;
+  }
+
+  .staff-app-side__nav--open {
+    @apply flex;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .ant-btn-primary:hover {
       transform: none;

@@ -1,60 +1,54 @@
 <% content_for :title, "Invitations — ANT Marine" %>
+<% content_for :staff_page_title, "Invitations" %>
+<% content_for :staff_nav, "invitations" %>
 
-<div class="portal-shell">
-  <div class="portal-shell__back">
-    <%= ant_back_link label: "Back to staff workspace", path: staff_root_path %>
+<div class="portal-shell__back mb-4">
+  <%= ant_back_link label: "Back to staff workspace", path: staff_root_path %>
+</div>
+
+<header class="portal-head">
+  <div>
+    <h1>Invitations</h1>
+    <p>Invite new people and review pending invitations for ANT Marine W.A.</p>
   </div>
-
-  <nav class="portal-topnav" aria-label="Staff">
-    <%= link_to "Staff workspace", staff_root_path %>
-    <span aria-hidden="true">/</span>
-    <span>Invitations</span>
-  </nav>
-
-  <header class="portal-head">
-    <div>
-      <h1>Invitations</h1>
-      <p>Invite new people and review pending invitations for ANT Marine W.A.</p>
-    </div>
-    <div>
-      <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "portal-btn-secondary" %>
-    </div>
-  </header>
-
-  <div class="portal-split">
-    <section class="portal-card">
-      <h3>Recent invitations</h3>
-      <%= render "shared/invitations/list",
-            invitations: @invitations,
-            show_organization: false,
-            cancel_path: ->(invitation) { staff_invitation_path(invitation) },
-            resend_path: ->(invitation) { resend_staff_invitation_path(invitation) } %>
-    </section>
-
-    <section class="portal-card">
-      <h3>Invite someone</h3>
-      <%= form_with url: staff_invitations_path,
-            class: "mt-5",
-            data: {
-              controller: "form-submit",
-              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
-              form_submit_loading_message_value: "Sending invitation..."
-            } do |form| %>
-        <%= ant_field form, :email,
-              type: :email,
-              label: "Email address",
-              context: :portal,
-              required: true,
-              autocomplete: "email",
-              placeholder: "name@company.com" %>
-        <%= ant_select form, :role_key,
-              choices: RoleLabels.options_for_roles(@allowed_roles),
-              label: "What can they do?",
-              context: :portal,
-              placeholder: "Choose access level" %>
-        <p class="portal-notice mb-5">An invited person should only see the work and projects they have permission to access.</p>
-        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
-      <% end %>
-    </section>
+  <div>
+    <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "portal-btn-secondary" %>
   </div>
+</header>
+
+<div class="portal-split">
+  <section class="portal-card">
+    <h3>Recent invitations</h3>
+    <%= render "shared/invitations/list",
+          invitations: @invitations,
+          show_organization: false,
+          cancel_path: ->(invitation) { staff_invitation_path(invitation) },
+          resend_path: ->(invitation) { resend_staff_invitation_path(invitation) } %>
+  </section>
+
+  <section class="portal-card">
+    <h3>Invite someone</h3>
+    <%= form_with url: staff_invitations_path,
+          class: "mt-5",
+          data: {
+            controller: "form-submit",
+            action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+            form_submit_loading_message_value: "Sending invitation..."
+          } do |form| %>
+      <%= ant_field form, :email,
+            type: :email,
+            label: "Email address",
+            context: :portal,
+            required: true,
+            autocomplete: "email",
+            placeholder: "name@company.com" %>
+      <%= ant_select form, :role_key,
+            choices: RoleLabels.options_for_roles(@allowed_roles),
+            label: "What can they do?",
+            context: :portal,
+            placeholder: "Choose access level" %>
+      <p class="portal-notice mb-5">An invited person should only see the work and projects they have permission to access.</p>
+      <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
+    <% end %>
+  </section>
 </div>

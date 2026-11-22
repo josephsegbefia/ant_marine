@@ -1,25 +1,33 @@
-<% content_for :title, "Staff workspace — ANT Marine" %>
+<% content_for :title, "Team overview — ANT Marine" %>
+<% content_for :staff_page_title, "Overview" %>
+<% content_for :staff_nav, "overview" %>
 
-<div class="portal-shell max-w-xl">
-  <header class="portal-head">
-    <div>
-      <h1>Staff workspace</h1>
-      <p>
-        Signed in as <%= Current.user.email %> ·
-        <%= RoleLabels.label(Current.membership.role_key) %> ·
-        <%= Current.membership.organization.name %>
-      </p>
-    </div>
-  </header>
+<div class="staff-overview-head">
+  <h1>Hello, <%= @greeting_name %></h1>
+  <p>This is your team workspace for ANT Marine W.A. Use the navigation to manage access and invitations.</p>
+</div>
 
-  <section class="portal-card">
-    <p class="text-sm text-[#5f7d8c]">Manage team access and invitations from here.</p>
-    <p class="mt-4">
-      <%= link_to "Invitations", staff_invitations_path, class: "portal-btn-secondary" %>
+<% if @can_invite %>
+  <section class="portal-card mt-6 max-w-2xl">
+    <h2 class="text-base font-extrabold text-[#173244]">Team access</h2>
+    <p class="mt-2 text-sm text-[#5f7d8c]">
+      <% if @pending_count.positive? %>
+        You have <%= pluralize(@pending_count, "pending invitation") %> awaiting a response.
+      <% else %>
+        No pending invitations right now.
+      <% end %>
     </p>
-    <div class="mt-6 flex flex-wrap gap-3">
-      <%= link_to "Switch workspace", workspace_selection_path, class: "portal-btn-secondary" %>
-      <%= button_to "Sign out", session_path, method: :delete, class: "portal-btn-secondary", form: { class: "inline" } %>
+    <div class="mt-4 flex flex-wrap gap-3">
+      <%= link_to "View invitations", staff_invitations_path, class: "portal-btn-secondary" %>
+      <% if @can_invite_clients %>
+        <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "portal-btn-secondary" %>
+      <% end %>
     </div>
   </section>
-</div>
+<% end %>
+
+<section class="portal-card mt-4 max-w-2xl">
+  <p class="text-sm text-[#5f7d8c]">
+    Project and request tools will appear here as they are added to the platform.
+  </p>
+</section>

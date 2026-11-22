@@ -1,0 +1,7 @@
+<div class="staff-bottom-user">
+  <span class="staff-bottom-user__name"><%= staff_display_name %></span>
+  <small class="staff-bottom-user__role"><%= RoleLabels.label(Current.membership.role_key) %></small>
+  <div class="staff-bottom-user__actions">
+    <%= link_to "Sign out", session_path, data: { turbo_method: :delete }, class: "staff-bottom-user__link" %>
+  </div>
+</div>

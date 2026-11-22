@@ -11,7 +11,8 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `toast-stack` | [`toast_stack_controller.js`](../../app/javascript/controllers/toast_stack_controller.js) | Global notifications |
 | `form-submit` | [`form_submit_controller.js`](../../app/javascript/controllers/form_submit_controller.js) | Submit loading / disable |
 | `ant_back_link` | [`_back_link.html.erb`](../../app/views/shared/ui/_back_link.html.erb) | Return navigation (studio **A05** outline + `left` icon) |
-| Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link` |
+| Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
+| Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link`, `.staff-*` |
 
 ## Back navigation
 
@@ -20,7 +21,9 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 ```
 
 - Uses a normal `link_to` to an **application path** only (`validate_back_path!` rejects external URLs).
-- **Breadcrumbs** (`portal-topnav`) show hierarchy; **back links** provide a clear primary return action (both may appear on nested portal pages).
+- **Staff shell breadcrumb** (`staff-app-bread`) shows `Team workspace › {page title}` via `content_for :staff_page_title`.
+- **Back links** provide a clear primary return action on nested staff/client pages.
+- **Workspace rule (staff):** show `ant_back_link "Back to workspaces"` → `workspace_selection_path` and sidebar “Switch workspace” **only when** `Current.user.portal_eligible_memberships.size > 1`.
 - **When to skip:** do not add a back link if it would duplicate the only navigation affordance with no added clarity (e.g. top-level auth entry with no safe parent).
 - Studio reference: **A05** `btn outline` + **left** icon; **P19–P21** quote wizard back actions.
 
@@ -52,7 +55,7 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `warning` | `warning` |
 | `info` | `info` |
 
-Layouts [`access`](../../app/views/layouts/access.html.erb) and [`portal`](../../app/views/layouts/portal.html.erb) mount `toast-stack` with `data-toast-stack-flash-value` JSON from `flash_toast_payload`.
+Layouts [`access`](../../app/views/layouts/access.html.erb), [`portal`](../../app/views/layouts/portal.html.erb) (client), and [`staff_portal`](../../app/views/layouts/staff_portal.html.erb) mount `toast-stack` with `data-toast-stack-flash-value` JSON from `flash_toast_payload`.
 
 Optional action (example): invitation success → “View invitations” (`staff_invitations_path`).
 
@@ -73,4 +76,13 @@ data: {
 - Studio HTML uses native selects; enhanced listbox is progressive enhancement with native fallback.
 - Keyboard/a11y of listbox requires manual browser QA (390px / 1440px).
 - No JavaScript unit test runner; coverage is integration + manual acceptance.
-- Full M07 sidebar / dashboard chrome not included.
+## Staff workspace shell (P3-A2-UX-C)
+
+- Layout `staff_portal` wraps all `Staff::*` controllers; client portal stays on `portal`.
+- Sidebar nav lists **implemented routes only**: Overview, Invitations (issuers only).
+- Home overview shows real invitation metrics or honest empty state — no studio demo stats.
+- Mobile: `staff-shell` Stimulus toggles sidebar nav below 1024px (`staff-mobile-nav-toggle`).
+
+## Limitations (continued)
+
+- Client portal does not yet use the full staff sidebar pattern.
