@@ -14,6 +14,7 @@ class User < ApplicationRecord
   normalizes :email, with: ->(e) { e.strip.downcase }
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
+  validates :full_name, presence: true, on: :invitation_setup
   validates :status, inclusion: { in: STATUSES }
 
   after_update :bump_security_version_on_password_change, if: :saved_change_to_password_digest?

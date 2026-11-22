@@ -139,6 +139,17 @@ The task is idempotent: it creates the single active `ant_marine` organisation i
 
 **Portals:** `/staff` requires an active ANT Marine membership; `/client` requires an active client-organisation membership. Users with both must choose a workspace at `/workspace`.
 
+## 8b. P3-A2 — invitations (local)
+
+Invitation-only onboarding (no public signup). Authorised staff or client members issue invites from `/staff/invitations` or `/client/invitations`.
+
+- Mail uses Action Mailer with `deliver_later` (test adapter in test; no production SMTP in this slice).
+- After sending in **development** or **test**, the flash notice includes a **development acceptance link** for QA (not shown in production).
+- Preview emails at `/rails/mailers/invitations_mailer/invite` when the server is running.
+- Authority rules: [`docs/architecture/P3_A2_INVITATION_AUTHORITY.md`](architecture/P3_A2_INVITATION_AUTHORITY.md).
+
+Acceptance flow: open invite link (A02) → continue → set up account or join existing user (A03). GET never consumes the invite.
+
 ## 9. What NOT to provision yet
 
 - Do **not** spin up production on Hetzner or move live client documents before storage encryption and backup design are approved.

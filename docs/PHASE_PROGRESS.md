@@ -5,7 +5,7 @@
 | Phase 1 — UI/UX | Delivered; final approval pending | Approved studio review export, corrected design HTML and signed-off wording |
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
-| Phase 3 — foundation | **P3-A1 on `main` (GitHub)** | Auth, orgs, memberships, access UI A01/A05/A06; CI verified `6328294`; P3-A2+ pending |
+| Phase 3 — foundation | **P3-A2 invitations (local main)** | Auth + invitation lifecycle A02/A03; 70 tests; push/CI pending PO review |
 | Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
@@ -34,6 +34,9 @@
 | P3-A1 Browser acceptance | 2026-11-22 | **Partial** | **PO verified:** sign-in, staff workspace. **Not agent-verified:** full reset mailbox flow, mobile screenshots, dual-org switch, client portal in browser |
 | P3-A1 Gates unchanged | — | **Open** | Phase 1 final design sign-off; ADR-010 confidential storage PoC; A02–A04 invitation UI |
 | P3-A1 GitHub push & CI | 2026-11-22 | **Passed** | `main` → `origin/main` at `6328294`; [CI run 45010728775](https://github.com/josephsegbefia/ant_marine/actions/runs/45010728775) (`verify` + `scan_js` success) |
+| P3-A2 Invitations & verification | 2026-11-22 | **Accepted — local `main` only** | Staff/client invite, mailer, A02/A03, audit_events, interim `Invitations::Policy`; 70 tests / 256 assertions; **not pushed** |
+| P3-A2 Browser acceptance | 2026-11-22 | **Partial** | Integration coverage; manual A02/A03 vs studio + mobile spot-check recommended before push |
+| P3-A2 Gates unchanged | — | **Open** | Phase 1 sign-off; ADR-010 storage; MFA A04; full M08; production SMTP |
 
 ## Local development quick reference
 

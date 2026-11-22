@@ -21,3 +21,31 @@ suspended:
   password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
   status: suspended
   security_version: 1
+
+super_admin:
+  email: superadmin@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+  full_name: Super Admin
+
+ops_manager:
+  email: ops@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+  full_name: Ops Manager
+
+client_owner:
+  email: owner@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+  full_name: Client Owner
+
+client_member_user:
+  email: member@example.com
+  password_digest: <%= BCrypt::Password.create("password", cost: 4) %>
+  status: active
+  security_version: 0
+  full_name: Client Member

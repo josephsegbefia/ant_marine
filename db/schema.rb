@@ -10,9 +10,47 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_092002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_103002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "audit_events", force: :cascade do |t|
+    t.bigint "organization_id"
+    t.bigint "actor_membership_id"
+    t.string "event_type", null: false
+    t.string "subject_type"
+    t.bigint "subject_id"
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_membership_id"], name: "index_audit_events_on_actor_membership_id"
+    t.index ["event_type", "occurred_at"], name: "index_audit_events_on_event_type_and_occurred_at"
+    t.index ["organization_id", "occurred_at"], name: "index_audit_events_on_organization_id_and_occurred_at"
+    t.index ["organization_id"], name: "index_audit_events_on_organization_id"
+    t.index ["subject_type", "subject_id"], name: "index_audit_events_on_subject_type_and_subject_id"
+  end
+
+  create_table "invitations", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "email", null: false
+    t.string "role_key", null: false
+    t.string "token_digest", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "expires_at", null: false
+    t.bigint "invited_by_membership_id", null: false
+    t.bigint "accepted_by_user_id"
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["accepted_by_user_id"], name: "index_invitations_on_accepted_by_user_id"
+    t.index ["email", "organization_id"], name: "index_invitations_on_email_and_organization_id"
+    t.index ["invited_by_membership_id"], name: "index_invitations_on_invited_by_membership_id"
+    t.index ["organization_id", "status"], name: "index_invitations_on_organization_id_and_status"
+    t.index ["organization_id"], name: "index_invitations_on_organization_id"
+    t.index ["token_digest"], name: "index_invitations_unique_pending_token_digest", unique: true, where: "((status)::text = 'pending'::text)"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying::text, 'accepted'::character varying::text, 'revoked'::character varying::text, 'expired'::character varying::text])", name: "invitations_status_check"
+  end
 
   create_table "memberships", force: :cascade do |t|
     t.bigint "user_id", null: false
@@ -75,10 +113,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_092002) do
     t.datetime "email_verified_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "full_name"
     t.index "lower((email)::text)", name: "index_users_on_lower_email", unique: true
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'suspended'::character varying]::text[])", name: "users_status_check"
   end
 
+  add_foreign_key "audit_events", "memberships", column: "actor_membership_id"
+  add_foreign_key "audit_events", "organizations"
+  add_foreign_key "invitations", "memberships", column: "invited_by_membership_id"
+  add_foreign_key "invitations", "organizations"
+  add_foreign_key "invitations", "users", column: "accepted_by_user_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "sessions", "memberships"

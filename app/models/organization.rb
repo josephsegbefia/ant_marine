@@ -3,6 +3,7 @@ class Organization < ApplicationRecord
   STATUSES = %w[active archived].freeze
 
   has_many :memberships, dependent: :destroy
+  has_many :invitations, dependent: :destroy
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }
@@ -12,6 +13,7 @@ class Organization < ApplicationRecord
   validate :single_active_ant_marine_org, if: -> { kind == "ant_marine" && archived_at.nil? }
 
   scope :active, -> { where(status: "active", archived_at: nil) }
+  scope :client, -> { where(kind: "client") }
 
   def ant_marine?
     kind == "ant_marine"
@@ -19,6 +21,10 @@ class Organization < ApplicationRecord
 
   def client?
     kind == "client"
+  end
+
+  def active?
+    status == "active" && archived_at.nil?
   end
 
   def self.ant_marine!

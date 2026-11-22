@@ -1,0 +1,13 @@
+<% content_for :title, "Invitation already used — ANT Marine W.A." %>
+
+<div class="login-page">
+  <%= render "shared/auth_branded_panel", heading_id: "invitation-accepted-heading" %>
+
+  <div class="login-form-area">
+    <div class="login-form">
+      <h2>This invitation has already been used.</h2>
+      <p class="login-form__intro">Sign in with your work email to open your workspace.</p>
+      <%= link_to "Sign in", new_session_path, class: "ant-btn-primary mt-6" %>
+    </div>
+  </div>
+</div>

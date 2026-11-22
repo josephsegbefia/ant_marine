@@ -41,3 +41,39 @@ suspended_client_membership:
   status: suspended
   permission_epoch: 0
   lock_version: 0
+
+super_admin_membership:
+  user: super_admin
+  organization: ant_marine
+  role_key: staff.super_administrator
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+ops_manager_membership:
+  user: ops_manager
+  organization: ant_marine
+  role_key: staff.operations_manager
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+client_owner_membership:
+  user: client_owner
+  organization: acme_client
+  role_key: client.org_owner
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>
+
+client_admin_membership:
+  user: client_member_user
+  organization: acme_client
+  role_key: client.org_administrator
+  status: active
+  permission_epoch: 0
+  lock_version: 0
+  accepted_at: <%= 1.day.ago.iso8601 %>

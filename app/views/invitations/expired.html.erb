@@ -1,0 +1,13 @@
+<% content_for :title, "Invitation expired — ANT Marine W.A." %>
+
+<div class="login-page">
+  <%= render "shared/auth_branded_panel", heading_id: "invitation-expired-heading" %>
+
+  <div class="login-form-area">
+    <div class="login-form">
+      <h2>Your invitation has expired.</h2>
+      <p class="login-form__intro">Ask someone at your organisation to send you a new invitation.</p>
+      <%= link_to "Back to sign in", new_session_path, class: "ant-btn-outline mt-6" %>
+    </div>
+  </div>
+</div>

@@ -244,6 +244,18 @@
     color: var(--color-ant-bad-text);
   }
 
+  .notice {
+    @apply rounded-[11px] border px-4 py-3 text-[12px] leading-relaxed;
+    background: #e5f5fa;
+    border-color: #b3d9e5;
+    color: var(--color-ant-navy);
+  }
+
+  .icon-circle {
+    @apply inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-ant-teal text-ant-teal;
+    background: #e8f6f8;
+  }
+
   .login-notice {
     @apply mb-5 rounded-[11px] border px-4 py-3 text-[11px] leading-relaxed;
     background: #e1f6ec;

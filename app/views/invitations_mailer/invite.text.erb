@@ -1,0 +1,12 @@
+Hello,
+
+You have been invited to join <%= @organization.name %> on the ANT Marine portal.
+
+Accept your invitation:
+<%= @accept_url %>
+
+This invitation will expire on <%= l(@expires_at, format: :long) %>.
+
+If you were not expecting this email, you can ignore it. No account will be created unless you accept the invitation.
+
+ANT Marine W.A.

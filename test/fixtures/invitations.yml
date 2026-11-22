@@ -1,0 +1,17 @@
+pending_staff_invite:
+  organization: ant_marine
+  email: newstaff@example.com
+  role_key: staff.general_staff
+  token_digest: <%= Invitations::Token.digest("fixture-staff-invite-token") %>
+  status: pending
+  expires_at: <%= 7.days.from_now.iso8601 %>
+  invited_by_membership: super_admin_membership
+
+expired_client_invite:
+  organization: acme_client
+  email: expired@example.com
+  role_key: client.client_member
+  token_digest: <%= Invitations::Token.digest("fixture-expired-token") %>
+  status: pending
+  expires_at: <%= 1.day.ago.iso8601 %>
+  invited_by_membership: client_owner_membership

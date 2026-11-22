@@ -1,0 +1,53 @@
+<% content_for :title, "Set up your account — ANT Marine W.A." %>
+
+<div class="login-page">
+  <%= render "shared/auth_branded_panel", heading_id: "invitation-setup-heading" %>
+
+  <div class="login-form-area">
+    <div class="login-form">
+      <%= render "shared/auth_flash" %>
+
+      <% if @existing_user %>
+        <h2>Join <%= @invitation.organization.name %>.</h2>
+        <p class="login-form__intro">Confirm that you want to accept this invitation with your existing account.</p>
+        <div class="login-notice" style="margin: 22px 0">
+          Signed in as <strong><%= @invitation.email %></strong>.
+        </div>
+        <%= form_with url: invitation_setup_path(params[:token]), method: :post, class: "contents" do |form| %>
+          <%= form.button type: "submit", class: "ant-btn-primary" do %>
+            Accept invitation
+          <% end %>
+        <% end %>
+      <% else %>
+        <h2>Set up your account.</h2>
+        <p class="login-form__intro">Choose a password to keep your project information safe.</p>
+
+        <%= form_with url: invitation_setup_path(params[:token]), method: :post, class: "contents" do |form| %>
+          <div class="field-wrap">
+            <%= form.label :full_name, "Your name" %>
+            <%= form.text_field :full_name, required: true, autofocus: true, autocomplete: "name", placeholder: "Full name", class: "control" %>
+          </div>
+
+          <div class="field-wrap">
+            <%= form.label :email, "Work email" %>
+            <%= form.email_field :email, value: @invitation.email, disabled: true, class: "control", aria: { readonly: true } %>
+          </div>
+
+          <div class="field-wrap">
+            <%= form.label :password, "Password" %>
+            <%= form.password_field :password, required: true, autocomplete: "new-password", placeholder: "Choose a secure password", maxlength: 72, class: "control" %>
+          </div>
+
+          <div class="field-wrap">
+            <%= form.label :password_confirmation, "Confirm password" %>
+            <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", placeholder: "Enter password again", maxlength: 72, class: "control" %>
+          </div>
+
+          <%= form.button type: "submit", class: "ant-btn-primary" do %>
+            Continue
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

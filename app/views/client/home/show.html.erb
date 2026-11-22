@@ -2,6 +2,9 @@
   <h1 class="text-2xl font-semibold text-gray-900">Client workspace</h1>
   <p class="mt-2 text-gray-700">Signed in as <%= Current.user.email %> — <%= Current.membership.role_key %> at <%= Current.membership.organization.name %>.</p>
   <p class="mt-4 text-sm text-gray-600">This is a temporary client landing page for P3-A1.</p>
+  <p class="mt-4 text-sm">
+    <%= link_to "Team invitations", client_invitations_path, class: "text-blue-700 underline" %>
+  </p>
   <div class="mt-6 flex gap-3 text-sm">
     <%= link_to "Switch workspace", workspace_selection_path, class: "underline text-blue-700" %>
     <%= button_to "Sign out", session_path, method: :delete, class: "underline text-blue-700" %>
