@@ -6,7 +6,7 @@
 | Preflight B0 — toolchain | **B0.0–B0.3 passed** | See B0 checkpoint log |
 | Phase 2 — architecture | **Exit preparation complete — approval pending P2.5B trio** | `P2_5B_PHASE_2_EXIT_DECISIONS.md`; P2.5A in `08a5423` |
 | Phase 3 — foundation | **P3-A3 local on `main`** | RBAC catalogue + EffectivePermissions + Pundit + granter; 124 tests; **not pushed** |
-| Phase 4 — features | Not started | End-to-end acceptance per vertical slice |
+| Phase 4 — features | **F4-01A local on `main`** | Public routes + staff Website CMS; see F4-01A checkpoint; **not pushed** |
 | Phase 5 — deployment | Not started | Staging checks, backup restoration, security/performance/SEO acceptance, launch approval |
 
 ## B0 checkpoint log
@@ -49,6 +49,7 @@
 | P3-A6 Final security acceptance | 2026-11-22 | **GO — local automated** | Production gate blocks plain `private_s3`/disk; extra storage security tests; **193 tests / 721 assertions**; live ClamAV + live `bin/jobs` **NOT VERIFIED**; ADR-010 production **BLOCKED**; GitHub **NO-GO** until PO |
 | P3-A7 Phase 3 exit (local) | 2026-11-22 | **CONDITIONAL GO** | Fork+pg worker mitigations; `/ready`; `EncryptedS3Service` + PoC compose; **3/3 runtime smoke jobs** (`scripts/verify_solid_queue_runtime.sh`); **200 tests / 730 assertions**; MinIO/ClamAV pulls **blocked** on host; authenticated browser matrix **NOT VERIFIED**; **not pushed** |
 | P3 final acceptance (local) | 2026-11-23 | **ACCEPTED** | Engineering foundation closed; SeaweedFS + ClamAV PoC verified; **203 / 741** with PoC env; **production deployment NOT AUTHORISED** |
+| F4-01A Public content foundation | 2026-11-23 | **Complete — local `main` only** | `services` + `public_site_pages`, staff Website (M02/M03), public routes/SEO/sitemap, draft catalogue seeder; **217 tests / 781 assertions**; `verify_foundation.sh` pass; docs `F4_01A_PUBLIC_CONTENT.md`; **content publish still PO-blocked**; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |
 | P3-A4 Browser acceptance | 2026-11-23 | **Closed (PO)** | Superseded by P3 browser acceptance row above |

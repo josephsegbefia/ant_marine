@@ -28,3 +28,9 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 **P2.5A reconciliation (2026-11-22):** Enumerated ADRs and P2-OD-004/043 approved in commit `08a5423` — see [`P2_5A_STAKEHOLDER_DECISION_RECORD.md`](architecture/P2_5A_STAKEHOLDER_DECISION_RECORD.md).
 
 **P2.5B exit prep (2026-11-22):** P2-OD-040–042 **APPROVED** by product owner for Phase 3 foundation; see [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md). Phase 2 full exit still pending Phase 1 formal sign-off and ADR-010 implementation.
+
+**F4-01A public content (2026-11-23):**
+
+- **`services.status` workflow** extended to `draft`, `in_review`, `approved`, `published`, `archived` with `published_*` snapshot columns for live site reads (supersedes P2.3 catalogue three-value enum for marketing services in this app).
+- **`public_site_pages` table** introduced for M03 static/homepage content — **not** STI on `content_pages` (aligns P2-OD-007 direction).
+- Public marketing HTML remains plain text + sanitised rendering until Action Text is explicitly approved for a later slice.

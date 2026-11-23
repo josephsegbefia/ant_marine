@@ -25,6 +25,18 @@ module StaffShellHelper
     )
   end
 
+  def staff_can_manage_website?
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "content.manage"
+    ) || Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "content.view_draft"
+    )
+  end
+
   def staff_nav_active?(key)
     (content_for?(:staff_nav) ? content_for(:staff_nav) : "overview") == key.to_s
   end

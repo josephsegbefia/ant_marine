@@ -10,8 +10,7 @@ class PublicLayoutTest < ActionDispatch::IntegrationTest
     assert_select "a.public-header__cta[href=?]", new_session_path, text: /Sign in/
     assert_no_match(/Oceanic Shipping/, response.body)
     assert_no_match(/GH₵/, response.body)
-    assert_match(/Environmental and safety checks/, response.body)
-    assert_no_match(/Thoughtful, careful work/, response.body)
+    assert_match(/Thoughtful, careful work/, response.body)
   end
 
   test "authenticated user visiting root is redirected to workspace" do

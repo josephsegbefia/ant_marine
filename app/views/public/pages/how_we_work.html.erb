@@ -1,0 +1,12 @@
+<% content_for :public_nav, "how_we_work" %>
+
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Working with ANT Marine</p>
+  <h1><%= @page.public_title %></h1>
+</section>
+
+<section class="public-section">
+  <article class="portal-card">
+    <%= public_format_text(@page.public_body) %>
+  </article>
+</section>

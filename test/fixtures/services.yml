@@ -1,0 +1,43 @@
+marine_surveys_draft:
+  organization: ant_marine
+  slug: marine-surveys
+  title: Marine surveys
+  summary: Surveys and inspections.
+  body: Draft body
+  category: marine_surveys
+  audience: Shipowners
+  scope_items:
+    - Warranty surveys
+  process_steps:
+    - Review request
+  display_order: 1
+  seo: '{}'
+  status: draft
+  published_scope_items: '[]'
+  published_process_steps: '[]'
+  published_seo: '{}'
+
+marine_surveys_published:
+  organization: ant_marine
+  slug: published-surveys
+  title: Published surveys
+  summary: Public summary
+  body: Public body
+  category: marine_surveys
+  audience: Operators
+  scope_items:
+    - Inspections
+  process_steps: []
+  display_order: 2
+  seo: '{"title":"Published surveys","description":"Desc"}'
+  status: published
+  published_title: Published surveys
+  published_summary: Public summary
+  published_body: Public body
+  published_audience: Operators
+  published_scope_items:
+    - Inspections
+  published_process_steps: []
+  published_display_order: 2
+  published_seo: '{"title":"Published surveys","description":"Desc"}'
+  published_at: <%= 1.day.ago.iso8601 %>

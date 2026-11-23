@@ -1,0 +1,28 @@
+<% content_for :public_nav, "contact" %>
+
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Contact us</p>
+  <h1><%= @page.public_title %></h1>
+  <p class="public-hero__lede"><%= @page.public_summary.presence || "A conversation is a good place to start." %></p>
+</section>
+
+<section class="public-section">
+  <div class="grid gap-6 lg:grid-cols-2">
+    <article class="portal-card">
+      <h2>How to reach us</h2>
+      <%= public_format_text(@page.public_body) if @page.public_body.present? %>
+      <% data = @page.public_page_data %>
+      <dl class="mt-4 space-y-3 text-sm text-[#466270]">
+        <div><dt class="font-semibold text-[#102c43]">Email</dt><dd><%= data["email"].presence || "To be confirmed" %></dd></div>
+        <div><dt class="font-semibold text-[#102c43]">Phone</dt><dd><%= data["phone"].presence || "To be confirmed" %></dd></div>
+        <div><dt class="font-semibold text-[#102c43]">Office</dt><dd><%= data["address"].presence || "Accra, Ghana — verified address pending" %></dd></div>
+        <div><dt class="font-semibold text-[#102c43]">Hours</dt><dd><%= data["hours"].presence || "To be confirmed" %></dd></div>
+      </dl>
+      <p class="text-sm text-[#5f7d8c] mt-6">Online quote requests are not available yet. F4-02 will add a secure enquiry form.</p>
+    </article>
+    <article class="portal-card">
+      <h2>Existing clients</h2>
+      <p class="text-sm text-[#5f7d8c]">If you already have a workspace invitation, <%= link_to "sign in", new_session_path %> for ongoing projects, files and reports.</p>
+    </article>
+  </div>
+</section>

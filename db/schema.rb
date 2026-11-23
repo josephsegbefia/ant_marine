@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_224000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -145,6 +145,41 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_224000) do
     t.check_constraint "override_rule::text = ANY (ARRAY['yes'::character varying::text, 'protected'::character varying::text, 'deny_only'::character varying::text])", name: "permissions_override_rule_check"
   end
 
+  create_table "public_site_pages", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "page_key", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.jsonb "page_data", default: {}, null: false
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.jsonb "published_page_data", default: {}, null: false
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_public_site_pages_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_public_site_pages_on_created_by_membership_id"
+    t.index ["organization_id", "page_key"], name: "index_public_site_pages_on_organization_id_and_page_key", unique: true
+    t.index ["organization_id"], name: "index_public_site_pages_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_public_site_pages_on_published_by_membership_id"
+    t.index ["status"], name: "index_public_site_pages_on_status"
+    t.index ["updated_by_membership_id"], name: "index_public_site_pages_on_updated_by_membership_id"
+    t.check_constraint "page_key::text = ANY (ARRAY['homepage'::character varying, 'about'::character varying, 'industries'::character varying, 'how_we_work'::character varying, 'contact'::character varying]::text[])", name: "public_site_pages_page_key_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'in_review'::character varying, 'approved'::character varying, 'published'::character varying, 'archived'::character varying]::text[])", name: "public_site_pages_status_check"
+  end
+
   create_table "role_permissions", force: :cascade do |t|
     t.string "role_key", null: false
     t.bigint "permission_id", null: false
@@ -153,6 +188,49 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_224000) do
     t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
     t.index ["role_key", "permission_id"], name: "index_role_permissions_on_role_key_and_permission_id", unique: true
     t.index ["role_key"], name: "index_role_permissions_on_role_key"
+  end
+
+  create_table "services", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.string "category"
+    t.text "audience"
+    t.jsonb "scope_items", default: [], null: false
+    t.jsonb "process_steps", default: [], null: false
+    t.integer "display_order", default: 0, null: false
+    t.string "icon_key"
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.text "published_audience"
+    t.jsonb "published_scope_items", default: [], null: false
+    t.jsonb "published_process_steps", default: [], null: false
+    t.integer "published_display_order"
+    t.string "published_icon_key"
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_services_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_services_on_created_by_membership_id"
+    t.index ["organization_id", "slug"], name: "index_services_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_services_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_services_on_published_by_membership_id"
+    t.index ["status", "display_order"], name: "index_services_on_status_and_display_order"
+    t.index ["updated_by_membership_id"], name: "index_services_on_updated_by_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'in_review'::character varying, 'approved'::character varying, 'published'::character varying, 'archived'::character varying]::text[])", name: "services_status_check"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -224,7 +302,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_224000) do
   add_foreign_key "permission_overrides", "memberships"
   add_foreign_key "permission_overrides", "memberships", column: "granted_by_membership_id"
   add_foreign_key "permission_overrides", "permissions"
+  add_foreign_key "public_site_pages", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "public_site_pages", "memberships", column: "created_by_membership_id"
+  add_foreign_key "public_site_pages", "memberships", column: "published_by_membership_id"
+  add_foreign_key "public_site_pages", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "public_site_pages", "organizations"
   add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "services", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "services", "memberships", column: "created_by_membership_id"
+  add_foreign_key "services", "memberships", column: "published_by_membership_id"
+  add_foreign_key "services", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "services", "organizations"
   add_foreign_key "sessions", "memberships"
   add_foreign_key "sessions", "users"
   add_foreign_key "storage_assets", "active_storage_blobs"

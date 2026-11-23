@@ -15,6 +15,7 @@ module ActiveSupport
     parallelize_setup do
       Authorization::CatalogueSeeder.reset_seed_flag!
       Authorization::CatalogueSeeder.seed!
+      PublicContent::CatalogueSeeder.seed! if Organization.exists?(kind: "ant_marine")
     end
 
     setup { Authorization::CatalogueSeeder.seed! unless Authorization::CatalogueSeeder.catalogue_present? }

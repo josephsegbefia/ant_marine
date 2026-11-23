@@ -1,0 +1,28 @@
+<% content_for :staff_nav, :website %>
+<%= render "staff/website/header", title: "Service pages", subtitle: "Manage what visitors read about your services." %>
+
+<div class="mt-6 flex justify-end">
+  <%= link_to "New service draft", new_staff_website_service_path, class: "ant-btn-primary ant-btn-primary--compact" %>
+</div>
+
+<% if @services.any? %>
+  <div class="mt-4 space-y-3">
+    <% @services.each do |service| %>
+      <%= link_to staff_website_service_path(service), class: "portal-card block hover:border-[#25877f]" do %>
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold text-[#102c43]"><%= service.title %></h2>
+            <p class="text-sm text-[#5f7d8c]"><%= service.slug %> · <%= service.status.humanize %></p>
+          </div>
+          <span class="text-sm text-[#25877f]">Edit</span>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="portal-card mt-6">
+    <p class="text-sm text-[#5f7d8c]">No services yet. Create a draft to start building the public catalogue.</p>
+  </div>
+<% end %>
+
+<p class="mt-6 text-sm"><%= link_to "Website pages", staff_website_pages_path, class: "font-semibold text-[#25877f]" %></p>

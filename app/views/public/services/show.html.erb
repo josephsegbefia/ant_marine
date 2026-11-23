@@ -1,0 +1,39 @@
+<% content_for :public_nav, "services" %>
+
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Our services</p>
+  <h1><%= @service.public_title %></h1>
+  <p class="public-hero__lede"><%= @service.public_summary %></p>
+</section>
+
+<section class="public-section">
+  <p class="text-sm text-[#5f7d8c] mb-4"><%= link_to "Services", public_services_path %> › <%= @service.public_title %></p>
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <article class="portal-card">
+      <h2>How we can help</h2>
+      <%= public_format_text(@service.public_body.presence || "Every project is different. Our team works with you to understand the scope, confirm what is needed and provide clear next steps.") %>
+      <% items = @service.public_scope_items %>
+      <% if items.any? %>
+        <ul class="mt-4 space-y-2 text-sm text-[#466270]">
+          <% items.each do |item| %>
+            <li><%= item %></li>
+          <% end %>
+        </ul>
+      <% end %>
+      <h2 class="mt-8">What happens next?</h2>
+      <% steps = @service.public_process_steps %>
+      <% if steps.any? %>
+        <%= public_format_text(steps.join("\n\n")) %>
+      <% else %>
+        <p>Tell us about the work. We will review your request, confirm any missing details, and provide a quotation where appropriate. A preferred date is not a confirmed booking until agreed in writing.</p>
+      <% end %>
+    </article>
+    <aside class="portal-card">
+      <h2 class="text-base font-semibold">Who this service is for</h2>
+      <p class="text-sm text-[#5f7d8c] mt-2"><%= @service.public_audience.presence || "Marine operators and project teams." %></p>
+      <div class="mt-6">
+        <%= link_to "Contact the team", contact_path, class: "ant-btn-primary ant-btn-primary--compact" %>
+      </div>
+    </aside>
+  </div>
+</section>

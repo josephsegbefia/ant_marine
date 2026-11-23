@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title) || "ANT Marine W.A." %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <% if defined?(@seo_title) && @seo_title.present? %>
+      <%= public_seo_tags(
+            title: @seo_title,
+            description: @seo_description,
+            canonical: request.original_url.split("?").first
+          ) %>
+    <% else %>
+      <title><%= content_for(:title) || "ANT Marine W.A." %></title>
+    <% end %>
     <%= yield :head %>
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">

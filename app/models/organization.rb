@@ -4,6 +4,8 @@ class Organization < ApplicationRecord
 
   has_many :memberships, dependent: :destroy
   has_many :invitations, dependent: :destroy
+  has_many :services, dependent: :destroy
+  has_many :public_site_pages, dependent: :destroy
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }

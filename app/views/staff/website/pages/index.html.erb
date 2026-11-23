@@ -1,0 +1,13 @@
+<% content_for :staff_nav, :website %>
+<%= render "staff/website/header", title: "Website content", subtitle: "Update public page sections and contact information." %>
+
+<div class="mt-6 space-y-3">
+  <% @pages.each do |page| %>
+    <%= link_to staff_website_page_path(page), class: "portal-card block hover:border-[#25877f]" do %>
+      <h2 class="text-base font-semibold text-[#102c43]"><%= page.title %></h2>
+      <p class="text-sm text-[#5f7d8c]"><%= page.page_key.humanize %> · <%= page.status.humanize %></p>
+    <% end %>
+  <% end %>
+</div>
+
+<p class="mt-6 text-sm"><%= link_to "Service pages", staff_website_services_path, class: "font-semibold text-[#25877f]" %></p>

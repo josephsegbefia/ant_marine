@@ -7,6 +7,15 @@ Rails.application.routes.draw do
 
   root "home#index"
 
+  get "services", to: "public/services#index", as: :public_services
+  get "services/:slug", to: "public/services#show", as: :public_service
+  get "about", to: "public/pages#show", defaults: { page: "about" }, as: :about
+  get "industries", to: "public/pages#show", defaults: { page: "industries" }, as: :industries
+  get "how-we-work", to: "public/pages#show", defaults: { page: "how-we-work" }, as: :how_we_work
+  get "contact", to: "public/pages#show", defaults: { page: "contact" }, as: :contact
+  get "sitemap", to: "public/sitemap#show", defaults: { format: :xml }, as: :sitemap
+  get "robots", to: "public/robots#show", defaults: { format: :txt }, as: :robots
+
   get "workspace", to: "workspace_selections#show", as: :workspace_selection
   patch "workspace", to: "workspace_selections#update", as: :workspace_select
 
@@ -27,6 +36,28 @@ Rails.application.routes.draw do
       end
     end
     resources :client_invitations, only: %i[new create]
+    namespace :website do
+      resources :services do
+        member do
+          post :submit_for_review
+          post :withdraw
+          post :approve
+          post :publish
+          post :unpublish
+          post :archive
+        end
+      end
+      resources :pages, only: %i[index show edit update] do
+        member do
+          post :submit_for_review
+          post :withdraw
+          post :approve
+          post :publish
+          post :unpublish
+          post :archive
+        end
+      end
+    end
   end
 
   namespace :client do

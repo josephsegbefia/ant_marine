@@ -1,0 +1,13 @@
+<% content_for :public_nav, "about" %>
+
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">About us</p>
+  <h1><%= @page.public_title %></h1>
+  <p class="public-hero__lede"><%= @page.public_summary.presence || "Focused marine expertise. Practical advice." %></p>
+</section>
+
+<section class="public-section">
+  <article class="portal-card">
+    <%= public_format_text(@page.public_body) %>
+  </article>
+</section>

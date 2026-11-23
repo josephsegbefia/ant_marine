@@ -14,5 +14,13 @@
   <% end %>
 
   <p class="staff-side-label staff-side-label--spaced">ADMINISTRATION</p>
-  <p class="staff-nav-note">Company settings, website content, and audit views (Design Studio M01–M13) will use this area. No administration routes are available yet.</p>
+  <% if staff_can_manage_website? %>
+    <%= link_to staff_website_services_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:website)}" do %>
+      <%= render "shared/staff/nav_icon", name: "globe" %>
+      <span>Website</span>
+    <% end %>
+  <% else %>
+    <p class="staff-nav-note">Website editing requires content permissions.</p>
+  <% end %>
 </nav>

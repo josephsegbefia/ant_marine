@@ -1,0 +1,23 @@
+<% content_for :staff_nav, :website %>
+<%= render "staff/website/header", title: @page.title, subtitle: "Page key: #{@page.page_key} · #{@page.status.humanize}" %>
+
+<div class="mt-4 flex flex-wrap gap-2">
+  <%= link_to "Edit draft", edit_staff_website_page_path(@page), class: "ant-btn-outline ant-btn-primary--compact" %>
+  <% if policy(@page).submit_for_review? && @page.draft? %>
+    <%= button_to "Submit for review", submit_for_review_staff_website_page_path(@page), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+  <% end %>
+  <% if policy(@page).withdraw? && @page.in_review? %>
+    <%= button_to "Withdraw", withdraw_staff_website_page_path(@page), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
+  <% end %>
+  <% if policy(@page).approve? && @page.in_review? %>
+    <%= button_to "Approve", approve_staff_website_page_path(@page), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+  <% end %>
+  <% if policy(@page).publish? && (@page.approved? || @page.published?) %>
+    <%= button_to "Publish", publish_staff_website_page_path(@page), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+  <% end %>
+  <% if policy(@page).unpublish? && @page.published? %>
+    <%= button_to "Unpublish", unpublish_staff_website_page_path(@page), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
+  <% end %>
+</div>
+
+<%= link_to "Back to pages", staff_website_pages_path, class: "mt-6 inline-block text-sm font-semibold text-[#25877f]" %>
