@@ -1,7 +1,7 @@
 <% content_for :staff_nav, :website %>
 <%= render "staff/website/header", title: "Edit page", subtitle: @page.page_key.humanize %>
 
-<%= form_with model: [:staff, :website, @page], class: "mt-6 space-y-4" do |f| %>
+<%= form_with model: @page, url: staff_website_page_path(@page), scope: :public_site_page, class: "mt-6 space-y-4" do |f| %>
   <% if @page.errors.any? %>
     <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900">
       <%= @page.errors.full_messages.to_sentence %>

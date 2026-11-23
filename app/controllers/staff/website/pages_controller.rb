@@ -3,7 +3,10 @@
 module Staff
   module Website
     class PagesController < BaseController
-      before_action :set_page
+      before_action :set_page, only: %i[
+        show edit update
+        submit_for_review withdraw approve publish unpublish archive
+      ]
 
       def index
         authorize PublicSitePage
