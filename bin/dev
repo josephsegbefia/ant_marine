@@ -11,9 +11,15 @@ elif [ -z "${ANT_MARINE_DB_PASSWORD:-}" ]; then
   exit 1
 fi
 
-if ! gem list foreman -i --silent; then
-  echo "Installing foreman..."
-  gem install foreman
+# Avoid macOS /usr/bin/bundle (system Ruby 2.6); use the project Ruby from mise when available.
+if command -v mise >/dev/null 2>&1 && [ -z "${ANT_MARINE_BIN_DEV_MISE:-}" ]; then
+  export ANT_MARINE_BIN_DEV_MISE=1
+  exec mise exec -- "$0" "$@"
+fi
+
+if ! bundle show foreman >/dev/null 2>&1; then
+  echo "Installing gems (including foreman)..." >&2
+  bundle check || bundle install
 fi
 
 # Default to port 3000 if not specified
@@ -24,4 +30,4 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
-exec foreman start -f Procfile.dev "$@"
+exec bundle exec foreman start -f Procfile.dev "$@"

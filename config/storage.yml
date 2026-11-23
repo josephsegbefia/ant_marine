@@ -13,14 +13,14 @@ local:
 # Plain S3 — does NOT apply application-side encryption. Confidential production
 # files must use an encrypted adapter (future EncryptedS3Service) or local_encrypted.
 # Boot is blocked in production when this service is selected (see Storage::ProductionServiceGate).
-# Local MinIO PoC only — requires compose.minio-poc.yml. Application-side encryption.
+# Local S3-compatible PoC only (SeaweedFS: compose.seaweedfs-poc.yml). Application-side encryption.
 encrypted_s3:
   service: EncryptedS3
-  access_key_id: <%= ENV.fetch("MINIO_POC_ACCESS_KEY", "ant_marine_minio_poc") %>
-  secret_access_key: <%= ENV.fetch("MINIO_POC_SECRET_KEY", "minio-poc-local-only") %>
-  region: <%= ENV.fetch("MINIO_POC_REGION", "us-east-1") %>
-  bucket: <%= ENV.fetch("MINIO_POC_BUCKET", "ant-marine-encrypted-poc") %>
-  endpoint: <%= ENV.fetch("MINIO_POC_ENDPOINT", "http://127.0.0.1:9000") %>
+  access_key_id: <%= ENV.fetch("S3_POC_ACCESS_KEY", ENV.fetch("MINIO_POC_ACCESS_KEY", "ant_marine_s3_poc")) %>
+  secret_access_key: <%= ENV.fetch("S3_POC_SECRET_KEY", ENV.fetch("MINIO_POC_SECRET_KEY", "seaweedfs-poc-local-only")) %>
+  region: <%= ENV.fetch("S3_POC_REGION", ENV.fetch("MINIO_POC_REGION", "us-east-1")) %>
+  bucket: <%= ENV.fetch("S3_POC_BUCKET", ENV.fetch("MINIO_POC_BUCKET", "ant-marine-encrypted-poc")) %>
+  endpoint: <%= ENV.fetch("S3_POC_ENDPOINT", ENV.fetch("MINIO_POC_ENDPOINT", "http://127.0.0.1:8333")) %>
   force_path_style: true
   upload:
     acl: "private"

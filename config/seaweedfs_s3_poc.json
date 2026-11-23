@@ -1,0 +1,14 @@
+{
+  "identities": [
+    {
+      "name": "ant_marine_s3_poc",
+      "credentials": [
+        {
+          "accessKey": "ant_marine_s3_poc",
+          "secretKey": "seaweedfs-poc-local-only"
+        }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

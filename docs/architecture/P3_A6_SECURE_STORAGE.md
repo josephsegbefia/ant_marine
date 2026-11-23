@@ -35,16 +35,16 @@ Staff routes `staff/storage/proof_*` are **technical proof endpoints only** — 
 | Service name | Adapter | Encryption at rest | Production |
 |--------------|---------|-------------------|------------|
 | `test` / `local_encrypted` | `EncryptedDisk` | App-side AES-GCM | **Allowed** (default prod default name is `local_encrypted` until object store wired) |
-| `encrypted_s3` | `EncryptedS3` | App-side AES-GCM before S3 PUT | **Allowed in gate**; **verified only when `MINIO_POC_ENABLED=1`** (local MinIO) |
+| `encrypted_s3` | `EncryptedS3` | App-side AES-GCM before S3 PUT | **Allowed in gate**; **verified locally** with SeaweedFS (`S3_POC_ENABLED=1`) — not Hetzner |
 | `local` | `Disk` | None | **Blocked** in production (`Storage::ProductionServiceGate`) |
 | `private_s3` | `S3` (plain) | **None** — ACL private only | **Blocked** in production until PoC encrypted adapter selected |
 
 - `config.active_storage.draw_routes = false` — `/rails/active_storage/*` returns **404** in tests.
 - Custom service: `lib/active_storage/service/encrypted_disk_service.rb` (manual require path; `autoload_lib` ignores `active_storage/`).
 
-**S3 / Hetzner:** **DOCUMENTED ONLY.** No credentials, no bucket, no verified encrypted S3 adapter. Selecting `private_s3` in production **raises on boot**.
+**S3 production / Hetzner:** **BLOCKED** — no production bucket or live Hetzner wiring. Local **SeaweedFS** PoC verifies `EncryptedS3Service` + `aws-sdk-s3` only.
 
-**Future encrypted S3:** Subclass or mirror `EncryptedDiskService` (encrypt in `upload`, decrypt in `download`, disable direct URLs), reuse `Storage::Encryption`, private bucket + IAM; PO sign-off on ADR-010 technique.
+**Production plain S3:** Selecting `private_s3` in production **raises on boot** (`Storage::ProductionServiceGate`).
 
 ## Metadata model (PoC)
 
@@ -68,7 +68,7 @@ Staff routes `staff/storage/proof_*` are **technical proof endpoints only** — 
 | Production without command | `:error` → asset **rejected** (fail-closed) |
 | `STORAGE_SCAN_COMMAND` | Scans tempfile path only (no user filename in shell) |
 
-**REAL MALWARE SCANNING NOT VERIFIED** without operational ClamAV or equivalent. EICAR proves quarantine boundary only.
+**REAL MALWARE SCANNING (local):** **VERIFIED** 2026-11-23 with Homebrew `clamscan` + `CLAMAV_POC_ENABLED=1`. Production still requires operational scanner + `STORAGE_SCAN_COMMAND` in each environment.
 
 **Job safety:** Missing blob, integrity errors, nil scan result → `rejected`; `:clean` never assumed on error paths.
 
@@ -110,7 +110,7 @@ Staff routes `staff/storage/proof_*` are **technical proof endpoints only** — 
 | Evidence | Status |
 |----------|--------|
 | `perform_enqueued_jobs` / `ScanStorageAssetJob.perform_now` in Minitest | **VERIFIED** |
-| Live `bin/jobs` under Foreman | **NOT VERIFIED** in acceptance session (worker process crashed with Ruby segfault in local `bin/dev`) |
+| Live `bin/jobs` under Foreman | **VERIFIED** 2026-11-23 — async supervisor; `verify_solid_queue_runtime.sh` + stable `bin/dev` `jobs.1` |
 
 ## Environment (names in `.env.example`)
 

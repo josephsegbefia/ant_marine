@@ -1,0 +1,17 @@
+# Isolated SeaweedFS S3 API for encrypted storage PoC only — NOT production Hetzner.
+# Usage: docker compose -f compose.seaweedfs-poc.yml up -d
+# Then: scripts/s3_poc_bootstrap.sh
+services:
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    container_name: ant_marine_seaweedfs_poc
+    command: server -dir=/data -ip=0.0.0.0 -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json
+    ports:
+      - "127.0.0.1:8333:8333"
+      - "127.0.0.1:9333:9333"
+    volumes:
+      - ant_marine_seaweedfs_poc:/data
+      - ./config/seaweedfs_s3_poc.json:/etc/seaweedfs/s3.json:ro
+
+volumes:
+  ant_marine_seaweedfs_poc:

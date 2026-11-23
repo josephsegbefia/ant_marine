@@ -1,68 +1,87 @@
 # P3-A7 — Phase 3 foundation exit (local)
 
-**Date:** 2026-11-22 (gap closure pass)  
+**Date:** 2026-11-23 (final local acceptance pass)  
 **Branch:** `main` (local only — **not pushed**)  
 
 Labels: **IMPLEMENTED**, **VERIFIED**, **NOT VERIFIED**, **BLOCKED**, **DEFERRED**.
 
-## Exit-gap closure evidence (this pass)
+## Final local acceptance evidence (2026-11-23)
 
 | Gap | Result |
 |-----|--------|
-| Solid Queue runtime (3× smoke, no segfault) | **VERIFIED** — `scripts/verify_solid_queue_runtime.sh` → 3/3 `Infrastructure::WorkerSmokeJob` + audit |
-| Encrypted S3-compatible API | **IMPLEMENTED** (`EncryptedS3Service`); **NOT VERIFIED** — Docker could not pull MinIO images on this host (`pull access denied` / registry) |
-| ClamAV integration | **IMPLEMENTED** (PoC compose + scan script); **NOT VERIFIED** — no arm64 `clamav/clamav` manifest; no host `clamscan` |
-| P01 browser @ 1440 | **PARTIAL** — screenshot captured when ANT Marine served on :3000; restart `bin/dev` after Procfile fix |
-| S01/M08/C01 authenticated | **NOT VERIFIED** — dev sign-in credentials not available to agent; no fabricated customers |
-| Recovery drill | **VERIFIED** — `scripts/p3_storage_backup_drill.sh` + recovery integration test |
+| Solid Queue runtime (3× smoke, no segfault) | **VERIFIED** — `scripts/verify_solid_queue_runtime.sh` → 3/3; no `Segmentation fault` in worker log |
+| `bin/dev` Foreman + worker | **VERIFIED** — `foreman` via Bundler; `mise exec` wrapper; `web`/`css`/`jobs` on **:3000**; async supervisor in `Procfile.dev` |
+| Encrypted S3-compatible API | **VERIFIED** — **SeaweedFS** (`compose.seaweedfs-poc.yml`, port **8333**); `encrypted_s3_storage_poc_test.rb` (4 tests) with `S3_POC_ENABLED=1` |
+| ClamAV integration | **VERIFIED** — Homebrew `clamav` + `freshclam`; `scripts/clamav_local_scan.sh`; `clamav_scanner_poc_test.rb` (3 tests) with `CLAMAV_POC_ENABLED=1` |
+| P01 browser | **VERIFIED** — live `http://127.0.0.1:3000/` @ ~1440 / 768 / 390 (Design Studio hero, nav, CTAs) |
+| S01 / M08 / C01 authenticated | **NOT VERIFIED (agent)** — `/staff` correctly redirects to `/session/new`; dev DB has staff super-admins only (no client org); PO must sign in with `.env.local` bootstrap credentials (not in repo) |
+| Recovery drill | **VERIFIED** — `scripts/p3_storage_backup_drill.sh` |
+| Foundation script | **VERIFIED** — `scripts/verify_foundation.sh` (all checks pass) |
 
 ## Phase 3 exit matrix (master spec §PHASE 3)
 
-See prior sections in this document; updated counts:
-
 | Requirement | Status |
 |-------------|--------|
-| Fresh clone tests + audit | **VERIFIED** — 200 tests, 730 assertions, 0 failures (4 optional PoC skips) |
+| Fresh clone tests + audit | **VERIFIED** — **203 runs, 741 assertions, 0 failures** with PoC env; **730 assertions, 7 skips** without PoC env (CI default) |
 | Permission enforcement | **VERIFIED** |
 | Encrypted storage (disk) | **VERIFIED** |
-| Encrypted storage (S3 API) | **NOT VERIFIED** (MinIO pull blocked) |
-| Real AV scanner | **NOT VERIFIED** |
-| Responsive shell browser matrix | **NOT VERIFIED** (authenticated paths) |
-| Solid Queue worker | **VERIFIED** (runtime script) |
+| Encrypted storage (S3 API) | **VERIFIED** (local SeaweedFS; not Hetzner) |
+| Real AV scanner | **VERIFIED** (host `clamscan`; optional Docker PoC retained) |
+| Responsive shell browser matrix | **PARTIAL** — P01 + unauthenticated auth gate; signed-in S01/M08/C01 **open** |
+| Solid Queue worker | **VERIFIED** (runtime script + stable `jobs.1` under `bin/dev`) |
 
 ## Worker runtime (final)
 
 - **Root cause (macOS):** fork + `pg` + threaded parent — see `solid_queue_fork_safety.rb`, `Procfile.dev` async mode.
 - **Evidence:** `scripts/verify_solid_queue_runtime.sh` — worker stays up, **no segfault** in log, **3/3** jobs `finished_at` + `infrastructure.worker_smoke` audit rows.
-- **Restart required:** Stop and re-run `bin/dev` so `jobs.1` picks up Procfile (user session had pre-fix crash output).
+- **`bin/dev`:** sources `.env.local`, re-execs via `mise exec`, `bundle exec foreman`; avoid bare `bin/dev` on system Ruby 2.6.
 
 ## Encrypted S3 PoC (code path)
 
 - `lib/active_storage/service/encrypted_s3_service.rb` — app-side encrypt before `S3Service` upload; decrypt on download; no direct URLs.
-- `config/storage.yml` — `encrypted_s3` + `compose.minio-poc.yml` (isolated, not production).
-- `Storage::ProductionServiceGate` — `encrypted_s3` allowed; plain `private_s3` **blocked**.
-- Tests: `test/integration/minio_encrypted_storage_poc_test.rb` — **skipped** unless `MINIO_POC_ENABLED=1` and MinIO reachable.
+- **Local server:** `compose.seaweedfs-poc.yml` + `config/seaweedfs_s3_poc.json` (arm64-maintained image `chrislusf/seaweedfs`).
+- `scripts/s3_poc_bootstrap.sh` — idempotent bucket create (`ant-marine-encrypted-poc`).
+- `config/storage.yml` — `S3_POC_*` env (legacy `MINIO_POC_*` aliases).
+- Tests: `test/integration/encrypted_s3_storage_poc_test.rb` — ciphertext at rest, round-trip, tamper, wrong key, route bypass.
 
-**Hetzner production:** **BLOCKED** — no live bucket; local MinIO not exercised on this machine.
+**Hetzner production:** **BLOCKED** — no live bucket; local PoC does not replace planned production provider.
+
+**MinIO compose:** retained as deprecated alternative; image pull was unreliable on this host.
 
 ## ClamAV PoC
 
-- `compose.clamav-poc.yml`, `scripts/clamav_poc_scan.sh`, `clamav_scanner_poc_test.rb` (skipped without `CLAMAV_POC_ENABLED=1`).
-- **REAL SCANNER NOT VERIFIED** in this environment.
+| Mode | Command | Notes |
+|------|---------|-------|
+| **Host (verified)** | `brew install clamav`; edit `/opt/homebrew/etc/clamav/freshclam.conf` (comment `Example`); `freshclam`; `CLAMAV_POC_SCAN_COMMAND=scripts/clamav_local_scan.sh` | DB under `/opt/homebrew/var/lib/clamav` |
+| Docker (optional) | `compose.clamav-poc.yml`, `scripts/clamav_poc_scan.sh` | arm64 image not verified here |
+
+- `Storage::MalwareScanner` — `FOUND` / `Infected files: N` → rejected; non-zero without infection signature → error (never fake clean).
+- Integration tests: clean synthetic file, EICAR path, forced scanner failure.
 
 ## Health / readiness
 
 - `GET /up` — liveness  
 - `GET /ready` — DB, permission catalogue, mail label, storage gate (no secrets)
 
+## Authenticated browser QA (PO manual)
+
+1. Ensure `bin/dev` running and PostgreSQL up.
+2. Open `http://127.0.0.1:3000/session/new`.
+3. Sign in with the **bootstrap super administrator** from your `.env.local` (`ANT_MARINE_BOOTSTRAP_EMAIL` / password you set at provision time — not stored in Git).
+4. After workspace selection, verify **S01** at `/staff`, **M08** at `/staff/invitations`.
+5. **C01** requires a client organization membership (none in current dev DB); invite a client user via M08/C15 flow, accept invitation, then verify `/client`.
+
 ## Phase 3 exit decision (local)
 
 | Decision | Outcome |
 |----------|---------|
-| Foundation acceptance | **CONDITIONAL GO** — worker runtime + automated gates improved; S3 API proof, ClamAV, full browser matrix remain open |
+| Foundation acceptance | **CONDITIONAL GO** — integration gaps closed locally; production Hetzner/ADR-010 and full authenticated browser matrix remain PO-owned |
 | GitHub push | **NO-GO** (per PO) |
 | Phase 4 implementation | **NO-GO** |
 
 ## Automated test baseline
 
-**200 runs, 730 assertions, 0 failures, 4 skips** (MinIO + ClamAV PoC tests when disabled).
+| Profile | Count |
+|---------|--------|
+| CI default (no PoC env) | 203 runs, 730 assertions, 0 failures, 7 skips |
+| Full acceptance (`S3_POC_ENABLED=1`, `CLAMAV_POC_ENABLED=1`) | 203 runs, 741 assertions, 0 failures, 0 skips |
