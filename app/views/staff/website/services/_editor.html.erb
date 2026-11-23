@@ -163,9 +163,11 @@
           <%= render "draft_preview" %>
         </div>
 
-        <div class="mt-6">
-          <%= render "workflow_status", service: service %>
-        </div>
+        <% if service.persisted? && service.draft? %>
+          <p class="mt-6 text-sm text-[#5f7d8c]">
+            When everything looks right, use <strong>Submit for review</strong> below the editor. A colleague with publish permission can approve and publish.
+          </p>
+        <% end %>
       </section>
 
       <details class="staff-editor-page-settings portal-card mt-4">
@@ -195,6 +197,12 @@
   </div>
 <% end %>
 
-<p class="staff-editor-footer__return">
+<% if editor_step == 4 && service.persisted? %>
+  <div class="staff-editor-workflow-below mt-4 max-w-3xl" data-staff-service-editor-target="submitReviewBlock">
+    <%= render "workflow_status", service: service %>
+  </div>
+<% end %>
+
+<div class="staff-editor-return">
   <%= link_to "Return to services", staff_website_services_path, class: "staff-editor-footer__return-link" %>
-</p>
+</div>

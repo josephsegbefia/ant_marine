@@ -70,7 +70,7 @@ module Staff
       def submit_for_review
         authorize @service, :submit_for_review?
         PublicContent::Transition.submit_for_review!(record: @service, membership: Current.membership)
-        redirect_to staff_website_service_path(@service), notice: "Submitted for review."
+        redirect_to staff_website_service_path(@service), notice: "Service submitted for review."
       rescue PublicContent::Transition::InvalidTransition
         redirect_to staff_website_service_path(@service), alert: "This service cannot be submitted from its current status."
       end
@@ -86,7 +86,7 @@ module Staff
       def approve
         authorize @service, :approve?
         PublicContent::Transition.approve!(record: @service, membership: Current.membership)
-        redirect_to staff_website_service_path(@service), notice: "Service approved."
+        redirect_to staff_website_service_path(@service), notice: "Service approved. You can publish when ready."
       rescue PublicContent::Transition::InvalidTransition
         redirect_to staff_website_service_path(@service), alert: "This service cannot be approved right now."
       end
@@ -94,7 +94,7 @@ module Staff
       def publish
         authorize @service, :publish?
         PublicContent::Transition.publish!(record: @service, membership: Current.membership)
-        redirect_to staff_website_service_path(@service), notice: "Service published."
+        redirect_to staff_website_service_path(@service), notice: "Service published on the public website."
       rescue PublicContent::Transition::InvalidTransition
         redirect_to staff_website_service_path(@service), alert: "This service cannot be published right now."
       end

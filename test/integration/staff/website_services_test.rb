@@ -123,5 +123,7 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
     post submit_for_review_staff_website_service_path(service)
     assert_redirected_to staff_website_service_path(service)
     assert_equal "in_review", service.reload.status
+    follow_redirect!
+    assert_match(/submitted for review/i, flash[:notice].to_s + response.body)
   end
 end

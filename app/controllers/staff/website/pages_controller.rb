@@ -51,7 +51,7 @@ module Staff
       def submit_for_review
         authorize @page, :submit_for_review?
         PublicContent::Transition.submit_for_review!(record: @page, membership: Current.membership)
-        redirect_to staff_website_page_path(@page), notice: "Submitted for review."
+        redirect_to staff_website_page_path(@page), notice: "Page submitted for review."
       rescue PublicContent::Transition::InvalidTransition
         redirect_to staff_website_page_path(@page), alert: "This page cannot be submitted from its current status."
       end

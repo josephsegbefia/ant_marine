@@ -1,6 +1,7 @@
 <% step = local_assigns[:editor_step] || 1 %>
-<% status_label = service.new_record? ? "Not saved yet" : service.status.humanize %>
+<% status_label = service.new_record? ? "Not saved yet" : public_content_status_label(service.status) %>
 <% step_names = [ "Basics", "Details", "Scope & process", "Review" ] %>
+<% footer_hint = service.new_record? ? "Add a service name, then save a draft when you are ready." : public_content_list_guidance(service.status) %>
 
 <footer class="staff-editor-footer" aria-label="Editor actions">
   <div class="staff-editor-footer__meta">
@@ -8,57 +9,38 @@
       <span data-staff-service-editor-target="footerStepLabel">Step <%= step %> of 4</span>
       ·
       <span data-staff-service-editor-target="footerStepName"><%= step_names[step - 1] %></span>
+      <span class="staff-editor-footer__status-pill"><%= status_label %></span>
     </p>
-    <p class="staff-editor-footer__status">Status: <strong><%= status_label %></strong></p>
-    <% if service.persisted? %>
-      <p class="staff-editor-footer__status-detail"><%= service_status_guidance(service) %></p>
-    <% end %>
-    <p class="staff-editor-footer__help">
-      Saving keeps a private draft on the server. Nothing is shown on the public website until it is reviewed, approved and published.
-    </p>
+    <p class="staff-editor-footer__status-detail"><%= footer_hint %></p>
   </div>
 
-  <div class="staff-editor-footer__cluster">
-    <div class="staff-editor-footer__primary">
-      <button
-        type="button"
-        class="ant-btn-outline ant-btn-primary--compact staff-editor-footer__back"
-        data-staff-service-editor-target="backButton"
-        data-action="staff-service-editor#goBack"
-        <%= "hidden" if step == 1 %>
-      >Back</button>
+  <div class="staff-editor-footer__actions">
+    <button
+      type="button"
+      class="ant-btn-outline ant-btn-outline--compact staff-editor-footer__back"
+      data-staff-service-editor-target="backButton"
+      data-action="staff-service-editor#goBack"
+      <%= "hidden" if step == 1 %>
+    >Back</button>
 
-      <button
-        type="submit"
-        name="commit"
-        value="save_draft"
-        class="ant-btn-outline ant-btn-primary--compact"
-        data-form-submit-target="submit"
-      >Save draft</button>
+    <button
+      type="submit"
+      name="commit"
+      value="save_draft"
+      class="ant-btn-outline ant-btn-outline--compact"
+      data-form-submit-target="submit"
+    >Save draft</button>
 
-      <button
-        type="submit"
-        name="commit"
-        value="save_continue"
-        class="ant-btn-primary ant-btn-primary--compact"
-        data-staff-service-editor-target="saveContinueButton"
-        data-form-submit-target="submit"
-        data-form-submit-loading-message-value="Saving…"
-        <%= "hidden" if step >= 4 %>
-      >Save and continue</button>
-    </div>
+    <button
+      type="submit"
+      name="commit"
+      value="save_continue"
+      class="ant-btn-primary ant-btn-primary--compact"
+      data-staff-service-editor-target="saveContinueButton"
+      data-form-submit-target="submit"
+      data-form-submit-loading-message-value="Saving…"
+      <%= "hidden" if step >= 4 %>
+    >Save and continue</button>
 
-    <% if service.persisted? && policy(service).submit_for_review? && service.draft? %>
-      <div
-        class="staff-editor-footer__review"
-        data-staff-service-editor-target="submitReviewBlock"
-        <%= "hidden" unless step == 4 %>
-      >
-        <%= link_to "Submit for review",
-              submit_for_review_staff_website_service_path(service),
-              class: "ant-btn-primary ant-btn-primary--compact",
-              data: { turbo_method: :post, turbo: false } %>
-      </div>
-    <% end %>
   </div>
 </footer>

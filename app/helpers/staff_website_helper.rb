@@ -199,4 +199,15 @@ module StaffWebsiteHelper
 
     "/services/#{slug}"
   end
+
+  def website_workflow_button(label, url, variant: :primary, confirm: nil)
+    classes = variant == :outline ? "ant-btn-outline ant-btn-outline--compact" : "ant-btn-primary ant-btn-primary--compact"
+    options = {
+      method: :post,
+      class: classes,
+      form: { class: "staff-workflow-action-form" }
+    }
+    options[:form][:data] = { turbo_confirm: confirm } if confirm.present?
+    button_to(label, url, **options)
+  end
 end
