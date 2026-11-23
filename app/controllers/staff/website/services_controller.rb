@@ -15,36 +15,51 @@ module Staff
       end
 
       def new
-        @service = @organization.services.build(display_order: next_display_order)
+        @service = @organization.services.build(
+          display_order: next_display_order,
+          category: "marine_surveys",
+          icon_key: "ship",
+          scope_items: [],
+          process_steps: []
+        )
+        @editor_step = editor_step_param
         authorize @service
       end
 
       def create
+        @editor_step = editor_step_param
         @service = @organization.services.build(service_params)
         @service.display_order = service_params[:display_order].presence || next_display_order
+        @service.category = service_params[:category].presence || "marine_surveys"
+        @service.icon_key = service_params[:icon_key].presence || "ship"
         @service.created_by_membership = Current.membership
         @service.updated_by_membership = Current.membership
         authorize @service
         mirror_draft_json_defaults!(@service)
 
         if @service.save
-          redirect_to staff_website_service_path(@service), notice: "Service draft saved."
+          redirect_after_save(@service, created: true)
         else
           render :new, status: :unprocessable_entity
         end
       end
 
       def edit
+        @editor_step = editor_step_param
         authorize @service
       end
 
       def update
+        @editor_step = editor_step_param
         authorize @service
-        @service.assign_attributes(service_params)
+        attributes = service_params
+        attributes.delete(:display_order) if attributes[:display_order].nil?
+        @service.assign_attributes(attributes)
         @service.updated_by_membership = Current.membership
+        mirror_draft_json_defaults!(@service)
 
         if @service.save
-          redirect_to staff_website_service_path(@service), notice: "Service draft saved."
+          redirect_after_save(@service, created: false)
         else
           render :edit, status: :unprocessable_entity
         end
@@ -108,7 +123,9 @@ module Staff
           permitted = params.require(:service).permit(
             :title, :slug, :summary, :body, :category, :audience, :display_order, :icon_key,
             :seo_title, :seo_description,
-            :scope_items_text, :process_steps_text
+            :scope_items_text, :process_steps_text,
+            scope_items: [],
+            process_steps: []
           )
           {
             title: permitted[:title],
@@ -119,13 +136,40 @@ module Staff
             audience: permitted[:audience],
             display_order: permitted[:display_order],
             icon_key: permitted[:icon_key],
-            scope_items: split_lines(permitted[:scope_items_text]),
-            process_steps: split_lines(permitted[:process_steps_text]),
+            scope_items: normalize_list(permitted[:scope_items], permitted[:scope_items_text]),
+            process_steps: normalize_list(permitted[:process_steps], permitted[:process_steps_text]),
             seo: {
               "title" => permitted[:seo_title],
               "description" => permitted[:seo_description]
             }.compact
           }
+        end
+
+        def normalize_list(values, legacy_text)
+          items = Array(values).map { |value| value.to_s.strip }.reject(&:blank?)
+          return items if items.any?
+
+          split_lines(legacy_text)
+        end
+
+        def editor_step_param
+          step = params[:step].presence || params[:editor_step].presence || 1
+          step.to_i.clamp(1, 4)
+        end
+
+        def redirect_after_save(service, created:)
+          commit = params[:commit].to_s
+          notice = "Draft saved."
+          path = case commit
+          when "save_continue"
+                   next_step = [ editor_step_param + 1, 4 ].min
+                   edit_staff_website_service_path(service, step: next_step)
+          when "save_draft"
+                   edit_staff_website_service_path(service, step: editor_step_param)
+          else
+                   created ? edit_staff_website_service_path(service, step: 4) : staff_website_service_path(service)
+          end
+          redirect_to path, notice: notice
         end
 
         def split_lines(text)

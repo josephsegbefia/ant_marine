@@ -1,4 +1,11 @@
 <% content_for :staff_nav, :website %>
+<% content_for :staff_page_title, "Website" %>
+<%= staff_website_breadcrumb_trail(
+      crumbs: [
+        { label: "Website", path: staff_website_services_path }
+      ],
+      current: "Services"
+    ) %>
 <%= render "staff/website/header", title: "Service pages", subtitle: "Manage what visitors read about your services." %>
 
 <div class="mt-6 flex justify-end">

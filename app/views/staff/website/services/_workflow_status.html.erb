@@ -1,0 +1,24 @@
+<% if service.persisted? %>
+  <div class="portal-card staff-editor-workflow">
+    <h2 class="text-base font-semibold text-[#102c43]">Publishing status</h2>
+    <p class="mt-2 text-sm text-[#5f7d8c]"><span class="font-semibold text-[#173244]"><%= service.status.humanize %></span> — <%= service_status_guidance(service) %></p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <% if policy(service).submit_for_review? && service.draft? %>
+        <%= button_to "Submit for review", submit_for_review_staff_website_service_path(service), method: :post, class: "ant-btn-primary ant-btn-primary--compact", data: { turbo: false } %>
+      <% end %>
+      <% if policy(service).withdraw? && service.in_review? %>
+        <%= button_to "Withdraw to draft", withdraw_staff_website_service_path(service), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
+      <% end %>
+      <% if policy(service).approve? && service.in_review? %>
+        <%= button_to "Approve", approve_staff_website_service_path(service), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+      <% end %>
+      <% if policy(service).publish? && (service.approved? || service.published?) %>
+        <%= button_to "Publish to website", publish_staff_website_service_path(service), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+      <% end %>
+      <% if policy(service).unpublish? && service.published? %>
+        <%= button_to "Unpublish", unpublish_staff_website_service_path(service), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
+      <% end %>
+    </div>
+    <p class="mt-3 text-xs text-[#5f7d8c]">Saving a draft does not publish. Only staff with publish permission can approve and make content live.</p>
+  </div>
+<% end %>

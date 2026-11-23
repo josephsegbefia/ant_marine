@@ -17,6 +17,17 @@
 
 **Deferred:** P10–P17, P19–P24, quote/inquiry (F4-02), articles/case studies/training URLs (F4-01B), footer links for Projects/Training/Insights.
 
+### Staff service editor (UX correction — local)
+
+| Before | After |
+|--------|--------|
+| Single long admin form with raw slug/list text areas | Four-step guided editor: Basics → Details → Scope & process → Review |
+| Minimal field help | Plain-English labels, hints, step validation, and missing-item checklist |
+| No in-context preview | Staff-only live draft preview + search snippet (not a public route) |
+| Breadcrumb showed only “Overview” on page | In-page trail: Team workspace › Website › Services › current service |
+
+Publishing workflow, permissions, and `published_*` snapshot semantics are unchanged. **Product owner visual acceptance pending.**
+
 **Public nav (PO):** Home, Services, About, Industries, How we work, Contact, Sign in — working routes only.
 
 ## Data model

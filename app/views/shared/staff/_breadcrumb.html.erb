@@ -1,0 +1,17 @@
+<% crumbs = local_assigns[:crumbs] || [] %>
+<% current_title = local_assigns[:current] || (content_for?(:staff_page_title) ? content_for(:staff_page_title) : "Overview") %>
+<div class="staff-app-bread" aria-label="Breadcrumb">
+  <span>Team workspace</span>
+  <% crumbs.each do |crumb| %>
+    <span aria-hidden="true">›</span>
+    <% label = crumb[:label] || crumb["label"] %>
+    <% path = crumb[:path] || crumb["path"] %>
+    <% if path.present? %>
+      <%= link_to label, path, class: "text-[#25877f] hover:underline" %>
+    <% else %>
+      <span><%= label %></span>
+    <% end %>
+  <% end %>
+  <span aria-hidden="true">›</span>
+  <strong><%= current_title %></strong>
+</div>

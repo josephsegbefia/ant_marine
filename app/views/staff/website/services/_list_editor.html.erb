@@ -1,0 +1,37 @@
+<% items = local_assigns[:items].presence || [""] %>
+<div
+  class="staff-list-editor"
+  data-controller="staff-list-editor"
+  data-staff-list-editor-field-name-value="service[<%= attribute %>][]"
+  data-staff-list-editor-placeholder-value="<%= h(placeholder) %>"
+  data-action="staff-list-editor:changed->staff-service-editor#refreshPreview"
+>
+  <div class="flex items-center justify-between gap-3">
+    <h3 class="text-sm font-semibold text-[#102c43]"><%= label %></h3>
+    <button type="button" class="ant-btn-outline ant-btn-primary--compact" data-action="staff-list-editor#add">Add item</button>
+  </div>
+  <% if hint.present? %>
+    <p class="text-sm text-[#5f7d8c] mt-1"><%= hint %></p>
+  <% end %>
+  <ol class="staff-list-editor__list mt-3 space-y-2" data-staff-list-editor-target="list">
+    <% items.each do |item| %>
+      <li class="staff-list-editor__item" data-staff-list-editor-target="item">
+        <input
+          type="text"
+          name="service[<%= attribute %>][]"
+          value="<%= item %>"
+          class="ant-control staff-list-editor__input"
+          placeholder="<%= placeholder %>"
+          autocomplete="off"
+          data-staff-list-editor-target="input"
+          data-action="input->staff-list-editor#dispatchChange"
+        >
+        <div class="staff-list-editor__actions">
+          <button type="button" class="staff-list-editor__icon-btn" data-action="staff-list-editor#moveUp" aria-label="Move up">↑</button>
+          <button type="button" class="staff-list-editor__icon-btn" data-action="staff-list-editor#moveDown" aria-label="Move down">↓</button>
+          <button type="button" class="staff-list-editor__icon-btn staff-list-editor__icon-btn--danger" data-action="staff-list-editor#remove" aria-label="Remove">✕</button>
+        </div>
+      </li>
+    <% end %>
+  </ol>
+</div>

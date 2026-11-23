@@ -28,7 +28,10 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
     sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
     get new_staff_website_service_path
     assert_response :success
-    assert_includes response.body, "New service"
+    assert_includes response.body, "Create a service"
+    assert_includes response.body, "staff-editor-stepper"
+    assert_includes response.body, "Website"
+    assert_includes response.body, "Services"
   end
 
   test "super admin can create draft service" do
@@ -43,15 +46,17 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
           body: "Details pending editorial review.",
           category: "project_support",
           icon_key: "brief",
-          scope_items_text: "Harbour attendance",
-          process_steps_text: "Review request"
-        }
+          scope_items: [ "Harbour attendance" ],
+          process_steps: [ "Review request" ]
+        },
+        commit: "save_draft",
+        editor_step: 1
       }
     end
 
     service = Service.find_by!(slug: "harbour-support")
     assert_equal "draft", service.status
-    assert_redirected_to staff_website_service_path(service)
+    assert_redirected_to edit_staff_website_service_path(service, step: 1)
   end
 
   test "general staff denied new service" do

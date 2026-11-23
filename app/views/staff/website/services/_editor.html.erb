@@ -1,0 +1,212 @@
+<% editor_step = local_assigns[:editor_step] || 1 %>
+<% heading = service.persisted? ? "Edit service" : "Create a service" %>
+
+<div class="staff-editor-head">
+  <h1 class="staff-editor-head__title" id="staff-service-editor-heading"><%= heading %></h1>
+  <p class="staff-editor-head__lede">Build a service page for visitors. Save it as a draft before submitting it for review.</p>
+  <%= ant_back_link label: "Back to services", path: staff_website_services_path %>
+</div>
+
+<%= form_with(
+      model: [:staff, :website, service],
+      class: "staff-editor",
+      data: {
+        controller: "staff-service-editor form-submit",
+        action: "submit->staff-service-editor#validateBeforeSubmit turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-end->staff-service-editor#clearDirty",
+        staff_service_editor_step_value: editor_step,
+        staff_service_editor_new_record_value: service.new_record?,
+        staff_service_editor_published_value: service.published?,
+        staff_service_editor_slug_locked_value: service.persisted?
+      }
+    ) do |f| %>
+  <input type="hidden" name="editor_step" value="<%= editor_step %>" data-staff-service-editor-target="stepField">
+
+  <div
+    class="staff-editor-stepper"
+    role="tablist"
+    aria-label="Service editor steps"
+  >
+    <% ["Basics", "Details", "Scope & process", "Review"].each_with_index do |label, index| %>
+      <% step_number = index + 1 %>
+      <button
+        type="button"
+        role="tab"
+        class="staff-editor-step__tab <%= "staff-editor-step__tab--current" if step_number == editor_step %>"
+        aria-selected="<%= step_number == editor_step %>"
+        data-step="<%= step_number %>"
+        data-staff-service-editor-target="tab"
+        data-action="staff-service-editor#jumpToStep"
+        id="editor-step-tab-<%= step_number %>"
+        aria-controls="editor-step-panel-<%= step_number %>"
+      >
+        <span class="staff-editor-step__number" aria-hidden="true"><%= step_number %></span>
+        <span><%= label %></span>
+      </button>
+    <% end %>
+  </div>
+
+  <div
+    class="staff-editor-error portal-card"
+    hidden
+    tabindex="-1"
+    role="alert"
+    data-staff-service-editor-target="errorSummary"
+  >
+    <p class="font-semibold text-[#102c43]">Please fix the following before continuing:</p>
+    <ul class="mt-2 list-disc pl-5 text-sm text-red-900" data-staff-service-editor-target="errorList"></ul>
+  </div>
+
+  <% if service.errors.any? %>
+    <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900" role="alert" tabindex="-1" id="server-error-summary">
+      <p class="font-semibold">We could not save your draft:</p>
+      <ul class="mt-2 list-disc pl-5">
+        <% service.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="staff-editor-layout">
+    <div class="staff-editor-layout__main">
+      <section
+        id="editor-step-panel-1"
+        role="tabpanel"
+        aria-labelledby="editor-step-tab-1"
+        class="staff-editor-panel portal-card"
+        data-step="1"
+        data-staff-service-editor-target="panel"
+        <%= "hidden" unless editor_step == 1 %>
+      >
+        <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">The basics</h2>
+        <p class="text-sm text-[#5f7d8c] mt-1">Give this service a clear name and a short introduction for visitors.</p>
+        <div class="mt-4 space-y-4">
+          <%= ant_field f, :title, label: "Service title", required: true, context: :portal, hint: "Use plain language — e.g. “Marine surveys”.", html_options: { data: { staff_service_editor_target: "titleField", action: "input->staff-service-editor#titleInput" } } %>
+          <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences for service cards and search results.", html_options: { rows: 3 } %>
+          <div>
+            <button type="button" class="text-sm font-semibold text-[#25877f]" data-action="staff-service-editor#toggleAdvanced" aria-expanded="false">Page address (URL slug)</button>
+            <div class="mt-3" hidden data-staff-service-editor-target="advancedPanel">
+              <%= ant_field f, :slug, label: "Page address", required: true, context: :portal, hint: service.published? ? "Changing a published address affects the live URL. Update only when necessary." : "Suggested from your title. Use lowercase letters, numbers and hyphens.", html_options: { data: { staff_service_editor_target: "slugField", action: "input->staff-service-editor#slugInput" } } %>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="editor-step-panel-2"
+        role="tabpanel"
+        aria-labelledby="editor-step-tab-2"
+        class="staff-editor-panel portal-card"
+        data-step="2"
+        data-staff-service-editor-target="panel"
+        <%= "hidden" unless editor_step == 2 %>
+      >
+        <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Describe the service</h2>
+        <div class="mt-4 space-y-4">
+          <%= ant_field f, :body, type: :textarea, label: "What does this service involve?", required: true, context: :portal, hint: "Explain what you do, how you work and what clients can expect.", html_options: { rows: 8 } %>
+          <%= ant_field f, :audience, type: :textarea, label: "Who is this service for?", required: true, context: :portal, hint: "e.g. shipowners, offshore contractors, insurers.", html_options: { rows: 3 } %>
+        </div>
+      </section>
+
+      <section
+        id="editor-step-panel-3"
+        role="tabpanel"
+        aria-labelledby="editor-step-tab-3"
+        class="staff-editor-panel portal-card"
+        data-step="3"
+        data-staff-service-editor-target="panel"
+        <%= "hidden" unless editor_step == 3 %>
+      >
+        <h2 id="editor-step-heading-3" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Scope and process</h2>
+        <p class="text-sm text-[#5f7d8c] mt-1">List what is included and the steps clients can expect. Use short, friendly phrases.</p>
+        <div class="mt-4 space-y-6">
+          <%= render "list_editor",
+                attribute: :scope_items,
+                label: "What's included?",
+                hint: "Each line becomes a bullet on the public page.",
+                placeholder: "e.g. Warranty surveys",
+                items: service_editor_list(service, :scope_items).presence || [""] %>
+          <%= render "list_editor",
+                attribute: :process_steps,
+                label: "How does the process work?",
+                hint: "Describe the journey in order — what happens first, next, and so on.",
+                placeholder: "e.g. We review your request",
+                items: service_editor_list(service, :process_steps).presence || [""] %>
+        </div>
+      </section>
+
+      <section
+        id="editor-step-panel-4"
+        role="tabpanel"
+        aria-labelledby="editor-step-tab-4"
+        class="staff-editor-panel portal-card"
+        data-step="4"
+        data-staff-service-editor-target="panel"
+        <%= "hidden" unless editor_step == 4 %>
+      >
+        <h2 id="editor-step-heading-4" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review your service page</h2>
+        <p class="text-sm text-[#5f7d8c] mt-1">Check content and publishing status before you leave. Previewing is not publishing.</p>
+
+        <div class="mt-4 portal-card bg-[#f6fafb] hidden" data-staff-service-editor-target="missingPanel">
+          <p class="text-sm font-semibold text-[#102c43]">Still needed:</p>
+          <ul class="mt-2 list-disc pl-5 text-sm text-[#466270]" data-staff-service-editor-target="missingList"></ul>
+        </div>
+
+        <% unless service_editor_missing_items(service).empty? %>
+          <p class="mt-4 text-sm text-[#5f7d8c]">Complete the highlighted items on earlier steps, then save your draft.</p>
+        <% end %>
+
+        <div class="mt-6 lg:hidden">
+          <%= render "draft_preview" %>
+        </div>
+
+        <div class="mt-6">
+          <%= render "workflow_status", service: service %>
+        </div>
+      </section>
+
+      <details class="staff-editor-page-settings portal-card mt-4">
+        <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
+        <div class="mt-4 space-y-4">
+          <%= ant_select f, :category, choices: service_category_options, label: "Service category", required: true, context: :portal, hint: "Groups this page in the public catalogue." %>
+          <%= ant_select f, :icon_key, choices: service_icon_options, label: "Icon", context: :portal, hint: "Shown on service cards." %>
+          <div class="ant-field ant-field--portal">
+            <%= f.label :display_order, "Display order", class: "ant-field__label" %>
+            <%= f.number_field :display_order, class: "ant-control w-full", min: 0 %>
+            <p class="ant-field__hint">Lower numbers appear first.</p>
+          </div>
+          <div class="ant-field ant-field--portal">
+            <%= f.label :seo_title, "Search title (optional)", class: "ant-field__label" %>
+            <%= f.text_field :seo_title, value: service.seo["title"], class: "ant-control w-full" %>
+            <p class="ant-field__hint">Defaults to your service title.</p>
+          </div>
+          <div class="ant-field ant-field--portal">
+            <%= f.label :seo_description, "Search description (optional)", class: "ant-field__label" %>
+            <%= f.text_area :seo_description, value: service.seo["description"], rows: 2, class: "ant-control w-full" %>
+            <p class="ant-field__hint">Defaults to your short description.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="staff-editor-actions">
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="ant-btn-outline ant-btn-primary--compact" data-action="staff-service-editor#goBack" <%= "hidden" if editor_step == 1 %>>Back</button>
+          <% if editor_step < 4 %>
+            <button type="button" class="ant-btn-primary ant-btn-primary--compact" data-action="staff-service-editor#goNext">Continue</button>
+          <% end %>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <%= f.submit "Save draft", name: "commit", value: "save_draft", class: "ant-btn-outline ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
+          <% if editor_step < 4 %>
+            <%= f.submit "Save and continue", name: "commit", value: "save_continue", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit", form_submit_loading_message_value: "Saving…" } %>
+          <% end %>
+          <%= link_to "Cancel", staff_website_services_path, class: "text-sm font-semibold text-[#5f7d8c] hover:text-[#102c43]" %>
+        </div>
+      </div>
+    </div>
+
+    <aside class="staff-editor-layout__aside hidden lg:block" aria-label="Live draft preview">
+      <%= render "draft_preview" %>
+    </aside>
+  </div>
+<% end %>
