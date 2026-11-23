@@ -11,6 +11,8 @@ class Staff::RichTextEditorTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "trix-editor"
     assert_includes response.body, "ant-rich-text-toolbar"
+    assert_includes response.body, "data-trix-attribute=\"underline\""
+    assert_includes response.body, "More formatting"
     assert_includes response.body, "staff-editor-preview"
     assert_not_includes response.body, "rails/active_storage/direct_uploads"
   end

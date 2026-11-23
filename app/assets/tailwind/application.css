@@ -1452,6 +1452,35 @@
     @apply ml-auto;
   }
 
+  .ant-rich-text-toolbar__group--more {
+    @apply relative;
+  }
+
+  .ant-rich-text-toolbar__divider {
+    @apply hidden h-7 w-px shrink-0 bg-[#dbe6e9] sm:inline-block;
+  }
+
+  .ant-rich-text-toolbar__divider--hide-sm {
+    @apply hidden sm:inline-block;
+  }
+
+  .ant-rich-text-toolbar__btn--more {
+    @apply w-auto gap-1.5 px-2.5;
+  }
+
+  .ant-rich-text-toolbar__more-label {
+    @apply text-xs font-semibold text-[#466270];
+  }
+
+  .ant-rich-text-toolbar__more-panel {
+    @apply absolute left-0 top-[calc(100%+4px)] z-20 flex flex-wrap gap-1 rounded-xl border border-[#dbe6e9] bg-white p-1.5 shadow-lg;
+    min-width: 10rem;
+  }
+
+  .ant-rich-text-toolbar__more-panel[hidden] {
+    display: none !important;
+  }
+
   @media (max-width: 640px) {
     .ant-rich-text-toolbar__row {
       @apply gap-1.5 px-2;
@@ -1506,6 +1535,21 @@
 
   .ant-rich-text-editor trix-editor a {
     @apply font-semibold text-[#25877f] underline underline-offset-2;
+  }
+
+  .ant-rich-text-editor trix-editor pre,
+  .public-rich-text pre {
+    @apply my-4 overflow-x-auto rounded-xl border border-[#e3eaed] bg-[#f4f8f9] px-4 py-3 font-mono text-sm leading-relaxed text-[#173244];
+  }
+
+  .ant-rich-text-editor trix-editor u,
+  .public-rich-text u {
+    @apply underline underline-offset-2;
+  }
+
+  .ant-rich-text-editor trix-editor del,
+  .public-rich-text del {
+    @apply text-[#5f7d8c] line-through;
   }
 
   .staff-editorial-form__footer {

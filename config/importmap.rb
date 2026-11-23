@@ -1,6 +1,7 @@
 # Pin npm packages by running ./bin/importmap
 
 pin "application"
+pin "trix_ant_marine_config", to: "trix_ant_marine_config.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"

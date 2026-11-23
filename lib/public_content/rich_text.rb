@@ -2,7 +2,7 @@
 
 module PublicContent
   module RichText
-    ALLOWED_TAGS = %w[p br ul ol li strong em a h1 h2 h3 blockquote div].freeze
+    ALLOWED_TAGS = %w[p br ul ol li strong em a u del pre code h1 h2 h3 blockquote div].freeze
     ALLOWED_ATTRIBUTES = %w[href title rel class].freeze
     UNSAFE_HREF = /href\s*=\s*["']?\s*javascript:/i
   ATTACHMENT_MARKERS = /action-text-attachment|data-trix-attachment|data-trix-mutable="true"[^>]*class="[^"]*attachment/
