@@ -35,6 +35,9 @@ module PublicContent
 
     def submit_for_review!
       ensure_transition!(from: %w[draft], to: "in_review")
+      if @record.is_a?(Service) && !@record.valid?(:editorial)
+        raise InvalidTransition, @record.errors.full_messages.to_sentence
+      end
       @record.update!(
         status: "in_review",
         submitted_at: Time.current,

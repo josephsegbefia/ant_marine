@@ -22,6 +22,7 @@
 | Before | After |
 |--------|--------|
 | Single long admin form with raw slug/list text areas | Four-step guided editor: Basics → Details → Scope & process → Review |
+| Staff entered slug; draft save failed validation | Page address generated on first save; stable thereafter |
 | Minimal field help | Plain-English labels, hints, step validation, and missing-item checklist |
 | No in-context preview | Staff-only live draft preview + search snippet (not a public route) |
 | Breadcrumb showed only “Overview” on page | In-page trail: Team workspace › Website › Services › current service |
@@ -41,6 +42,23 @@ Organisation-scoped (`organization_id` → ANT Marine). Editorial workflow:
 On **publish**, draft fields are copied into `published_*` snapshot columns. Public site reads snapshots only for `status == published`. Draft, in review and approved rows return **404** by slug (no numeric-ID IDOR).
 
 Content: `title`, `slug`, `summary`, `body`, `category`, `audience`, `scope_items` / `process_steps` (jsonb string arrays), `display_order`, `seo` jsonb, `icon_key`, workflow timestamps and `*_by_membership_id` attribution.
+
+### Draft save validation correction (2026-11-23)
+
+**Root cause (six PO errors):**
+
+| Error | Cause | Fix |
+|-------|--------|-----|
+| Slug can't be blank / invalid | Staff form left slug empty; no server generation; slug still permitted | `PublicContent::ServiceSlug.generate` on **create**; slug removed from staff strong params; read-only “Page address” in UI |
+| Scope/process/published_* “is reserved” | `validates :*_items, exclusion: { in: [nil] }` — Rails treats **empty arrays** as excluded | Removed broken exclusions; `normalize_list_columns` coerces lists to `[]` |
+| Draft save mirrored into published snapshots | Controller copied draft JSONB into `published_*` on every save | Removed mirror; snapshots updated only via `PublicContent::Snapshot` on **publish** |
+
+**Validation contexts:**
+
+- Default (`create`/`update`): title required; lists may be empty; slug system-managed.
+- `:editorial`: summary, body, audience, category required — enforced on **submit for review** (`PublicContent::Transition`).
+
+**System-managed (not in staff `service_params`):** `slug`, `display_order` (defaulted on create), `status`, all `published_*`, workflow timestamps, attribution ids.
 
 ### `public_site_pages`
 

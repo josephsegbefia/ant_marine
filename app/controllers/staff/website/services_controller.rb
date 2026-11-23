@@ -29,13 +29,10 @@ module Staff
       def create
         @editor_step = editor_step_param
         @service = @organization.services.build(service_params)
-        @service.display_order = service_params[:display_order].presence || next_display_order
-        @service.category = service_params[:category].presence || "marine_surveys"
-        @service.icon_key = service_params[:icon_key].presence || "ship"
         @service.created_by_membership = Current.membership
         @service.updated_by_membership = Current.membership
         authorize @service
-        mirror_draft_json_defaults!(@service)
+        assign_new_service_defaults!(@service)
 
         if @service.save
           redirect_after_save(@service, created: true)
@@ -56,7 +53,6 @@ module Staff
         attributes.delete(:display_order) if attributes[:display_order].nil?
         @service.assign_attributes(attributes)
         @service.updated_by_membership = Current.membership
-        mirror_draft_json_defaults!(@service)
 
         if @service.save
           redirect_after_save(@service, created: false)
@@ -121,7 +117,7 @@ module Staff
 
         def service_params
           permitted = params.require(:service).permit(
-            :title, :slug, :summary, :body, :category, :audience, :display_order, :icon_key,
+            :title, :summary, :body, :category, :audience, :icon_key,
             :seo_title, :seo_description,
             :scope_items_text, :process_steps_text,
             scope_items: [],
@@ -129,12 +125,10 @@ module Staff
           )
           {
             title: permitted[:title],
-            slug: permitted[:slug],
             summary: permitted[:summary],
             body: permitted[:body],
             category: permitted[:category],
             audience: permitted[:audience],
-            display_order: permitted[:display_order],
             icon_key: permitted[:icon_key],
             scope_items: normalize_list(permitted[:scope_items], permitted[:scope_items_text]),
             process_steps: normalize_list(permitted[:process_steps], permitted[:process_steps_text]),
@@ -180,10 +174,11 @@ module Staff
           (policy_scope(Service).maximum(:display_order) || 0) + 1
         end
 
-        def mirror_draft_json_defaults!(service)
-          service.published_scope_items = service.scope_items if service.published_scope_items.blank?
-          service.published_process_steps = service.process_steps if service.published_process_steps.blank?
-          service.published_seo = service.seo if service.published_seo.blank?
+        def assign_new_service_defaults!(service)
+          service.display_order ||= next_display_order
+          service.category ||= "marine_surveys"
+          service.icon_key ||= "ship"
+          service.status ||= "draft"
         end
     end
   end

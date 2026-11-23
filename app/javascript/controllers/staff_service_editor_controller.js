@@ -9,9 +9,8 @@ export default class extends Controller {
     "stepField",
     "errorSummary",
     "errorList",
-    "slugField",
     "titleField",
-    "advancedPanel",
+    "suggestedPath",
     "previewTitle",
     "previewSummary",
     "previewBody",
@@ -33,7 +32,7 @@ export default class extends Controller {
     step: { type: Number, default: 1 },
     newRecord: Boolean,
     published: Boolean,
-    slugLocked: Boolean
+    savedSlug: String
   }
 
   connect() {
@@ -69,6 +68,14 @@ export default class extends Controller {
 
   validateBeforeSubmit(event) {
     const commit = event.submitter?.value
+    if (commit === "save_draft") {
+      if (!this.titleFieldTarget.value.trim()) {
+        event.preventDefault()
+        this.showErrors(["Enter a service name to save this draft."])
+        this.titleFieldTarget.focus()
+      }
+      return
+    }
     if (commit === "save_continue") {
       const result = this.validateStep(this.stepValue)
       if (!result.ok) {
@@ -142,15 +149,10 @@ export default class extends Controller {
     if (step === 1) {
       if (!this.titleFieldTarget.value.trim()) messages.push("Enter a service name to continue.")
       if (!this.fieldValue("summary").trim()) messages.push("Add a short description so visitors understand what this service offers.")
-      if (!this.slugFieldTarget.value.trim()) messages.push("Choose a page address for this service.")
     }
     if (step === 2) {
       if (!this.fieldValue("body").trim()) messages.push("Describe what this service involves before continuing.")
       if (!this.fieldValue("audience").trim()) messages.push("Tell us who this service is for.")
-    }
-    if (step === 3) {
-      if (!this.listValues("scope_items").length) messages.push("Add at least one item under “What’s included?”.")
-      if (!this.listValues("process_steps").length) messages.push("Add at least one step under “How does the process work?”.")
     }
     return { ok: messages.length === 0, messages }
   }
@@ -175,28 +177,16 @@ export default class extends Controller {
     if (this.stepValue === 1) {
       if (!this.titleFieldTarget.value.trim()) return this.titleFieldTarget.focus()
       if (!this.fieldValue("summary").trim()) return this.element.querySelector("#service_summary")?.focus()
-      return this.slugFieldTarget.focus()
     }
   }
 
   titleInput() {
-    if (!this.newRecordValue || this.publishedValue || this.slugLockedValue) return
+    this.markDirty()
+    if (!this.hasSuggestedPathTarget || !this.newRecordValue) return
     const slug = this.slugify(this.titleFieldTarget.value)
-    if (slug) this.slugFieldTarget.value = slug
-    this.markDirty()
-  }
-
-  slugInput() {
-    this.slugLockedValue = true
-    this.markDirty()
-  }
-
-  toggleAdvanced(event) {
-    event.preventDefault()
-    if (!this.hasAdvancedPanelTarget) return
-    const open = this.advancedPanelTarget.hasAttribute("hidden")
-    this.advancedPanelTarget.toggleAttribute("hidden", !open)
-    event.currentTarget.setAttribute("aria-expanded", open ? "true" : "false")
+    this.suggestedPathTarget.textContent = slug
+      ? `Likely address after save: /services/${slug}`
+      : "We will assign an address when you save this draft."
   }
 
   refreshPreview() {
@@ -224,8 +214,8 @@ export default class extends Controller {
       this.previewProcessTarget.textContent = steps.length > 0 ? steps.join(" → ") : "Process steps will appear here."
     }
     if (this.hasPreviewUrlTarget) {
-      const slug = this.slugFieldTarget.value.trim()
-      this.previewUrlTarget.textContent = slug ? `/services/${slug}` : "Page address not set yet"
+      const slug = this.savedSlugValue || this.slugify(this.titleFieldTarget.value)
+      this.previewUrlTarget.textContent = slug ? `/services/${slug}` : "Page address is assigned when you save"
     }
     if (this.hasPreviewSeoTitleTarget) {
       const seoTitle = this.fieldValue("seo_title")
@@ -255,7 +245,6 @@ export default class extends Controller {
     if (!this.fieldValue("audience").trim()) missing.push("Intended audience")
     if (!this.listValues("scope_items").length) missing.push("What's included")
     if (!this.listValues("process_steps").length) missing.push("Process steps")
-    if (!this.slugFieldTarget.value.trim()) missing.push("Page address")
     return missing
   }
 

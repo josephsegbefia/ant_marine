@@ -13,8 +13,8 @@ marine_surveys_draft:
   display_order: 1
   seo: '{}'
   status: draft
-  published_scope_items: '[]'
-  published_process_steps: '[]'
+  published_scope_items: []
+  published_process_steps: []
   published_seo: '{}'
 
 marine_surveys_published:

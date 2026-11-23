@@ -52,4 +52,16 @@ class AntUiHelperEmptyStateTest < ActionView::TestCase
       )
     end
   end
+
+  test "action buttons use paired compact classes" do
+    html = ant_empty_state(
+      title: "Empty",
+      primary_action: { label: "Primary", path: "/staff" },
+      secondary_action: { label: "Secondary", path: "/staff/invitations" }
+    )
+
+    assert_includes html, "ant-btn-primary--compact"
+    assert_includes html, "ant-btn-outline--compact"
+    refute_match(/ant-btn-outline ant-btn-primary--compact/, html)
+  end
 end

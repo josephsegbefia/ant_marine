@@ -51,13 +51,7 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
       post staff_website_services_path, params: {
         service: {
           title: "Harbour support",
-          slug: "harbour-support",
-          summary: "Harbour attendance.",
-          body: "Details pending editorial review.",
-          category: "project_support",
-          icon_key: "brief",
-          scope_items: [ "Harbour attendance" ],
-          process_steps: [ "Review request" ]
+          summary: "Harbour attendance."
         },
         commit: "save_draft",
         editor_step: 1
@@ -97,6 +91,28 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
   test "anonymous user denied new service" do
     get new_staff_website_service_path
     assert_redirected_to new_session_path
+  end
+
+  test "forged slug and published fields are ignored on update" do
+    sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
+    service = services(:marine_surveys_published)
+    prior = service.published_body
+
+    patch staff_website_service_path(service), params: {
+      service: {
+        title: service.title,
+        body: "Draft-only change",
+        slug: "forged-slug",
+        published_body: "Public hijack"
+      },
+      commit: "save_draft",
+      editor_step: 2
+    }
+
+    service.reload
+    assert_equal prior, service.published_body
+    assert_equal "published-surveys", service.slug
+    assert_equal "Draft-only change", service.body
   end
 
   test "submit for review workflow still works" do

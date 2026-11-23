@@ -67,7 +67,6 @@ module StaffWebsiteHelper
     missing << "At least one scope item" if service_editor_list(service, :scope_items).empty?
     missing << "At least one process step" if service_editor_list(service, :process_steps).empty?
     missing << "Service category" if service.category.blank?
-    missing << "Page address (URL slug)" if service.slug.blank?
     missing
   end
 
