@@ -1,0 +1,38 @@
+<%
+  variant = local_assigns.fetch(:variant, :default).to_s
+  size = local_assigns.fetch(:size, :default).to_s
+  tone = local_assigns.fetch(:tone, :neutral).to_s
+  title_id = local_assigns.fetch(:title_id) { "empty-state-#{title.to_s.parameterize}" }
+  primary = local_assigns[:primary_action]
+  secondary = local_assigns[:secondary_action]
+  guidance = local_assigns[:guidance]
+  icon = local_assigns[:icon]
+%>
+<section
+  class="ant-empty-state ant-empty-state--<%= variant %> ant-empty-state--<%= size %> ant-empty-state--<%= tone %>"
+  role="status"
+  aria-labelledby="<%= title_id %>"
+>
+  <% if icon.present? %>
+    <div class="ant-empty-state__icon-circle">
+      <%= render "shared/ui/empty_state_icon", name: icon %>
+    </div>
+  <% end %>
+  <h2 class="ant-empty-state__title" id="<%= title_id %>"><%= title %></h2>
+  <% if description.present? %>
+    <p class="ant-empty-state__description"><%= description %></p>
+  <% end %>
+  <% if guidance.present? %>
+    <p class="ant-empty-state__guidance"><%= guidance %></p>
+  <% end %>
+  <% if primary.present? || secondary.present? %>
+    <div class="ant-empty-state__actions">
+      <% if primary.present? %>
+        <%= link_to primary[:label], primary[:path], class: primary[:class].presence || "ant-btn-primary ant-btn-primary--compact", data: primary[:data] || {} %>
+      <% end %>
+      <% if secondary.present? %>
+        <%= link_to secondary[:label], secondary[:path], class: secondary[:class].presence || "ant-btn-outline ant-btn-primary--compact", data: secondary[:data] || {} %>
+      <% end %>
+    </div>
+  <% end %>
+</section>

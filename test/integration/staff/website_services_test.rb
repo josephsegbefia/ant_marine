@@ -3,6 +3,16 @@
 require "test_helper"
 
 class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
+  test "services index empty state with create action" do
+    Service.delete_all
+    sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
+    get staff_website_services_path
+    assert_response :success
+    assert_includes response.body, "ant-empty-state"
+    assert_includes response.body, "No service pages yet"
+    assert_includes response.body, "Create a service"
+  end
+
   test "super admin can view website services" do
     sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
     get staff_website_services_path

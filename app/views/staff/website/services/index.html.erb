@@ -8,11 +8,12 @@
     ) %>
 <%= render "staff/website/header", title: "Service pages", subtitle: "Manage what visitors read about your services." %>
 
-<div class="mt-6 flex justify-end">
-  <%= link_to "New service draft", new_staff_website_service_path, class: "ant-btn-primary ant-btn-primary--compact" %>
-</div>
-
 <% if @services.any? %>
+  <% if policy(Service).create? %>
+    <div class="mt-6 flex justify-end">
+      <%= link_to "New service draft", new_staff_website_service_path, class: "ant-btn-primary ant-btn-primary--compact" %>
+    </div>
+  <% end %>
   <div class="mt-4 space-y-3">
     <% @services.each do |service| %>
       <%= link_to staff_website_service_path(service), class: "portal-card block hover:border-[#25877f]" do %>
@@ -27,8 +28,17 @@
     <% end %>
   </div>
 <% else %>
-  <div class="portal-card mt-6">
-    <p class="text-sm text-[#5f7d8c]">No services yet. Create a draft to start building the public catalogue.</p>
+  <div class="mt-6">
+    <%= ant_empty_state(
+          icon: :layers,
+          title: "No service pages yet",
+          description: "Create a draft service page when you are ready to add to the public catalogue.",
+          guidance: "Nothing is visible on the public website until a service is reviewed and published.",
+          primary_action: (policy(Service).create? ? { label: "Create a service", path: new_staff_website_service_path } : nil),
+          secondary_action: { label: "View website pages", path: staff_website_pages_path },
+          variant: :default,
+          size: :spacious
+        ) %>
   </div>
 <% end %>
 

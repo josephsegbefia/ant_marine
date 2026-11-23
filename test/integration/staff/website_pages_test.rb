@@ -13,6 +13,16 @@ class Staff::WebsitePagesTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "pages index empty state" do
+    PublicSitePage.delete_all
+    sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
+    get staff_website_pages_path
+    assert_response :success
+    assert_includes response.body, "ant-empty-state"
+    assert_includes response.body, "No website pages yet"
+    assert_includes response.body, "View service pages"
+  end
+
   test "pages index succeeds with existing rows" do
     sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
     get staff_website_pages_path

@@ -631,6 +631,50 @@
     @apply mt-2 text-sm text-[#8799a3];
   }
 
+  .ant-empty-state {
+    @apply mx-auto w-full max-w-xl rounded-[14px] border border-dashed border-[#cfdfe3] bg-white px-5 py-10 text-center sm:px-8;
+  }
+
+  .ant-empty-state--muted {
+    @apply border-solid border-[#e2eaeb] bg-[#f8fafb];
+  }
+
+  .ant-empty-state--emphasis {
+    @apply border-solid border-[#b9ddd5] bg-[#f0faf8];
+  }
+
+  .ant-empty-state--compact {
+    @apply py-7;
+  }
+
+  .ant-empty-state--spacious {
+    @apply py-14;
+  }
+
+  .ant-empty-state--info .ant-empty-state__guidance {
+    @apply text-[#25877f];
+  }
+
+  .ant-empty-state__icon-circle {
+    @apply mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#e8f3f6] text-[#25877f];
+  }
+
+  .ant-empty-state__title {
+    @apply text-base font-bold text-[#102c43] sm:text-lg;
+  }
+
+  .ant-empty-state__description {
+    @apply mt-2 text-sm leading-relaxed text-[#5f7d8c];
+  }
+
+  .ant-empty-state__guidance {
+    @apply mt-3 text-xs leading-relaxed text-[#8799a3];
+  }
+
+  .ant-empty-state__actions {
+    @apply mt-6 flex flex-col items-stretch justify-center gap-2 sm:flex-row sm:items-center;
+  }
+
   .staff-app {
     @apply flex min-h-dvh flex-col bg-[#f4f7f8] lg:flex-row;
   }

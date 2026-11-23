@@ -68,6 +68,26 @@ module AntUiHelper
            }
   end
 
+  EmptyStateAction = Struct.new(:label, :path, :class, :data, keyword_init: true)
+
+  def ant_empty_state(title:, description: nil, guidance: nil, icon: nil,
+                      variant: :default, size: :default, tone: :neutral,
+                      primary_action: nil, secondary_action: nil, title_id: nil)
+    render partial: "shared/ui/empty_state",
+           locals: {
+             title: title,
+             description: description,
+             guidance: guidance,
+             icon: icon,
+             variant: variant,
+             size: size,
+             tone: tone,
+             title_id: title_id,
+             primary_action: normalize_empty_state_action(primary_action),
+             secondary_action: normalize_empty_state_action(secondary_action)
+           }
+  end
+
   def ant_collection_select(form, method, collection, value_method, text_method, **options)
     choices = collection.map { |item| [ item.public_send(text_method), item.public_send(value_method) ] }
     selected = options.delete(:selected)
@@ -84,6 +104,18 @@ module AntUiHelper
   end
 
   private
+
+    def normalize_empty_state_action(action)
+      return nil if action.blank?
+
+      path = validate_back_path!(action[:path] || action["path"])
+      EmptyStateAction.new(
+        label: (action[:label] || action["label"]).to_s,
+        path: path,
+        class: action[:class] || action["class"],
+        data: action[:data] || action["data"] || {}
+      )
+    end
 
     def validate_back_path!(path)
       string_path = path.to_s
