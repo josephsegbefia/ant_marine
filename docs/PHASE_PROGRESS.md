@@ -54,6 +54,7 @@
 | F4-01A Website list UX (M02/M03) | 2026-11-23 | **Code complete — PO browser gate open** | Shared list hub components, single breadcrumb, record cards; integration tests; **not pushed** |
 | F4-01B Public marketing content | 2026-11-23 | **Foundation local — PO content gate open** | Articles, case studies, training, resources + staff hub tabs; resource files disabled; **not pushed** |
 | F4-01B WYSIWYG editor | 2026-11-23 | **Code complete — PO browser gate open** | Action Text/Trix, draft preview, snapshot HTML, attachments disabled; **not pushed** |
+| F4-01B Action Text save + toolbar | 2026-11-23 | **Code complete — PO browser retest** | `ignored_columns` + dev schema refresh; custom toolbar/canvas; create-article regression tests; **not pushed** |
 | F4-01A Service editor UX | 2026-11-23 | **Delivered — PO visual sign-off pending** | Guided four-step editor + list builders + staff draft preview; Pundit fix `32503c1`; automated suite green; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |

@@ -1,12 +1,15 @@
 <% field_id = "#{form.object_name}_#{method}" %>
+<% toolbar_id = "#{field_id}_toolbar" %>
 <div class="ant-field ant-field--portal ant-rich-text-field" data-controller="rich-text-editor">
   <%= form.label method, label, class: "ant-field__label", for: field_id %>
   <% if hint.present? %>
     <p class="ant-field__hint"><%= hint %></p>
   <% end %>
   <div class="ant-rich-text-editor">
+    <%= render "shared/ui/rich_text_toolbar", toolbar_id: toolbar_id %>
     <%= form.rich_text_area method,
           id: field_id,
+          toolbar: toolbar_id,
           class: "ant-rich-text-editor__surface",
           required: required,
           data: {

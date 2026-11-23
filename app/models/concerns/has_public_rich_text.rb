@@ -12,6 +12,8 @@ module HasPublicRichText
     def has_public_rich_text(*attributes)
       symbols = attributes.map(&:to_sym)
       self.public_rich_text_attributes = (public_rich_text_attributes + symbols).uniq
+      # Legacy text columns were removed; never persist these names on the base table.
+      self.ignored_columns = (ignored_columns + symbols.map(&:to_s)).uniq
       symbols.each { |name| has_rich_text name }
     end
   end

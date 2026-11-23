@@ -48,6 +48,14 @@ No `project_id` or client org linkage. `release_basis` is for internal editorial
 
 Automated F4-01A + snapshot tests must remain green.
 
+## Action Text save fix (F4-01B corrective)
+
+**Root cause:** Migration `20261123143000` removed `articles.body` (and other legacy text columns) after backfill to `action_text_rich_texts`. Fresh test processes load the correct schema, but a **long-running `bin/dev` Puma** could keep **stale `ActiveRecord` column metadata** that still included `body`, so `INSERT` referenced a non-existent column.
+
+**Fix:** `HasPublicRichText#has_public_rich_text` sets **`ignored_columns`** for each rich-text name so legacy names are never written on the base table, plus `config/initializers/public_content_rich_text.rb` calls **`reset_column_information`** on prepare in development.
+
+**Regression:** `test/models/action_text_persistence_test.rb`, `test/integration/staff/article_create_action_text_test.rb`.
+
 ## Rich text (Action Text / Trix) — F4-01B amendment
 
 - Draft long-form fields stored in **Action Text** (`has_public_rich_text`); `published_*` columns remain frozen HTML snapshots on publish.
@@ -56,6 +64,7 @@ Automated F4-01A + snapshot tests must remain green.
 - Public render: `public_render_rich_text` + `.public-rich-text` typography (matches public reading styles).
 - Applies to: article body, case study story fields, training body, resource body, service body, website page body.
 - Embedded attachments rejected/scrubbed server-side; snapshot HTML sanitized (`PublicContent::RichText`).
+- Staff toolbar: shared `shared/ui/rich_text_toolbar` (Studio-aligned ANT chrome), custom Stimulus active states, comfortable canvas (`min-height` ~18–20rem), `heading3` block registered in Trix.
 
 ## Out of scope
 

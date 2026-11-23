@@ -7,7 +7,7 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | `ant_field` | [`app/helpers/ant_ui_helper.rb`](../../app/helpers/ant_ui_helper.rb) + [`app/views/shared/ui/_field.html.erb`](../../app/views/shared/ui/_field.html.erb) | Text, email, password inputs |
-| `ant_rich_text_field` | [`_rich_text_field.html.erb`](../../app/views/shared/ui/_rich_text_field.html.erb) + [`rich_text_editor_controller.js`](../../app/javascript/controllers/rich_text_editor_controller.js) | Action Text / Trix long-form editor (staff) |
+| `ant_rich_text_field` | [`_rich_text_field.html.erb`](../../app/views/shared/ui/_rich_text_field.html.erb) + [`_rich_text_toolbar.html.erb`](../../app/views/shared/ui/_rich_text_toolbar.html.erb) + [`rich_text_editor_controller.js`](../../app/javascript/controllers/rich_text_editor_controller.js) | Action Text / Trix long-form editor (staff): custom ANT toolbar, grouped controls, accessible labels |
 | `staff-editorial-preview` | [`staff_editorial_preview_controller.js`](../../app/javascript/controllers/staff_editorial_preview_controller.js) + [`editorial/_draft_preview.html.erb`](../../app/views/staff/website/editorial/_draft_preview.html.erb) | Live draft preview using `.public-rich-text` |
 | `ant_select` / `ant_collection_select` | [`_select.html.erb`](../../app/views/shared/ui/_select.html.erb) | Custom listbox synced to native `<select>` |
 | `toast-stack` | [`toast_stack_controller.js`](../../app/javascript/controllers/toast_stack_controller.js) | Global notifications |
