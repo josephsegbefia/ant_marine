@@ -1,0 +1,9 @@
+<% content_for :public_nav, "training" %>
+<section class="public-section public-page-banner">
+  <h1><%= @training.public_title %></h1>
+  <p class="public-hero__lede"><%= @training.public_summary %></p>
+</section>
+<section class="public-section portal-card article">
+  <%= public_format_text(@training.public_body) %>
+  <p class="mt-6"><%= link_to "Contact us about training", contact_path %></p>
+</section>

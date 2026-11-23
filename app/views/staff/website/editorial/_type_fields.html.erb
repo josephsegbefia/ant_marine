@@ -1,0 +1,18 @@
+<% if record.is_a?(Article) %>
+  <%= ant_select form, :category, choices: Article::CATEGORIES.map { |k, v| [v, k] }, label: "Category", context: :portal, placeholder: "Choose category" %>
+<% elsif record.is_a?(CaseStudy) %>
+  <%= ant_select form, :service_category, choices: service_category_options, label: "Related service area", context: :portal %>
+  <%= ant_field form, :industry, label: "Industry or sector", context: :portal %>
+  <%= ant_field form, :client_challenge, type: :textarea, label: "Client challenge", context: :portal, html_options: { rows: 3 } %>
+  <%= ant_field form, :approach, type: :textarea, label: "ANT Marine's approach", context: :portal, html_options: { rows: 3 } %>
+  <%= ant_field form, :work_performed, type: :textarea, label: "Work performed", context: :portal, html_options: { rows: 3 } %>
+  <%= ant_field form, :outcome, type: :textarea, label: "Outcome", context: :portal, html_options: { rows: 3 } %>
+  <%= ant_field form, :release_basis, type: :textarea, label: "Publication permission (internal note)", hint: "Record who approved sharing this story — not shown on the public site.", context: :portal, html_options: { rows: 2 } %>
+<% elsif record.is_a?(TrainingOffering) %>
+  <%= ant_field form, :audience, type: :textarea, label: "Who is this for?", context: :portal, html_options: { rows: 2 } %>
+  <%= ant_field form, :delivery_format, label: "Delivery format (optional)", hint: "e.g. workshop, on-site briefing.", context: :portal %>
+<% elsif record.is_a?(PublicResource) %>
+  <%= ant_select form, :resource_category, choices: PublicResource::RESOURCE_CATEGORIES.map { |k, v| [v, k] }, label: "Resource type", context: :portal %>
+  <%= ant_field form, :related_content_label, label: "Related topic (optional)", context: :portal %>
+  <p class="text-xs text-[#5f7d8c]">File downloads are not available in this release. Save catalogue information only.</p>
+<% end %>

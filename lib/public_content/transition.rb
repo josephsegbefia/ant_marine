@@ -35,7 +35,7 @@ module PublicContent
 
     def submit_for_review!
       ensure_transition!(from: %w[draft], to: "in_review")
-      if @record.is_a?(Service) && !@record.valid?(:editorial)
+      if editorial_record? && !@record.valid?(:editorial)
         raise InvalidTransition, @record.errors.full_messages.to_sentence
       end
       @record.update!(
@@ -73,8 +73,14 @@ module PublicContent
       from_status = @record.status
       ensure_transition!(from: %w[approved published], to: "published")
 
-      Snapshot.copy_service!(@record) if @record.is_a?(Service)
-      Snapshot.copy_site_page!(@record) if @record.is_a?(PublicSitePage)
+      case @record
+      when Service then Snapshot.copy_service!(@record)
+      when PublicSitePage then Snapshot.copy_site_page!(@record)
+      when Article then Snapshot.copy_article!(@record)
+      when CaseStudy then Snapshot.copy_case_study!(@record)
+      when TrainingOffering then Snapshot.copy_training_offering!(@record)
+      when PublicResource then Snapshot.copy_public_resource!(@record)
+      end
 
       attrs = {
         status: "published",
@@ -113,15 +119,25 @@ module PublicContent
 
     private
 
+      def editorial_record?
+        @record.is_a?(Service) ||
+          @record.is_a?(Article) ||
+          @record.is_a?(CaseStudy) ||
+          @record.is_a?(TrainingOffering) ||
+          @record.is_a?(PublicResource)
+      end
+
       def ensure_transition!(from:, to:)
         raise InvalidTransition, "Cannot move from #{@record.status} to #{to}" unless from.include?(@record.status)
       end
 
       def audit!(event_type, from:, to:)
-        subject_key = if @record.is_a?(Service)
+        subject_key = if @record.respond_to?(:slug) && @record.slug.present?
           @record.slug
-        else
+        elsif @record.respond_to?(:page_key)
           @record.page_key
+        else
+          @record.id.to_s
         end
         AuditEvent.record!(
           event_type: event_type,

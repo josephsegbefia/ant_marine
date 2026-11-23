@@ -6,6 +6,10 @@ class Organization < ApplicationRecord
   has_many :invitations, dependent: :destroy
   has_many :services, dependent: :destroy
   has_many :public_site_pages, dependent: :destroy
+  has_many :articles, dependent: :destroy
+  has_many :case_studies, dependent: :destroy
+  has_many :training_offerings, dependent: :destroy
+  has_many :public_resources, dependent: :destroy
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }

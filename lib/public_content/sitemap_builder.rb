@@ -2,7 +2,7 @@
 
 module PublicContent
   class SitemapBuilder
-    STATIC_PATHS = %w[/ /services /about /industries /how-we-work /contact].freeze
+    STATIC_PATHS = %w[/ /services /projects /training /insights /resources /about /industries /how-we-work /contact].freeze
 
     def self.call(host:)
       new(host: host).to_xml
@@ -16,6 +16,18 @@ module PublicContent
       urls = STATIC_PATHS.map { |path| url_node(path) }
       Service.published_catalogue.for_ant_marine.find_each do |service|
         urls << url_node("/services/#{service.slug}", updated_at: service.updated_at)
+      end
+      Article.published_catalogue.for_ant_marine.find_each do |item|
+        urls << url_node("/insights/#{item.slug}", updated_at: item.updated_at)
+      end
+      CaseStudy.published_catalogue.for_ant_marine.find_each do |item|
+        urls << url_node("/projects/#{item.slug}", updated_at: item.updated_at)
+      end
+      TrainingOffering.published_catalogue.for_ant_marine.find_each do |item|
+        urls << url_node("/training/#{item.slug}", updated_at: item.updated_at)
+      end
+      PublicResource.published_catalogue.for_ant_marine.find_each do |item|
+        urls << url_node("/resources/#{item.slug}", updated_at: item.updated_at)
       end
 
       <<~XML

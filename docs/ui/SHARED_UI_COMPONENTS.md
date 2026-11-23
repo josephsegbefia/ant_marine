@@ -55,6 +55,8 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 
 Breadcrumbs: set in `Staff::Website::*` controllers via `assign_staff_breadcrumb` / `assign_website_section_breadcrumb` (rendered once in `shared/staff/_header.html.erb`).
 
+F4-01B reuses the same hub (`staff/website/_website_hub_tabs`, `editorial/index`, `workflow_actions`, `website_workflow_button`) for articles, case studies, training offerings and public resources.
+
 ## Empty state
 
 Use when a list or section has nothing to show yet. The **parent page** supplies all copy, icons and routes — the component does not hardcode modules.

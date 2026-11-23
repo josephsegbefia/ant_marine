@@ -1,0 +1,21 @@
+<% content_for :public_nav, "training" %>
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Training</p>
+  <h1>Training and workshops.</h1>
+  <p class="public-hero__lede">Explore what ANT Marine can offer. Registration and scheduling are arranged separately.</p>
+</section>
+<section class="public-section">
+  <% if @training_offerings.any? %>
+    <div class="public-service-grid">
+      <% @training_offerings.each do |training| %>
+        <article class="portal-card public-service-card">
+          <h2><%= training.public_title %></h2>
+          <p><%= training.public_summary %></p>
+          <p><%= link_to "View details", public_training_offering_path(training.slug) %></p>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="portal-card"><p>No training courses are published yet. <%= link_to "Contact us", contact_path %> to discuss your needs.</p></div>
+  <% end %>
+</section>

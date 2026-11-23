@@ -1,0 +1,10 @@
+<% content_for :public_nav, "insights" %>
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow"><%= @article.public_category %></p>
+  <h1><%= @article.public_title %></h1>
+  <p class="public-hero__lede"><%= @article.public_summary %></p>
+</section>
+<section class="public-section portal-card article">
+  <%= public_format_text(@article.public_body) %>
+  <p class="mt-6"><%= link_to "All insights", public_insights_path %></p>
+</section>

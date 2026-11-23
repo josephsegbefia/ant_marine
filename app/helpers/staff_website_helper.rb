@@ -200,6 +200,54 @@ module StaffWebsiteHelper
     "/services/#{slug}"
   end
 
+  def editorial_record_primary_action(record)
+    return nil unless policy(record).update?
+
+    path = editorial_staff_path(record, :edit)
+    { label: "Continue editing", path: path }
+  end
+
+  def editorial_record_public_action(record)
+    return nil unless record.published?
+
+    path = case record
+    when Article then public_insight_path(record.slug)
+    when CaseStudy then public_project_path(record.slug)
+    when TrainingOffering then public_training_offering_path(record.slug)
+    when PublicResource then public_resource_path(record.slug)
+    else nil
+    end
+    return nil if path.blank?
+
+    { label: "View public page", path: path }
+  end
+
+  def editorial_transition_path(record, transition)
+    send("#{transition}_#{editorial_route_key(record)}_path", record)
+  end
+
+  def editorial_route_key(record)
+    case record
+    when Service then "staff_website_service"
+    when PublicSitePage then "staff_website_page"
+    when Article then "staff_website_article"
+    when CaseStudy then "staff_website_case_study"
+    when TrainingOffering then "staff_website_training_offering"
+    when PublicResource then "staff_website_public_resource"
+    else
+      raise ArgumentError, "Unknown editorial record"
+    end
+  end
+
+  def editorial_staff_path(record, action)
+    case record
+    when Article then send("#{action}_staff_website_article_path", record)
+    when CaseStudy then send("#{action}_staff_website_case_study_path", record)
+    when TrainingOffering then send("#{action}_staff_website_training_offering_path", record)
+    when PublicResource then send("#{action}_staff_website_public_resource_path", record)
+    end
+  end
+
   def website_workflow_button(label, url, variant: :primary, confirm: nil)
     classes = variant == :outline ? "ant-btn-outline ant-btn-outline--compact" : "ant-btn-primary ant-btn-primary--compact"
     options = {

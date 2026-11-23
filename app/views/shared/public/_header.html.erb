@@ -22,6 +22,10 @@
        data-public-nav-target="nav">
     <%= link_to "Home", root_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:home)}" %>
     <%= link_to "Services", public_services_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:services)}" %>
+    <%= link_to "Our work", public_projects_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:projects)}" %>
+    <%= link_to "Training", public_training_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:training)}" %>
+    <%= link_to "Insights", public_insights_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:insights)}" %>
+    <%= link_to "Resources", public_resources_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:resources)}" %>
     <%= link_to "About", about_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:about)}" %>
     <%= link_to "Industries", industries_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:industries)}" %>
     <%= link_to "How we work", how_we_work_path, class: "public-header__link#{" public-header__link--active" if public_nav_active?(:how_we_work)}" %>

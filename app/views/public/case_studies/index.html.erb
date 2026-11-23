@@ -1,0 +1,21 @@
+<% content_for :public_nav, "projects" %>
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Our work</p>
+  <h1>Projects and experience.</h1>
+  <p class="public-hero__lede">Examples are published only with appropriate client permission.</p>
+</section>
+<section class="public-section">
+  <% if @case_studies.any? %>
+    <div class="public-service-grid">
+      <% @case_studies.each do |study| %>
+        <article class="portal-card public-service-card">
+          <h2><%= study.public_title %></h2>
+          <p><%= study.public_summary %></p>
+          <p><%= link_to "View story", public_project_path(study.slug) %></p>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="portal-card"><p>We will share approved project stories here when they are ready. <%= link_to "Contact us", contact_path %> in the meantime.</p></div>
+  <% end %>
+</section>

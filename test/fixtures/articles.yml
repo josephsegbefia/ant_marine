@@ -1,0 +1,26 @@
+insight_draft:
+  organization: ant_marine
+  slug: draft-insight
+  title: Draft insight article
+  summary: Introduction text
+  body: Body text
+  category: guidance
+  seo: '{}'
+  status: draft
+  published_seo: '{}'
+
+insight_published:
+  organization: ant_marine
+  slug: published-insight
+  title: Published insight
+  summary: Public summary
+  body: Public body
+  category: guidance
+  seo: '{}'
+  status: published
+  published_title: Published insight
+  published_summary: Public summary
+  published_body: Public body
+  published_category: guidance
+  published_seo: '{}'
+  published_at: <%= 2.days.ago.iso8601 %>

@@ -1,0 +1,13 @@
+<% content_for :public_nav, "resources" %>
+<section class="public-section public-page-banner">
+  <h1><%= @resource.public_title %></h1>
+  <p class="public-hero__lede"><%= @resource.public_summary %></p>
+</section>
+<section class="public-section portal-card article">
+  <%= public_format_text(@resource.public_body) %>
+  <% if @resource.downloadable? %>
+    <p class="mt-4 text-sm text-[#5f7d8c]">Download will be enabled when file release is approved.</p>
+  <% else %>
+    <p class="mt-4 text-sm text-[#5f7d8c]">This listing is informational. File download is not available yet.</p>
+  <% end %>
+</section>

@@ -1,0 +1,14 @@
+<% content_for :staff_nav, :website %>
+<div class="staff-website-hub max-w-3xl">
+  <h1 class="text-2xl font-extrabold text-[#173244]"><%= @record.title %></h1>
+  <p class="mt-2 text-sm text-[#5f7d8c]"><%= public_content_list_guidance(@record.status) %></p>
+  <div class="mt-4 flex flex-wrap gap-2">
+    <% if policy(@record).update? %>
+      <%= link_to "Continue editing", url_for(action: :edit, id: @record), class: "ant-btn-outline ant-btn-outline--compact" %>
+    <% end %>
+  </div>
+  <div class="portal-card mt-6">
+    <%= render "staff/website/workflow_actions", record: @record %>
+  </div>
+  <%= link_to "Back to #{editorial_section_label.downcase}", editorial_index_path, class: "mt-6 inline-block text-sm font-semibold text-[#25877f]" %>
+</div>

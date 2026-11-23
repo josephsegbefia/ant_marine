@@ -1,0 +1,22 @@
+<%= form_with model: [:staff, :website, record], class: "mt-6 space-y-4" do |f| %>
+  <% if record.errors.any? %>
+    <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900" role="alert">
+      <%= record.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+  <div class="portal-card space-y-4">
+    <%= ant_field f, :title, label: "Title", required: true, context: :portal %>
+    <%= ant_field f, :summary, type: :textarea, label: "Short introduction", required: true, context: :portal, html_options: { rows: 3 } %>
+    <%= ant_field f, :body, type: :textarea, label: "Main content", required: true, context: :portal, html_options: { rows: 10 } %>
+    <%= render "staff/website/editorial/type_fields", record: record, form: f %>
+    <div class="ant-field ant-field--portal">
+      <label class="ant-field__label" for="<%= f.object_name %>_seo_title">Search title (optional)</label>
+      <%= text_field_tag "#{f.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{f.object_name}_seo_title" %>
+    </div>
+    <div class="ant-field ant-field--portal">
+      <label class="ant-field__label" for="<%= f.object_name %>_seo_description">Search description (optional)</label>
+      <%= text_area_tag "#{f.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{f.object_name}_seo_description" %>
+    </div>
+  </div>
+  <%= f.submit "Save draft", class: "ant-btn-primary ant-btn-primary--compact" %>
+<% end %>

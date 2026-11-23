@@ -1,0 +1,22 @@
+<% content_for :public_nav, "insights" %>
+<section class="public-section public-page-banner">
+  <p class="public-eyebrow">Insights</p>
+  <h1>Useful maritime guidance and updates.</h1>
+  <p class="public-hero__lede">Articles are published only after editorial review.</p>
+</section>
+<section class="public-section">
+  <% if @articles.any? %>
+    <div class="public-service-grid">
+      <% @articles.each do |article| %>
+        <article class="portal-card public-service-card">
+          <p class="text-xs font-bold text-[#5f7d8c]"><%= article.public_category %></p>
+          <h2><%= article.public_title %></h2>
+          <p><%= article.public_summary %></p>
+          <p><%= link_to "Read article", public_insight_path(article.slug) %></p>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="portal-card"><p>No articles are published yet. <%= link_to "Contact us", contact_path %> to discuss maritime support.</p></div>
+  <% end %>
+</section>

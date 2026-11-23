@@ -1,0 +1,9 @@
+<% content_for :public_nav, "projects" %>
+<section class="public-section public-page-banner">
+  <h1><%= @case_study.public_title %></h1>
+  <p class="public-hero__lede"><%= @case_study.public_summary %></p>
+</section>
+<section class="public-section portal-card article">
+  <%= public_format_text(@case_study.public_body) %>
+  <p class="mt-6"><%= link_to "All project stories", public_projects_path %></p>
+</section>

@@ -1,0 +1,36 @@
+<% content_for :staff_nav, :website %>
+<div class="staff-website-hub">
+  <%= render "staff/website/management_header",
+        active_tab: @hub_active_tab,
+        primary_action: (policy(editorial_record_class).create? ? { label: @hub_create_label, path: @hub_new_path } : nil) %>
+
+  <% if @records.any? %>
+    <%= render layout: "staff/website/content_list_panel",
+              locals: { section_title: @hub_section_title, notice: @hub_section_notice } do %>
+      <% @records.each do |record| %>
+        <%= ant_content_record(
+              title: record.title,
+              description: record.summary.presence || "Draft content",
+              guidance: public_content_list_guidance(record.status),
+              meta: (record.updated_at ? "Last saved #{l(record.updated_at, format: :short)}" : nil),
+              icon: @hub_empty_icon,
+              status_label: public_content_status_label(record.status),
+              status_badge_class: public_content_status_badge_class(record.status),
+              primary_action: editorial_record_primary_action(record),
+              secondary_action: editorial_record_public_action(record)
+            ) %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <div class="staff-website-hub__empty">
+      <%= ant_empty_state(
+            icon: @hub_empty_icon,
+            title: @hub_empty_title,
+            description: @hub_empty_description,
+            guidance: @hub_section_notice,
+            primary_action: (policy(editorial_record_class).create? ? { label: @hub_create_label, path: @hub_new_path } : nil),
+            variant: :muted
+          ) %>
+    </div>
+  <% end %>
+</div>

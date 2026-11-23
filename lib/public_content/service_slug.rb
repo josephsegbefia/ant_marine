@@ -2,29 +2,16 @@
 
 module PublicContent
   module ServiceSlug
-    MAX_BASE_LENGTH = 80
-    RESERVED = %w[new edit index admin api staff client session].freeze
+    RESERVED = %w[new edit index admin api staff client session insights projects training resources].freeze
 
     module_function
 
     def generate(title:, organization:, except_id: nil)
-      base = title.to_s.parameterize
-      base = "service" if base.blank?
-      base = base.delete_prefix("-").delete_suffix("-")
-      base = base[0, MAX_BASE_LENGTH]
-      base = "service" if base.blank?
-
-      candidate = base
-      suffix = 2
-      scope = organization.services
-      scope = scope.where.not(id: except_id) if except_id
-
-      while reserved?(candidate) || scope.exists?(slug: candidate)
-        candidate = "#{base}-#{suffix}"
-        suffix += 1
-      end
-
-      candidate
+      ContentSlug.generate(
+        title: title,
+        scope: organization.services,
+        except_id: except_id
+      )
     end
 
     def reserved?(slug)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,40 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "articles", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.string "category"
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.string "published_category"
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_articles_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_articles_on_created_by_membership_id"
+    t.index ["organization_id", "slug"], name: "index_articles_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_articles_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_articles_on_published_by_membership_id"
+    t.index ["status", "published_at"], name: "index_articles_on_status_and_published_at"
+    t.index ["updated_by_membership_id"], name: "index_articles_on_updated_by_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::text, 'in_review'::text, 'approved'::text, 'published'::text, 'archived'::text])", name: "articles_status_check"
+  end
+
   create_table "audit_events", force: :cascade do |t|
     t.bigint "organization_id"
     t.bigint "actor_membership_id"
@@ -57,6 +91,51 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
     t.index ["organization_id", "occurred_at"], name: "index_audit_events_on_organization_id_and_occurred_at"
     t.index ["organization_id"], name: "index_audit_events_on_organization_id"
     t.index ["subject_type", "subject_id"], name: "index_audit_events_on_subject_type_and_subject_id"
+  end
+
+  create_table "case_studies", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.string "service_category"
+    t.string "industry"
+    t.text "client_challenge"
+    t.text "approach"
+    t.text "work_performed"
+    t.text "outcome"
+    t.text "release_basis"
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.string "published_service_category"
+    t.string "published_industry"
+    t.text "published_client_challenge"
+    t.text "published_approach"
+    t.text "published_work_performed"
+    t.text "published_outcome"
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_case_studies_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_case_studies_on_created_by_membership_id"
+    t.index ["organization_id", "slug"], name: "index_case_studies_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_case_studies_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_case_studies_on_published_by_membership_id"
+    t.index ["status", "published_at"], name: "index_case_studies_on_status_and_published_at"
+    t.index ["updated_by_membership_id"], name: "index_case_studies_on_updated_by_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::text, 'in_review'::text, 'approved'::text, 'published'::text, 'archived'::text])", name: "case_studies_status_check"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -143,6 +222,44 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
     t.datetime "updated_at", null: false
     t.index ["key"], name: "index_permissions_on_key", unique: true
     t.check_constraint "override_rule::text = ANY (ARRAY['yes'::character varying::text, 'protected'::character varying::text, 'deny_only'::character varying::text])", name: "permissions_override_rule_check"
+  end
+
+  create_table "public_resources", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.string "resource_category"
+    t.string "related_content_label"
+    t.boolean "file_release_enabled", default: false, null: false
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.string "published_resource_category"
+    t.string "published_related_content_label"
+    t.boolean "published_file_release_enabled", default: false, null: false
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_public_resources_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_public_resources_on_created_by_membership_id"
+    t.index ["organization_id", "slug"], name: "index_public_resources_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_public_resources_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_public_resources_on_published_by_membership_id"
+    t.index ["status", "published_at"], name: "index_public_resources_on_status_and_published_at"
+    t.index ["updated_by_membership_id"], name: "index_public_resources_on_updated_by_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::text, 'in_review'::text, 'approved'::text, 'published'::text, 'archived'::text])", name: "public_resources_status_check"
   end
 
   create_table "public_site_pages", force: :cascade do |t|
@@ -277,6 +394,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
     t.check_constraint "scan_status::text = ANY (ARRAY['pending_upload'::character varying, 'scanning'::character varying, 'available'::character varying, 'rejected'::character varying]::text[])", name: "storage_assets_scan_status_check"
   end
 
+  create_table "training_offerings", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "body"
+    t.text "audience"
+    t.jsonb "learning_objectives", default: [], null: false
+    t.jsonb "topics", default: [], null: false
+    t.string "delivery_format"
+    t.jsonb "seo", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.string "published_title"
+    t.text "published_summary"
+    t.text "published_body"
+    t.text "published_audience"
+    t.jsonb "published_learning_objectives", default: [], null: false
+    t.jsonb "published_topics", default: [], null: false
+    t.string "published_delivery_format"
+    t.jsonb "published_seo", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.bigint "approved_by_membership_id"
+    t.bigint "published_by_membership_id"
+    t.datetime "submitted_at"
+    t.datetime "approved_at"
+    t.datetime "published_at"
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_membership_id"], name: "index_training_offerings_on_approved_by_membership_id"
+    t.index ["created_by_membership_id"], name: "index_training_offerings_on_created_by_membership_id"
+    t.index ["organization_id", "slug"], name: "index_training_offerings_on_organization_id_and_slug", unique: true
+    t.index ["organization_id"], name: "index_training_offerings_on_organization_id"
+    t.index ["published_by_membership_id"], name: "index_training_offerings_on_published_by_membership_id"
+    t.index ["status", "published_at"], name: "index_training_offerings_on_status_and_published_at"
+    t.index ["updated_by_membership_id"], name: "index_training_offerings_on_updated_by_membership_id"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::text, 'in_review'::text, 'approved'::text, 'published'::text, 'archived'::text])", name: "training_offerings_status_check"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
@@ -292,8 +449,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "articles", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "articles", "memberships", column: "created_by_membership_id"
+  add_foreign_key "articles", "memberships", column: "published_by_membership_id"
+  add_foreign_key "articles", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "articles", "organizations"
   add_foreign_key "audit_events", "memberships", column: "actor_membership_id"
   add_foreign_key "audit_events", "organizations"
+  add_foreign_key "case_studies", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "case_studies", "memberships", column: "created_by_membership_id"
+  add_foreign_key "case_studies", "memberships", column: "published_by_membership_id"
+  add_foreign_key "case_studies", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "case_studies", "organizations"
   add_foreign_key "invitations", "memberships", column: "invited_by_membership_id"
   add_foreign_key "invitations", "organizations"
   add_foreign_key "invitations", "users", column: "accepted_by_user_id"
@@ -302,6 +469,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
   add_foreign_key "permission_overrides", "memberships"
   add_foreign_key "permission_overrides", "memberships", column: "granted_by_membership_id"
   add_foreign_key "permission_overrides", "permissions"
+  add_foreign_key "public_resources", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "public_resources", "memberships", column: "created_by_membership_id"
+  add_foreign_key "public_resources", "memberships", column: "published_by_membership_id"
+  add_foreign_key "public_resources", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "public_resources", "organizations"
   add_foreign_key "public_site_pages", "memberships", column: "approved_by_membership_id"
   add_foreign_key "public_site_pages", "memberships", column: "created_by_membership_id"
   add_foreign_key "public_site_pages", "memberships", column: "published_by_membership_id"
@@ -318,4 +490,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_010000) do
   add_foreign_key "storage_assets", "active_storage_blobs"
   add_foreign_key "storage_assets", "memberships", column: "uploaded_by_membership_id"
   add_foreign_key "storage_assets", "organizations"
+  add_foreign_key "training_offerings", "memberships", column: "approved_by_membership_id"
+  add_foreign_key "training_offerings", "memberships", column: "created_by_membership_id"
+  add_foreign_key "training_offerings", "memberships", column: "published_by_membership_id"
+  add_foreign_key "training_offerings", "memberships", column: "updated_by_membership_id"
+  add_foreign_key "training_offerings", "organizations"
 end

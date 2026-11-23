@@ -1,42 +1,21 @@
-<%# locals: record (Service or PublicSitePage) %>
+<%# locals: record %>
 <div class="staff-workflow-actions flex flex-wrap gap-2">
-  <% if record.is_a?(Service) %>
-    <% if policy(record).submit_for_review? && record.draft? %>
-      <%= website_workflow_button "Submit for review", submit_for_review_staff_website_service_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).withdraw? && record.in_review? %>
-      <%= website_workflow_button "Request changes", withdraw_staff_website_service_path(record), variant: :outline %>
-    <% end %>
-    <% if policy(record).approve? && record.in_review? %>
-      <%= website_workflow_button "Approve content", approve_staff_website_service_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).publish? && (record.approved? || record.published?) %>
-      <%= website_workflow_button "Publish to website", publish_staff_website_service_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).unpublish? && record.published? %>
-      <%= website_workflow_button "Unpublish", unpublish_staff_website_service_path(record), variant: :outline %>
-    <% end %>
-    <% if policy(record).archive? %>
-      <%= website_workflow_button "Archive", archive_staff_website_service_path(record), variant: :outline, confirm: "Archive this service? It will be hidden from the public website." %>
-    <% end %>
-  <% else %>
-    <% if policy(record).submit_for_review? && record.draft? %>
-      <%= website_workflow_button "Submit for review", submit_for_review_staff_website_page_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).withdraw? && record.in_review? %>
-      <%= website_workflow_button "Request changes", withdraw_staff_website_page_path(record), variant: :outline %>
-    <% end %>
-    <% if policy(record).approve? && record.in_review? %>
-      <%= website_workflow_button "Approve content", approve_staff_website_page_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).publish? && (record.approved? || record.published?) %>
-      <%= website_workflow_button "Publish to website", publish_staff_website_page_path(record), variant: :primary %>
-    <% end %>
-    <% if policy(record).unpublish? && record.published? %>
-      <%= website_workflow_button "Unpublish", unpublish_staff_website_page_path(record), variant: :outline %>
-    <% end %>
-    <% if policy(record).archive? %>
-      <%= website_workflow_button "Archive", archive_staff_website_page_path(record), variant: :outline, confirm: "Archive this page? It will be hidden from the public website." %>
-    <% end %>
+  <% if policy(record).submit_for_review? && record.draft? %>
+    <%= website_workflow_button "Submit for review", editorial_transition_path(record, :submit_for_review), variant: :primary %>
+  <% end %>
+  <% if policy(record).withdraw? && record.in_review? %>
+    <%= website_workflow_button "Request changes", editorial_transition_path(record, :withdraw), variant: :outline %>
+  <% end %>
+  <% if policy(record).approve? && record.in_review? %>
+    <%= website_workflow_button "Approve content", editorial_transition_path(record, :approve), variant: :primary %>
+  <% end %>
+  <% if policy(record).publish? && (record.approved? || record.published?) %>
+    <%= website_workflow_button "Publish to website", editorial_transition_path(record, :publish), variant: :primary %>
+  <% end %>
+  <% if policy(record).unpublish? && record.published? %>
+    <%= website_workflow_button "Unpublish", editorial_transition_path(record, :unpublish), variant: :outline %>
+  <% end %>
+  <% if policy(record).archive? %>
+    <%= website_workflow_button "Archive", editorial_transition_path(record, :archive), variant: :outline, confirm: "Archive this item? It will be hidden from the public website." %>
   <% end %>
 </div>

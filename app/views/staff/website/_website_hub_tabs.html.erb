@@ -1,0 +1,12 @@
+<% active = local_assigns[:active_tab] %>
+<%= ant_section_tabs(
+      aria_label: "Website management",
+      tabs: [
+        { label: "Services", path: staff_website_services_path, active: active == :services },
+        { label: "Website pages", path: staff_website_pages_path, active: active == :pages },
+        { label: "Insights", path: staff_website_articles_path, active: active == :insights },
+        { label: "Our work", path: staff_website_case_studies_path, active: active == :our_work },
+        { label: "Training", path: staff_website_training_offerings_path, active: active == :training },
+        { label: "Resources", path: staff_website_public_resources_path, active: active == :resources }
+      ]
+    ) %>
