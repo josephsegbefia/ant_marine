@@ -1150,8 +1150,56 @@
     @apply space-y-2;
   }
 
-  .staff-editor-actions {
-    @apply mt-6 flex flex-col gap-4 border-t border-[#e2eaeb] pt-4 sm:flex-row sm:items-center sm:justify-between;
+  .staff-editor-footer {
+    @apply mt-6 space-y-4 border-t border-[#e2eaeb] pt-5;
+  }
+
+  .staff-editor-footer__meta {
+    @apply space-y-1 text-sm text-[#5f7d8c];
+  }
+
+  .staff-editor-footer__step {
+    @apply font-semibold text-[#173244];
+  }
+
+  .staff-editor-footer__status strong {
+    @apply text-[#102c43];
+  }
+
+  .staff-editor-footer__status-detail {
+    @apply text-xs leading-relaxed text-[#5f7d8c];
+  }
+
+  .staff-editor-footer__help {
+    @apply text-xs leading-relaxed;
+  }
+
+  .staff-editor-footer__cluster {
+    @apply flex flex-col gap-3;
+  }
+
+  .staff-editor-footer__primary {
+    @apply flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .staff-editor-footer__back {
+    @apply sm:mr-1;
+  }
+
+  .staff-editor-footer__review {
+    @apply pt-1 sm:pt-0;
+  }
+
+  .staff-editor-footer__return {
+    @apply mt-2 border-t border-[#e2eaeb] pt-3;
+  }
+
+  .staff-editor-footer__return-link {
+    @apply text-sm font-semibold text-[#5f7d8c] no-underline hover:text-[#102c43] hover:underline;
+  }
+
+  .staff-editor-footer__return-link:focus-visible {
+    @apply rounded outline-2 outline-offset-2 outline-[#25877f];
   }
 
   .staff-editor-error {

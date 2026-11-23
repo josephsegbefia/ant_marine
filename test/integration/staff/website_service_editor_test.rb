@@ -15,6 +15,10 @@ class Staff::WebsiteServiceEditorTest < ActionDispatch::IntegrationTest
     assert_select "[role='tab']", 4
     assert_select "#editor-step-panel-1"
     assert_select "#editor-step-panel-4"
+    assert_includes response.body, "Save and continue"
+    refute_includes response.body, ">Continue</button>"
+    refute_match(/>\s*save_continue\s*</i, response.body)
+    assert_includes response.body, "Return to services"
   end
 
   test "edit opens requested step" do
@@ -42,6 +46,14 @@ class Staff::WebsiteServiceEditorTest < ActionDispatch::IntegrationTest
     @service.reload
     assert_equal [ "Updated item", "Second item" ], @service.scope_items
     assert_equal [ "Step one" ], @service.process_steps
+  end
+
+  test "step four shows submit for review when draft" do
+    get edit_staff_website_service_path(@service, step: 4)
+    assert_response :success
+    assert_includes response.body, "Submit for review"
+    assert_includes response.body, 'value="save_continue"'
+    assert_includes response.body, "hidden"
   end
 
   test "draft preview route remains staff only" do

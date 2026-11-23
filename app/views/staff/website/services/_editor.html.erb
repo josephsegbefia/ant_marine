@@ -4,7 +4,6 @@
 <div class="staff-editor-head">
   <h1 class="staff-editor-head__title" id="staff-service-editor-heading"><%= heading %></h1>
   <p class="staff-editor-head__lede">Build a service page for visitors. Save it as a draft before submitting it for review.</p>
-  <%= ant_back_link label: "Back to services", path: staff_website_services_path %>
 </div>
 
 <%= form_with(
@@ -188,21 +187,7 @@
         </div>
       </details>
 
-      <div class="staff-editor-actions">
-        <div class="flex flex-wrap gap-2">
-          <button type="button" class="ant-btn-outline ant-btn-primary--compact" data-action="staff-service-editor#goBack" <%= "hidden" if editor_step == 1 %>>Back</button>
-          <% if editor_step < 4 %>
-            <button type="button" class="ant-btn-primary ant-btn-primary--compact" data-action="staff-service-editor#goNext">Continue</button>
-          <% end %>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          <%= f.submit "Save draft", name: "commit", value: "save_draft", class: "ant-btn-outline ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
-          <% if editor_step < 4 %>
-            <%= f.submit "Save and continue", name: "commit", value: "save_continue", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit", form_submit_loading_message_value: "Saving…" } %>
-          <% end %>
-          <%= link_to "Cancel", staff_website_services_path, class: "text-sm font-semibold text-[#5f7d8c] hover:text-[#102c43]" %>
-        </div>
-      </div>
+      <%= render "editor_footer", service: service, editor_step: editor_step %>
     </div>
 
     <aside class="staff-editor-layout__aside hidden lg:block" aria-label="Live draft preview">
@@ -210,3 +195,7 @@
     </aside>
   </div>
 <% end %>
+
+<p class="staff-editor-footer__return">
+  <%= link_to "Return to services", staff_website_services_path, class: "staff-editor-footer__return-link" %>
+</p>

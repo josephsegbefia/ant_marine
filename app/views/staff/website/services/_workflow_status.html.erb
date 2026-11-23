@@ -3,9 +3,6 @@
     <h2 class="text-base font-semibold text-[#102c43]">Publishing status</h2>
     <p class="mt-2 text-sm text-[#5f7d8c]"><span class="font-semibold text-[#173244]"><%= service.status.humanize %></span> — <%= service_status_guidance(service) %></p>
     <div class="mt-4 flex flex-wrap gap-2">
-      <% if policy(service).submit_for_review? && service.draft? %>
-        <%= button_to "Submit for review", submit_for_review_staff_website_service_path(service), method: :post, class: "ant-btn-primary ant-btn-primary--compact", data: { turbo: false } %>
-      <% end %>
       <% if policy(service).withdraw? && service.in_review? %>
         <%= button_to "Withdraw to draft", withdraw_staff_website_service_path(service), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
       <% end %>

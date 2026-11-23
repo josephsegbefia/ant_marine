@@ -21,7 +21,12 @@ export default class extends Controller {
     "previewUrl",
     "previewSeoTitle",
     "previewSeoDescription",
-    "missingList"
+    "missingList",
+    "backButton",
+    "saveContinueButton",
+    "submitReviewBlock",
+    "footerStepLabel",
+    "footerStepName"
   ]
 
   static values = {
@@ -74,18 +79,6 @@ export default class extends Controller {
     }
   }
 
-  goNext(event) {
-    event.preventDefault()
-    const result = this.validateStep(this.stepValue)
-    if (!result.ok) {
-      this.showErrors(result.messages)
-      this.focusFirstInvalid()
-      return
-    }
-    this.clearErrors()
-    this.showStep(Math.min(this.stepValue + 1, 4))
-  }
-
   goBack(event) {
     event.preventDefault()
     this.clearErrors()
@@ -123,6 +116,25 @@ export default class extends Controller {
     })
     const heading = this.element.querySelector(`#editor-step-heading-${step}`)
     heading?.focus()
+    this.syncFooter(step)
+  }
+
+  syncFooter(step) {
+    if (this.hasBackButtonTarget) {
+      this.backButtonTarget.hidden = step === 1
+    }
+    if (this.hasSaveContinueButtonTarget) {
+      this.saveContinueButtonTarget.hidden = step >= 4
+    }
+    if (this.hasSubmitReviewBlockTarget) {
+      this.submitReviewBlockTarget.hidden = step !== 4
+    }
+    if (this.hasFooterStepLabelTarget) {
+      this.footerStepLabelTarget.textContent = `Step ${step} of 4`
+    }
+    if (this.hasFooterStepNameTarget) {
+      this.footerStepNameTarget.textContent = STEP_LABELS[step - 1] || ""
+    }
   }
 
   validateStep(step) {
