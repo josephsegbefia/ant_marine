@@ -21,9 +21,11 @@ module Staff
 
       def create
         @service = @organization.services.build(service_params)
+        @service.display_order = service_params[:display_order].presence || next_display_order
         @service.created_by_membership = Current.membership
         @service.updated_by_membership = Current.membership
         authorize @service
+        mirror_draft_json_defaults!(@service)
 
         if @service.save
           redirect_to staff_website_service_path(@service), notice: "Service draft saved."
@@ -132,6 +134,12 @@ module Staff
 
         def next_display_order
           (policy_scope(Service).maximum(:display_order) || 0) + 1
+        end
+
+        def mirror_draft_json_defaults!(service)
+          service.published_scope_items = service.scope_items if service.published_scope_items.blank?
+          service.published_process_steps = service.process_steps if service.published_process_steps.blank?
+          service.published_seo = service.seo if service.published_seo.blank?
         end
     end
   end

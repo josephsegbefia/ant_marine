@@ -9,8 +9,16 @@ class ServicePolicy < ApplicationPolicy
     staff_content_access?
   end
 
+  def new?
+    create?
+  end
+
   def create?
     allowed?("content.manage")
+  end
+
+  def edit?
+    update?
   end
 
   def update?
