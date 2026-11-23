@@ -7,7 +7,7 @@
 </section>
 
 <section class="public-section">
-  <%= public_format_text(@page.public_body) if @page.public_body.present? %>
+  <%= public_render_rich_text(@page.public_body) if @page.public_body.present? %>
   <div class="public-service-grid mt-6">
     <% (@page.public_page_data["industry_cards"] || []).each do |card| %>
       <article class="portal-card public-service-card">

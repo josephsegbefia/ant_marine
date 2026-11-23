@@ -1,0 +1,23 @@
+<% field_id = "#{form.object_name}_#{method}" %>
+<div class="ant-field ant-field--portal ant-rich-text-field" data-controller="rich-text-editor">
+  <%= form.label method, label, class: "ant-field__label", for: field_id %>
+  <% if hint.present? %>
+    <p class="ant-field__hint"><%= hint %></p>
+  <% end %>
+  <div class="ant-rich-text-editor">
+    <%= form.rich_text_area method,
+          id: field_id,
+          class: "ant-rich-text-editor__surface",
+          required: required,
+          data: {
+            direct_upload_url: " ",
+            blob_url_template: " ",
+            rich_text_editor_target: "editor",
+            staff_editorial_preview_target: "richField",
+            preview_field: method
+          } %>
+  </div>
+  <% if form.object.errors[method].any? %>
+    <p class="ant-field__error" role="alert"><%= form.object.errors[method].first %></p>
+  <% end %>
+</div>

@@ -2,6 +2,9 @@
 
 class CaseStudy < ApplicationRecord
   include PublicContentEditorial
+  include HasPublicRichText
+
+  has_public_rich_text :body, :client_challenge, :approach, :work_performed, :outcome
 
   validate :case_study_story_fields, on: :editorial
 
@@ -12,7 +15,7 @@ class CaseStudy < ApplicationRecord
   private
 
     def case_study_story_fields
-      errors.add(:client_challenge, "Describe the client's situation.") if client_challenge.blank?
-      errors.add(:approach, "Describe ANT Marine's approach.") if approach.blank?
+      errors.add(:client_challenge, "Describe the client's situation.") if rich_text_blank?(:client_challenge)
+      errors.add(:approach, "Describe ANT Marine's approach.") if rich_text_blank?(:approach)
     end
 end

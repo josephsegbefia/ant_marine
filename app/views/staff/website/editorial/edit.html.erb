@@ -1,5 +1,11 @@
 <% content_for :staff_nav, :website %>
-<div class="staff-website-hub max-w-3xl">
+<div class="staff-website-hub max-w-6xl">
   <h1 class="text-2xl font-extrabold text-[#173244]">Edit <%= @record.title %></h1>
-  <%= render "staff/website/editorial/form", record: @record %>
+  <div class="staff-editorial-layout lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(260px,320px)] lg:gap-8 lg:items-start"
+       data-controller="staff-editorial-preview">
+    <%= render "staff/website/editorial/form", record: @record %>
+    <aside class="mt-8 lg:mt-6 lg:sticky lg:top-6" aria-label="Draft preview">
+      <%= render "staff/website/editorial/draft_preview" %>
+    </aside>
+  </div>
 </div>

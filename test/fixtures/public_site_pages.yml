@@ -3,7 +3,6 @@ about_draft:
   page_key: about
   title: About draft
   summary: Draft summary
-  body: Draft body
   page_data: '{}'
   seo: '{}'
   status: draft
@@ -15,13 +14,12 @@ contact_published:
   page_key: contact
   title: Contact
   summary: Reach us
-  body: Contact body
   page_data: '{}'
   seo: '{}'
   status: published
   published_title: Contact
   published_summary: Reach us
-  published_body: Contact body
+  published_body: "<p>Contact body</p>"
   published_page_data: '{"email":null}'
   published_seo: '{}'
   published_at: <%= 1.day.ago.iso8601 %>

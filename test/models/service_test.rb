@@ -47,7 +47,8 @@ class ServiceTest < ActiveSupport::TestCase
   test "published snapshot unchanged after draft edit" do
     service = services(:marine_surveys_published)
     prior_body = service.published_body
-    service.update!(body: "New draft only body text")
+    service.body = "<p>New draft only body text</p>"
+    service.save!
     assert_equal prior_body, service.reload.published_body
   end
 

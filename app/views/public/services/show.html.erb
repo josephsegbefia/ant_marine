@@ -11,7 +11,7 @@
   <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
     <article class="portal-card">
       <h2>How we can help</h2>
-      <%= public_format_text(@service.public_body.presence || "Every project is different. Our team works with you to understand the scope, confirm what is needed and provide clear next steps.") %>
+      <%= public_render_rich_text(@service.public_body.presence || "<p>Every project is different. Our team works with you to understand the scope, confirm what is needed and provide clear next steps.</p>") %>
       <% items = @service.public_scope_items %>
       <% if items.any? %>
         <ul class="mt-4 space-y-2 text-sm text-[#466270]">

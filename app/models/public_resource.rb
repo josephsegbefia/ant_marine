@@ -2,6 +2,9 @@
 
 class PublicResource < ApplicationRecord
   include PublicContentEditorial
+  include HasPublicRichText
+
+  has_public_rich_text :body
 
   RESOURCE_CATEGORIES = {
     "guide" => "Technical guide",

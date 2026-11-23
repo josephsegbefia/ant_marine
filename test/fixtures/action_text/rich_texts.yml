@@ -1,0 +1,29 @@
+insight_draft_body:
+  name: body
+  record: insight_draft (Article)
+  body: "<p>Body text</p>"
+
+insight_published_body:
+  name: body
+  record: insight_published (Article)
+  body: "<p>Public body</p>"
+
+marine_surveys_draft_body:
+  name: body
+  record: marine_surveys_draft (Service)
+  body: "<p>Draft body</p>"
+
+marine_surveys_published_body:
+  name: body
+  record: marine_surveys_published (Service)
+  body: "<p>Public body</p>"
+
+about_draft_body:
+  name: body
+  record: about_draft (PublicSitePage)
+  body: "<p>Draft body</p>"
+
+contact_published_body:
+  name: body
+  record: contact_published (PublicSitePage)
+  body: "<p>Contact body</p>"

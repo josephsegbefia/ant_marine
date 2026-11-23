@@ -2,6 +2,9 @@
 
 class Article < ApplicationRecord
   include PublicContentEditorial
+  include HasPublicRichText
+
+  has_public_rich_text :body
 
   CATEGORIES = {
     "guidance" => "Practical guidance",

@@ -2,6 +2,9 @@
 
 class Service < ApplicationRecord
   include PublicContentPublishable
+  include HasPublicRichText
+
+  has_public_rich_text :body
 
   SLUG_FORMAT = /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/
 
@@ -31,7 +34,9 @@ class Service < ApplicationRecord
   end
 
   def public_body
-    published_body.presence || body
+    return published_body if published_body.present?
+
+    PublicContent::RichText.snapshot_html(body)
   end
 
   def public_audience
@@ -121,7 +126,7 @@ class Service < ApplicationRecord
 
     def editorial_requirements
       errors.add(:summary, "Add a short description.") if summary.blank?
-      errors.add(:body, "Describe what this service involves.") if body.blank?
+      errors.add(:body, "Describe what this service involves.") if rich_text_blank?(:body)
       errors.add(:audience, "Tell us who this service is for.") if audience.blank?
       errors.add(:category, "Choose a service category.") if category.blank?
     end

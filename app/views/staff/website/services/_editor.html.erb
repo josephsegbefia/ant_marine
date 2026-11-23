@@ -106,7 +106,7 @@
       >
         <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Describe the service</h2>
         <div class="mt-4 space-y-4">
-          <%= ant_field f, :body, type: :textarea, label: "What does this service involve?", required: true, context: :portal, hint: "Explain what you do, how you work and what clients can expect.", html_options: { rows: 8 } %>
+          <%= ant_rich_text_field f, :body, label: "What does this service involve?", required: true, hint: "Explain what you do, how you work and what clients can expect. Images and uploads are not available yet." %>
           <%= ant_field f, :audience, type: :textarea, label: "Who is this service for?", required: true, context: :portal, hint: "e.g. shipowners, offshore contractors, insurers.", html_options: { rows: 3 } %>
         </div>
       </section>

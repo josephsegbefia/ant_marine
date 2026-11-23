@@ -3,10 +3,10 @@
 <% elsif record.is_a?(CaseStudy) %>
   <%= ant_select form, :service_category, choices: service_category_options, label: "Related service area", context: :portal %>
   <%= ant_field form, :industry, label: "Industry or sector", context: :portal %>
-  <%= ant_field form, :client_challenge, type: :textarea, label: "Client challenge", context: :portal, html_options: { rows: 3 } %>
-  <%= ant_field form, :approach, type: :textarea, label: "ANT Marine's approach", context: :portal, html_options: { rows: 3 } %>
-  <%= ant_field form, :work_performed, type: :textarea, label: "Work performed", context: :portal, html_options: { rows: 3 } %>
-  <%= ant_field form, :outcome, type: :textarea, label: "Outcome", context: :portal, html_options: { rows: 3 } %>
+  <%= ant_rich_text_field form, :client_challenge, label: "Client challenge" %>
+  <%= ant_rich_text_field form, :approach, label: "ANT Marine's approach" %>
+  <%= ant_rich_text_field form, :work_performed, label: "Work performed" %>
+  <%= ant_rich_text_field form, :outcome, label: "Outcome" %>
   <%= ant_field form, :release_basis, type: :textarea, label: "Publication permission (internal note)", hint: "Record who approved sharing this story — not shown on the public site.", context: :portal, html_options: { rows: 2 } %>
 <% elsif record.is_a?(TrainingOffering) %>
   <%= ant_field form, :audience, type: :textarea, label: "Who is this for?", context: :portal, html_options: { rows: 2 } %>

@@ -102,7 +102,7 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
     patch staff_website_service_path(service), params: {
       service: {
         title: service.title,
-        body: "Draft-only change",
+        body: "<p>Draft-only change</p>",
         slug: "forged-slug",
         published_body: "Public hijack"
       },
@@ -113,7 +113,7 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
     service.reload
     assert_equal prior, service.published_body
     assert_equal "published-surveys", service.slug
-    assert_equal "Draft-only change", service.body
+    assert_includes service.body.to_plain_text, "Draft-only change"
   end
 
   test "submit for review workflow still works" do

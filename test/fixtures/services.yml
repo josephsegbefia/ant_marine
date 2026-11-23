@@ -3,7 +3,6 @@ marine_surveys_draft:
   slug: marine-surveys
   title: Marine surveys
   summary: Surveys and inspections.
-  body: Draft body
   category: marine_surveys
   audience: Shipowners
   scope_items:
@@ -22,7 +21,6 @@ marine_surveys_published:
   slug: published-surveys
   title: Published surveys
   summary: Public summary
-  body: Public body
   category: marine_surveys
   audience: Operators
   scope_items:
@@ -33,7 +31,7 @@ marine_surveys_published:
   status: published
   published_title: Published surveys
   published_summary: Public summary
-  published_body: Public body
+  published_body: "<p>Public body</p>"
   published_audience: Operators
   published_scope_items:
     - Inspections

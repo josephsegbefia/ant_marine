@@ -13,8 +13,7 @@
     <%= f.text_field :title, class: "ant-control w-full", required: true %>
     <%= f.label :summary, class: "block text-sm font-semibold" %>
     <%= f.text_area :summary, rows: 2, class: "ant-control w-full" %>
-    <%= f.label :body, class: "block text-sm font-semibold" %>
-    <%= f.text_area :body, rows: 8, class: "ant-control w-full" %>
+    <%= ant_rich_text_field f, :body, label: "Main page content", hint: "Use headings and lists where helpful." %>
 
     <% if @page.page_key == "homepage" %>
       <% data = @page.page_data %>

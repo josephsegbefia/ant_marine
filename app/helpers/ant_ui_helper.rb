@@ -23,6 +23,17 @@ module AntUiHelper
     end
   end
 
+  def ant_rich_text_field(form, method, **options)
+    render partial: "shared/ui/rich_text_field",
+           locals: {
+             form: form,
+             method: method,
+             label: options.delete(:label),
+             hint: options.delete(:hint),
+             required: options.delete(:required)
+           }
+  end
+
   def ant_field(form, method, **options)
     render partial: "shared/ui/field",
            locals: {

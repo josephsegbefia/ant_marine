@@ -2,6 +2,9 @@
 
 class PublicSitePage < ApplicationRecord
   include PublicContentPublishable
+  include HasPublicRichText
+
+  has_public_rich_text :body
 
   PAGE_KEYS = %w[homepage about industries how_we_work contact].freeze
 
@@ -30,7 +33,9 @@ class PublicSitePage < ApplicationRecord
   end
 
   def public_body
-    published_body.presence || body
+    return published_body if published_body.present?
+
+    PublicContent::RichText.snapshot_html(body)
   end
 
   def public_page_data

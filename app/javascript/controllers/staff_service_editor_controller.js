@@ -40,6 +40,7 @@ export default class extends Controller {
     this.showStep(this.stepValue)
     this.refreshPreview()
     this.element.addEventListener("input", () => this.markDirty())
+    this.element.addEventListener("trix-change", () => this.markDirty())
     this.element.addEventListener("staff-list-editor:changed", () => {
       this.markDirty()
       this.refreshPreview()
@@ -151,7 +152,7 @@ export default class extends Controller {
       if (!this.fieldValue("summary").trim()) messages.push("Add a short description so visitors understand what this service offers.")
     }
     if (step === 2) {
-      if (!this.fieldValue("body").trim()) messages.push("Describe what this service involves before continuing.")
+      if (!this.bodyHasText(this.fieldValue("body"))) messages.push("Describe what this service involves before continuing.")
       if (!this.fieldValue("audience").trim()) messages.push("Tell us who this service is for.")
     }
     return { ok: messages.length === 0, messages }
@@ -192,7 +193,16 @@ export default class extends Controller {
   refreshPreview() {
     if (this.hasPreviewTitleTarget) this.previewTitleTarget.textContent = this.titleFieldTarget.value.trim() || "Service title"
     if (this.hasPreviewSummaryTarget) this.previewSummaryTarget.textContent = this.fieldValue("summary") || "Short description will appear here."
-    if (this.hasPreviewBodyTarget) this.previewBodyTarget.textContent = this.fieldValue("body") || "Your full explanation will appear here."
+    if (this.hasPreviewBodyTarget) {
+      const bodyHtml = this.fieldValue("body")
+      if (bodyHtml.trim() && this.bodyHasText(bodyHtml)) {
+        this.previewBodyTarget.classList.add("public-rich-text")
+        this.previewBodyTarget.innerHTML = bodyHtml
+      } else {
+        this.previewBodyTarget.classList.remove("public-rich-text")
+        this.previewBodyTarget.textContent = "Your full explanation will appear here."
+      }
+    }
     if (this.hasPreviewAudienceTarget) this.previewAudienceTarget.textContent = this.fieldValue("audience") || "Intended audience"
     if (this.hasPreviewScopeListTarget) {
       const items = this.listValues("scope_items")
@@ -241,7 +251,7 @@ export default class extends Controller {
     const missing = []
     if (!this.titleFieldTarget.value.trim()) missing.push("Service name")
     if (!this.fieldValue("summary").trim()) missing.push("Short description")
-    if (!this.fieldValue("body").trim()) missing.push("Full explanation")
+    if (!this.bodyHasText(this.fieldValue("body"))) missing.push("Full explanation")
     if (!this.fieldValue("audience").trim()) missing.push("Intended audience")
     if (!this.listValues("scope_items").length) missing.push("What's included")
     if (!this.listValues("process_steps").length) missing.push("Process steps")
@@ -257,6 +267,13 @@ export default class extends Controller {
     return Array.from(this.element.querySelectorAll(`input[name='service[${name}][]']`))
       .map((input) => input.value.trim())
       .filter(Boolean)
+  }
+
+  bodyHasText(html) {
+    if (!html || !html.trim()) return false
+    const div = document.createElement("div")
+    div.innerHTML = html
+    return (div.textContent || "").trim().length > 0
   }
 
   slugify(value) {

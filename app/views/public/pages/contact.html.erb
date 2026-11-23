@@ -10,7 +10,7 @@
   <div class="grid gap-6 lg:grid-cols-2">
     <article class="portal-card">
       <h2>How to reach us</h2>
-      <%= public_format_text(@page.public_body) if @page.public_body.present? %>
+      <%= public_render_rich_text(@page.public_body) if @page.public_body.present? %>
       <% data = @page.public_page_data %>
       <dl class="mt-4 space-y-3 text-sm text-[#466270]">
         <div><dt class="font-semibold text-[#102c43]">Email</dt><dd><%= data["email"].presence || "To be confirmed" %></dd></div>

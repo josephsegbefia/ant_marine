@@ -48,6 +48,15 @@ No `project_id` or client org linkage. `release_basis` is for internal editorial
 
 Automated F4-01A + snapshot tests must remain green.
 
+## Rich text (Action Text / Trix) — F4-01B amendment
+
+- Draft long-form fields stored in **Action Text** (`has_public_rich_text`); `published_*` columns remain frozen HTML snapshots on publish.
+- Reusable staff control: `ant_rich_text_field` + `rich_text_editor` Stimulus (no file tools; `trix-file-accept` blocked).
+- Direct Active Storage upload routes stay disabled; editor omits upload URLs.
+- Public render: `public_render_rich_text` + `.public-rich-text` typography (matches public reading styles).
+- Applies to: article body, case study story fields, training body, resource body, service body, website page body.
+- Embedded attachments rejected/scrubbed server-side; snapshot HTML sanitized (`PublicContent::RichText`).
+
 ## Out of scope
 
-Training registration, public resource downloads, rich HTML editor, F4-02 forms, production deploy.
+Training registration, public resource file downloads, image/file embedding in rich text (until ADR-010), F4-02 forms, production deploy.

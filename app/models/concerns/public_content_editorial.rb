@@ -32,7 +32,9 @@ module PublicContentEditorial
   end
 
   def public_body
-    published_body.presence || body
+    return published_body if published_body.present?
+
+    PublicContent::RichText.snapshot_html(body)
   end
 
   def public_seo_title
@@ -68,6 +70,6 @@ module PublicContentEditorial
 
     def editorial_requirements
       errors.add(:summary, "Add a short introduction.") if summary.blank?
-      errors.add(:body, "Add the main content.") if body.blank?
+      errors.add(:body, "Add the main content.") if rich_text_blank?(:body)
     end
 end

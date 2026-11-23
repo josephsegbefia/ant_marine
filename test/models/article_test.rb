@@ -19,5 +19,6 @@ class ArticleTest < ActiveSupport::TestCase
     article.reload
     assert_equal "published", article.status
     assert_equal article.title, article.published_title
+    assert_includes article.published_body, "Body text"
   end
 end

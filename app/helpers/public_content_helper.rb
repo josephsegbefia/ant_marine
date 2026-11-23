@@ -11,6 +11,12 @@ module PublicContentHelper
     simple_format(sanitized, {}, sanitize: false)
   end
 
+  def public_render_rich_text(html)
+    return "" if html.blank?
+
+    content_tag(:div, PublicContent::RichText.sanitize_html(html).html_safe, class: "public-rich-text")
+  end
+
   def public_seo_tags(title:, description:, canonical:, og_type: "website")
     safe_title = strip_tags(title.to_s)
     safe_description = strip_tags(description.to_s)

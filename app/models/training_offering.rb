@@ -2,6 +2,9 @@
 
 class TrainingOffering < ApplicationRecord
   include PublicContentEditorial
+  include HasPublicRichText
+
+  has_public_rich_text :body
 
   before_validation :normalize_list_columns
 

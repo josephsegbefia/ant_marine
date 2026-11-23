@@ -17,6 +17,7 @@ module AntMarine
     config.autoload_lib(ignore: %w[assets tasks active_storage])
 
     config.active_storage.draw_routes = false
+    config.action_text.disable_direct_uploads = true
 
     # Mail and invitation delivery share one queue. Other jobs may use default.
     config.action_mailer.deliver_later_queue_name = "mail"

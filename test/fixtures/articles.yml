@@ -3,7 +3,6 @@ insight_draft:
   slug: draft-insight
   title: Draft insight article
   summary: Introduction text
-  body: Body text
   category: guidance
   seo: '{}'
   status: draft
@@ -14,13 +13,12 @@ insight_published:
   slug: published-insight
   title: Published insight
   summary: Public summary
-  body: Public body
   category: guidance
   seo: '{}'
   status: published
   published_title: Published insight
   published_summary: Public summary
-  published_body: Public body
+  published_body: "<p>Public body</p>"
   published_category: guidance
   published_seo: '{}'
   published_at: <%= 2.days.ago.iso8601 %>
