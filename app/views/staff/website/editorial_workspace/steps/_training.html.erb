@@ -1,0 +1,36 @@
+<section id="editor-step-panel-1" role="tabpanel" class="staff-editor-panel portal-card" data-step="1" data-staff-editorial-wizard-target="panel"
+         data-validate="title:Enter a course title.|summary:Add a short description.|body:Describe the course overview."
+         aria-labelledby="editor-step-tab-1" <%= "hidden" unless editor_step == 1 %>>
+  <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Course basics</h2>
+  <div class="mt-4 space-y-4">
+    <%= ant_field form, :title, label: "Course title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
+    <%= ant_field form, :summary, type: :textarea, label: "Short description", required: true, context: :portal, html_options: { rows: 3 } %>
+    <%= ant_rich_text_field form, :body, label: "Course overview", required: true %>
+    <%= render "staff/website/editorial_workspace/address_card", record: record %>
+  </div>
+</section>
+
+<section id="editor-step-panel-2" role="tabpanel" class="staff-editor-panel portal-card" data-step="2" data-staff-editorial-wizard-target="panel"
+         data-validate="audience:Say who this training is for."
+         aria-labelledby="editor-step-tab-2" <%= "hidden" unless editor_step == 2 %>>
+  <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Learning details</h2>
+  <div class="mt-4 space-y-4">
+    <%= ant_field form, :audience, type: :textarea, label: "Who is this for?", context: :portal, html_options: { rows: 2 } %>
+    <%= ant_field form, :delivery_format, label: "Delivery format (optional)", hint: "e.g. workshop, on-site briefing.", context: :portal %>
+    <%= render "staff/website/editorial_workspace/list_editor", attribute: :learning_objectives, param_prefix: form.object_name, label: "Learning objectives", hint: "Short phrases — one per line.", placeholder: "e.g. Understand safety basics", items: editorial_training_list(record, :learning_objectives) %>
+    <%= render "staff/website/editorial_workspace/list_editor", attribute: :topics, param_prefix: form.object_name, label: "Topics covered", hint: "Key subjects included.", placeholder: "e.g. Risk assessment", items: editorial_training_list(record, :topics) %>
+    <details class="staff-editor-page-settings">
+      <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
+      <div class="mt-4 space-y-4">
+        <%= text_field_tag "#{form.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", placeholder: "Search title (optional)" %>
+        <%= text_area_tag "#{form.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", placeholder: "Search summary (optional)" %>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="editor-step-panel-3" role="tabpanel" class="staff-editor-panel portal-card" data-step="3" data-staff-editorial-wizard-target="panel"
+         aria-labelledby="editor-step-tab-3" <%= "hidden" unless editor_step == 3 %>>
+  <h2 id="editor-step-heading-3" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review</h2>
+  <div class="mt-6 lg:hidden"><%= render "staff/website/editorial_workspace/previews/training", record: record, config: editorial_workspace_config(record) %></div>
+</section>

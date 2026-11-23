@@ -1,0 +1,15 @@
+<% path = record.persisted? ? editorial_public_path(record) : nil %>
+<% fixed_path = local_assigns[:fixed_path] %>
+<div class="rounded-lg border border-[#e2eaeb] bg-[#f6fafb] px-4 py-3 text-sm text-[#5f7d8c]">
+  <p class="font-semibold text-[#102c43]">Page address</p>
+  <% if path.present? %>
+    <p class="mt-1 font-mono text-xs text-[#173244]"><%= path %></p>
+    <p class="mt-1 text-xs">Set when this draft was first saved. It does not change if you edit the title.</p>
+  <% elsif fixed_path.present? %>
+    <p class="mt-1 font-mono text-xs text-[#173244]"><%= fixed_path %></p>
+    <p class="mt-1 text-xs">This page has a fixed address on the public website.</p>
+  <% else %>
+    <p class="mt-1" data-staff-editorial-wizard-target="suggestedPath">We will assign an address when you save this draft.</p>
+    <p class="mt-1 text-xs">Based on your title — you do not need to choose it yourself.</p>
+  <% end %>
+</div>

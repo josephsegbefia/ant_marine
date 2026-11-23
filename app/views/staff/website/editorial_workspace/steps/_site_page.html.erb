@@ -1,0 +1,62 @@
+<section id="editor-step-panel-1" role="tabpanel" class="staff-editor-panel portal-card" data-step="1" data-staff-editorial-wizard-target="panel"
+         data-validate="title:Enter a page title.|body:Add the main page content."
+         aria-labelledby="editor-step-tab-1" <%= "hidden" unless editor_step == 1 %>>
+  <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Page content</h2>
+  <p class="text-sm text-[#5f7d8c] mt-1">Editing <strong><%= public_site_page_label(record) %></strong> — the page identity does not change.</p>
+  <div class="mt-4 space-y-4">
+    <%= ant_field form, :title, label: "Page title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
+    <%= ant_field form, :summary, type: :textarea, label: "Short introduction", context: :portal, html_options: { rows: 2 } %>
+    <%= ant_rich_text_field form, :body, label: "Main page content" %>
+
+    <% if record.page_key == "homepage" %>
+      <% data = record.page_data %>
+      <%= label_tag :eyebrow, "Hero eyebrow", class: "ant-field__label block" %>
+      <%= text_field_tag "public_site_page[eyebrow]", data["eyebrow"], class: "ant-control w-full" %>
+      <%= label_tag :hero_title, "Hero title", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[hero_title]", data["title"] || data["hero_title"], class: "ant-control w-full" %>
+      <%= label_tag :hero_lede, "Hero introduction", class: "ant-field__label block mt-3" %>
+      <%= text_area_tag "public_site_page[hero_lede]", data["lede"] || data["hero_lede"], rows: 3, class: "ant-control w-full" %>
+      <%= label_tag :primary_cta_label, "Primary button label", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[primary_cta_label]", data["primary_cta_label"], class: "ant-control w-full" %>
+      <%= label_tag :primary_cta_path, "Primary button path", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[primary_cta_path]", data["primary_cta_path"], class: "ant-control w-full" %>
+      <%= label_tag :secondary_cta_label, "Secondary button label", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[secondary_cta_label]", data["secondary_cta_label"], class: "ant-control w-full" %>
+      <%= label_tag :secondary_cta_path, "Secondary button path", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[secondary_cta_path]", data["secondary_cta_path"], class: "ant-control w-full" %>
+    <% elsif record.page_key == "contact" %>
+      <% data = record.page_data %>
+      <%= label_tag :contact_email, "Email (approved only)", class: "ant-field__label block" %>
+      <%= email_field_tag "public_site_page[contact_email]", data["email"], class: "ant-control w-full" %>
+      <%= label_tag :contact_phone, "Phone (approved only)", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[contact_phone]", data["phone"], class: "ant-control w-full" %>
+      <%= label_tag :contact_address, "Address", class: "ant-field__label block mt-3" %>
+      <%= text_area_tag "public_site_page[contact_address]", data["address"], rows: 2, class: "ant-control w-full" %>
+      <%= label_tag :contact_hours, "Opening hours", class: "ant-field__label block mt-3" %>
+      <%= text_field_tag "public_site_page[contact_hours]", data["hours"], class: "ant-control w-full" %>
+    <% end %>
+
+    <%= render "staff/website/editorial_workspace/address_card", record: record, fixed_path: editorial_public_path(record) %>
+
+    <details class="staff-editor-page-settings">
+      <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
+      <div class="mt-4 space-y-4">
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="<%= form.object_name %>_seo_title">Preferred search title</label>
+          <%= text_field_tag "public_site_page[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{form.object_name}_seo_title" %>
+        </div>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="<%= form.object_name %>_seo_description">Preferred search summary</label>
+          <%= text_area_tag "public_site_page[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{form.object_name}_seo_description" %>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section id="editor-step-panel-2" role="tabpanel" class="staff-editor-panel portal-card" data-step="2" data-staff-editorial-wizard-target="panel"
+         aria-labelledby="editor-step-tab-2" <%= "hidden" unless editor_step == 2 %>>
+  <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review</h2>
+  <p class="text-sm text-[#5f7d8c] mt-1">Check content and status. Previewing is not publishing.</p>
+  <div class="mt-6 lg:hidden"><%= render "staff/website/editorial_workspace/previews/site_page", record: record, config: editorial_workspace_config(record) %></div>
+</section>

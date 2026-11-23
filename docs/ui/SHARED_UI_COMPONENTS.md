@@ -8,7 +8,8 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 |-----------|----------|---------|
 | `ant_field` | [`app/helpers/ant_ui_helper.rb`](../../app/helpers/ant_ui_helper.rb) + [`app/views/shared/ui/_field.html.erb`](../../app/views/shared/ui/_field.html.erb) | Text, email, password inputs |
 | `ant_rich_text_field` | [`_rich_text_field.html.erb`](../../app/views/shared/ui/_rich_text_field.html.erb) + [`_rich_text_toolbar.html.erb`](../../app/views/shared/ui/_rich_text_toolbar.html.erb) + [`trix_ant_marine_config.js`](../../app/javascript/trix_ant_marine_config.js) + [`rich_text_editor_controller.js`](../../app/javascript/controllers/rich_text_editor_controller.js) | Action Text / Trix (2.1.19): primary + **More** menus (underline, strike, indent, code block, clear formatting); shared across all staff long-form fields |
-| `staff-editorial-preview` | [`staff_editorial_preview_controller.js`](../../app/javascript/controllers/staff_editorial_preview_controller.js) + [`editorial/_draft_preview.html.erb`](../../app/views/staff/website/editorial/_draft_preview.html.erb) | Live draft preview using `.public-rich-text` |
+| **Editorial workspace** | [`staff/website/editorial_workspace/*`](../../app/views/staff/website/editorial_workspace/) + [`staff_editorial_wizard_controller.js`](../../app/javascript/controllers/staff_editorial_wizard_controller.js) + [`StaffEditorialWorkspaceHelper`](../../app/helpers/staff_editorial_workspace_helper.rb) | Multi-step staff CMS shell (matches service editor): stepper, cards, preview aside, page settings, save draft / save and continue |
+| `staff-editorial-preview` | [`staff_editorial_preview_controller.js`](../../app/javascript/controllers/staff_editorial_preview_controller.js) + [`editorial/_draft_preview.html.erb`](../../app/views/staff/website/editorial/_draft_preview.html.erb) | Legacy single-page preview; superseded by editorial workspace previews for F4-01B types |
 | `ant_select` / `ant_collection_select` | [`_select.html.erb`](../../app/views/shared/ui/_select.html.erb) | Custom listbox synced to native `<select>` |
 | `toast-stack` | [`toast_stack_controller.js`](../../app/javascript/controllers/toast_stack_controller.js) | Global notifications |
 | `form-submit` | [`form_submit_controller.js`](../../app/javascript/controllers/form_submit_controller.js) | Submit loading / disable |
@@ -58,6 +59,29 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 Breadcrumbs: set in `Staff::Website::*` controllers via `assign_staff_breadcrumb` / `assign_website_section_breadcrumb` (rendered once in `shared/staff/_header.html.erb`).
 
 F4-01B reuses the same hub (`staff/website/_website_hub_tabs`, `editorial/index`, `workflow_actions`, `website_workflow_button`) for articles, case studies, training offerings and public resources.
+
+## Editorial workspace (F4-01B-UX)
+
+Visual reference: **service editor** (`staff/website/services/_editor.html.erb`, `.staff-editor-*` in Tailwind).
+
+Shared partials under `staff/website/editorial_workspace/`:
+
+| Partial | Role |
+|---------|------|
+| `_editor.html.erb` | Page head, step tabs, two-column layout, form wrapper |
+| `_footer.html.erb` | Step label, status pill, Back / Save draft / Save and continue |
+| `_workflow_status.html.erb` | Review-step publishing actions (`workflow_actions`) |
+| `_address_card.html.erb` | Public URL (fixed for site pages; slug after first save elsewhere) |
+| `steps/_*.html.erb` | Per-model fields and `data-validate` rules |
+| `previews/_*.html.erb` | Live aside preview (`staff-editorial-wizard` sanitizes HTML client-side) |
+
+Configuration: `StaffEditorialWorkspaceHelper::WORKSPACES` (steps, copy, path prefixes). Controllers: `StaffWebsiteEditorialController` + `StaffWebsiteEditorialWizard`; website **pages** use the same shell via `PagesController` (two steps: content → review).
+
+**Save behaviour:** `commit=save_continue` validates the current step, saves, redirects to `edit_*?step=n+1`; `save_draft` requires title only; review step shows workflow POST buttons only (no nested forms).
+
+**Responsive:** `.staff-editor-layout` — main column + `lg:` preview aside; step tabs stack on small screens.
+
+**Services:** unchanged four-step service wizard (separate Stimulus controller).
 
 ## Empty state
 

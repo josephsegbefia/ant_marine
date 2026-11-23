@@ -2,6 +2,7 @@
 
 module StaffWebsiteEditorialController
   extend ActiveSupport::Concern
+  include StaffWebsiteEditorialWizard
 
   included do
     class_attribute :editorial_record_class, :editorial_param_key, :editorial_section_label
@@ -24,6 +25,8 @@ module StaffWebsiteEditorialController
   def new
     @record = @organization.public_send(editorial_association).build
     authorize @record
+    @editor_step = editorial_editor_step
+    @editor_config = editorial_workspace_config(@record)
     assign_website_section_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
     render "staff/website/editorial/new"
   end
@@ -32,9 +35,11 @@ module StaffWebsiteEditorialController
     @record = @organization.public_send(editorial_association).build(editorial_params)
     @record.created_by_membership = Current.membership
     @record.updated_by_membership = Current.membership
+    @editor_step = editorial_editor_step
+    @editor_config = editorial_workspace_config(@record)
     authorize @record
     if @record.save
-      redirect_to editorial_show_path(@record), notice: "Draft saved."
+      redirect_editorial_after_save(created: true)
     else
       assign_website_section_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
       render "staff/website/editorial/new", status: :unprocessable_entity
@@ -43,16 +48,20 @@ module StaffWebsiteEditorialController
 
   def edit
     authorize @record
+    @editor_step = editorial_editor_step
+    @editor_config = editorial_workspace_config(@record)
     assign_website_section_breadcrumb(current: @record.title)
     render "staff/website/editorial/edit"
   end
 
   def update
     authorize @record
+    @editor_step = editorial_editor_step
+    @editor_config = editorial_workspace_config(@record)
     @record.assign_attributes(editorial_params)
     @record.updated_by_membership = Current.membership
     if @record.save
-      redirect_to editorial_show_path(@record), notice: "Draft saved."
+      redirect_editorial_after_save(created: false)
     else
       assign_website_section_breadcrumb(current: @record.title)
       render "staff/website/editorial/edit", status: :unprocessable_entity

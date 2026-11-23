@@ -1,0 +1,24 @@
+<% step = local_assigns[:editor_step] || 1 %>
+<% status_label = record.new_record? ? "Not saved yet" : public_content_status_label(record.status) %>
+<% footer_hint = record.new_record? ? "Add a title, then save a draft when you are ready." : public_content_list_guidance(record.status) %>
+
+<footer class="staff-editor-footer" aria-label="Editor actions">
+  <div class="staff-editor-footer__meta">
+    <p class="staff-editor-footer__step">
+      <span data-staff-editorial-wizard-target="footerStepLabel">Step <%= step %> of <%= config[:step_count] %></span>
+      ·
+      <span data-staff-editorial-wizard-target="footerStepName"><%= config[:steps][step - 1] %></span>
+      <span class="staff-editor-footer__status-pill"><%= status_label %></span>
+    </p>
+    <p class="staff-editor-footer__status-detail"><%= footer_hint %></p>
+  </div>
+  <div class="staff-editor-footer__actions">
+    <button type="button" class="ant-btn-outline ant-btn-outline--compact staff-editor-footer__back"
+            data-staff-editorial-wizard-target="backButton" data-action="staff-editorial-wizard#goBack"
+            <%= "hidden" if step == 1 %>>Back</button>
+    <button type="submit" name="commit" value="save_draft" class="ant-btn-outline ant-btn-outline--compact" data-form-submit-target="submit">Save draft</button>
+    <button type="submit" name="commit" value="save_continue" class="ant-btn-primary ant-btn-primary--compact"
+            data-staff-editorial-wizard-target="saveContinueButton" data-form-submit-target="submit"
+            data-form-submit-loading-message-value="Saving…" <%= "hidden" if step >= config[:step_count] %>>Save and continue</button>
+  </div>
+</footer>

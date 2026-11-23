@@ -1,0 +1,79 @@
+<% config = local_assigns[:config] || editorial_workspace_config(record) %>
+<% editor_step = local_assigns[:editor_step] || 1 %>
+<% heading = record.persisted? ? config[:heading_edit] : config[:heading_new] %>
+<% return_path = local_assigns[:return_path] || editorial_return_path(record) %>
+<% fixed_page_path = record.is_a?(PublicSitePage) ? "/#{record.page_key}" : nil %>
+
+<div class="staff-editor-head">
+  <h1 class="staff-editor-head__title" id="staff-editorial-heading"><%= heading %></h1>
+  <p class="staff-editor-head__lede"><%= config[:lede] %></p>
+</div>
+
+<% form_options = {
+      class: "staff-editor",
+      data: {
+        controller: "staff-editorial-wizard form-submit",
+        action: "submit->staff-editorial-wizard#validateBeforeSubmit turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-end->staff-editorial-wizard#clearDirty",
+        staff_editorial_wizard_step_value: editor_step,
+        staff_editorial_wizard_step_count_value: config[:step_count],
+        staff_editorial_wizard_param_prefix_value: config[:param_key],
+        staff_editorial_wizard_public_path_prefix_value: config[:path_prefix].to_s,
+        staff_editorial_wizard_step_labels_value: config[:steps].to_json,
+        staff_editorial_wizard_new_record_value: record.new_record?,
+        staff_editorial_wizard_saved_slug_value: record.try(:slug).to_s,
+        fixed_page_path: fixed_page_path
+      }
+    }
+form_options[:model] = record.is_a?(PublicSitePage) ? record : [ :staff, :website, record ]
+if record.is_a?(PublicSitePage)
+  form_options[:url] = staff_website_page_path(record)
+  form_options[:scope] = :public_site_page
+end %>
+<%= form_with(**form_options) do |f| %>
+  <input type="hidden" name="editor_step" value="<%= editor_step %>" data-staff-editorial-wizard-target="stepField">
+
+  <div class="staff-editor-stepper" role="tablist" aria-label="Editor steps">
+    <% config[:steps].each_with_index do |label, index| %>
+      <% step_number = index + 1 %>
+      <button type="button" role="tab" class="staff-editor-step__tab <%= "staff-editor-step__tab--current" if step_number == editor_step %>"
+              aria-selected="<%= step_number == editor_step %>" data-step="<%= step_number %>"
+              data-staff-editorial-wizard-target="tab" data-action="staff-editorial-wizard#jumpToStep"
+              id="editor-step-tab-<%= step_number %>" aria-controls="editor-step-panel-<%= step_number %>">
+        <span class="staff-editor-step__number" aria-hidden="true"><%= step_number %></span>
+        <span><%= label %></span>
+      </button>
+    <% end %>
+  </div>
+
+  <div class="staff-editor-error portal-card" hidden tabindex="-1" role="alert" data-staff-editorial-wizard-target="errorSummary">
+    <p class="font-semibold text-[#102c43]">Please fix the following before continuing:</p>
+    <ul class="mt-2 list-disc pl-5 text-sm text-red-900" data-staff-editorial-wizard-target="errorList"></ul>
+  </div>
+
+  <% if record.errors.any? %>
+    <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900" role="alert" tabindex="-1">
+      <p class="font-semibold">We could not save your draft:</p>
+      <ul class="mt-2 list-disc pl-5"><% record.errors.full_messages.each { |m| %><li><%= m %></li><% } %></ul>
+    </div>
+  <% end %>
+
+  <div class="staff-editor-layout">
+    <div class="staff-editor-layout__main">
+      <%= render "staff/website/editorial_workspace/steps/#{config[:partial]}", form: f, record: record, editor_step: editor_step %>
+      <%= render "staff/website/editorial_workspace/footer", record: record, editor_step: editor_step, config: config %>
+    </div>
+    <aside class="staff-editor-layout__aside hidden lg:block" aria-label="Live draft preview">
+      <%= render "staff/website/editorial_workspace/previews/#{config[:partial]}", record: record, config: config %>
+    </aside>
+  </div>
+<% end %>
+
+<% if editor_step == config[:step_count] && record.persisted? %>
+  <div class="staff-editor-workflow-below mt-4" data-staff-editorial-wizard-target="submitReviewBlock">
+    <%= render "staff/website/editorial_workspace/workflow_status", record: record %>
+  </div>
+<% end %>
+
+<div class="staff-editor-return">
+  <%= link_to config[:return_label], return_path, class: "staff-editor-footer__return-link" %>
+</div>

@@ -22,7 +22,7 @@ class Staff::ArticleCreateActionTextTest < ActionDispatch::IntegrationTest
     end
 
     article = Article.order(:id).last
-    assert_redirected_to staff_website_article_path(article)
+    assert_redirected_to edit_staff_website_article_path(article, step: 3)
     assert_equal "draft", article.status
     assert_includes article.body.to_plain_text, "Bold"
     assert_equal 1, ActionText::RichText.where(record: article, name: "body").count

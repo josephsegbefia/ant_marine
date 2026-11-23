@@ -3,10 +3,15 @@
 module Staff
   module Website
     class PagesController < BaseController
+      include StaffWebsiteEditorialWizard
+
       before_action :set_page, only: %i[
         show edit update
         submit_for_review withdraw approve publish unpublish archive
       ]
+      before_action :assign_editorial_record, only: %i[edit update]
+
+      helper StaffEditorialWorkspaceHelper
 
       def index
         assign_website_section_breadcrumb(current: "Website pages")
@@ -27,6 +32,8 @@ module Staff
 
       def edit
         authorize @page
+        @editor_step = editorial_editor_step
+        @editor_config = editorial_workspace_config(@page)
         assign_staff_breadcrumb(
           crumbs: [
             { label: "Website", path: staff_website_services_path },
@@ -38,11 +45,13 @@ module Staff
 
       def update
         authorize @page
+        @editor_step = editorial_editor_step
+        @editor_config = editorial_workspace_config(@page)
         @page.assign_attributes(page_params)
         @page.updated_by_membership = Current.membership
 
         if @page.save
-          redirect_to staff_website_page_path(@page), notice: "Page draft saved."
+          redirect_editorial_after_save(created: false)
         else
           render :edit, status: :unprocessable_entity
         end
@@ -101,6 +110,12 @@ module Staff
         def set_page
           @page = policy_scope(PublicSitePage).find(params[:id])
         end
+
+        def assign_editorial_record
+          @record = @page
+        end
+
+        def editorial_show_path(record) = staff_website_page_path(record)
 
         def page_params
           permitted = params.require(:public_site_page).permit(

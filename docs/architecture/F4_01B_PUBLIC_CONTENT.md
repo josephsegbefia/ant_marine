@@ -66,6 +66,26 @@ Automated F4-01A + snapshot tests must remain green.
 - Embedded attachments rejected/scrubbed server-side; snapshot HTML sanitized (`PublicContent::RichText`).
 - Staff toolbar: shared `shared/ui/rich_text_toolbar` + `trix_ant_marine_config.js` (Trix 2.1.19). Primary: heading, bold/italic/underline/strike, lists, quote, link, undo/redo. **More:** indent, outdent, code block, clear formatting. **Not in scope:** text alignment, horizontal rules, tables, colours/fonts (Trix/sanitizer not approved).
 
+## Unified editorial workspace (F4-01B-UX)
+
+Staff create/edit for **insights, case studies, training, resources**, and **website pages** uses the shared **Editorial workspace** (service-editor parity):
+
+| Type | Steps |
+|------|-------|
+| Article | Write article → Page details → Review |
+| Case study | Overview → Challenge & approach → Outcomes → Review |
+| Training | Course basics → Learning details → Review |
+| Public resource | Resource details → Publication settings → Review |
+| Public site page | Page content → Review |
+
+Implementation: `app/views/staff/website/editorial_workspace/`, `StaffWebsiteEditorialController`, `StaffWebsiteEditorialWizard`, `staff_editorial_wizard_controller.js`. Slugs and technical metadata remain server-managed; SEO fields under collapsible **Page settings**.
+
+**Preview:** type-specific `previews/_*.html.erb`; sanitized DOM updates only (no public draft URLs).
+
+**Regression:** `test/integration/staff/website_article_editor_test.rb`, existing service editor tests unchanged.
+
+**Visual PO QA:** desktop/mobile screenshots not captured in this checkpoint (mark **unverified** until browser pass at 1440 / 768 / 390).
+
 ## Out of scope
 
 Training registration, public resource file downloads, image/file embedding in rich text (until ADR-010), F4-02 forms, production deploy.
