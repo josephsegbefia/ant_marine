@@ -1,0 +1,13 @@
+<% tabs = local_assigns[:tabs] || [] %>
+<nav class="ant-section-tabs" aria-label="<%= local_assigns[:aria_label] || "Sections" %>">
+  <% tabs.each do |tab| %>
+    <% active = tab[:active] || tab["active"] %>
+    <% label = tab[:label] || tab["label"] %>
+    <% path = tab[:path] || tab["path"] %>
+    <% if active %>
+      <span class="ant-section-tabs__tab ant-section-tabs__tab--active" aria-current="page"><%= label %></span>
+    <% else %>
+      <%= link_to label, path, class: "ant-section-tabs__tab" %>
+    <% end %>
+  <% end %>
+</nav>

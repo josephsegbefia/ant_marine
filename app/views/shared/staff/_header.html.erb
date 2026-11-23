@@ -1,9 +1,13 @@
 <header class="staff-app-top">
-  <div class="staff-app-bread" aria-label="Breadcrumb">
-    <span>Team workspace</span>
-    <span aria-hidden="true">›</span>
-    <strong><%= content_for?(:staff_page_title) ? content_for(:staff_page_title) : "Overview" %></strong>
-  </div>
+  <% if staff_breadcrumb_current.present? %>
+    <%= render partial: "shared/staff/breadcrumb", locals: { crumbs: staff_breadcrumb_crumbs, current: staff_breadcrumb_current } %>
+  <% else %>
+    <div class="staff-app-bread" aria-label="Breadcrumb">
+      <span>Team workspace</span>
+      <span aria-hidden="true">›</span>
+      <strong><%= content_for?(:staff_page_title) ? content_for(:staff_page_title) : "Overview" %></strong>
+    </div>
+  <% end %>
   <% if staff_multiple_workspaces? %>
     <%= ant_back_link(label: "Back to workspaces", path: workspace_selection_path) %>
   <% end %>

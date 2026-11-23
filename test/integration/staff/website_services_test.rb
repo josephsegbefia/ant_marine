@@ -17,6 +17,7 @@ class Staff::WebsiteServicesTest < ActionDispatch::IntegrationTest
     sign_in_as users(:super_admin), membership: memberships(:super_admin_membership)
     get staff_website_services_path
     assert_response :success
+    assert_includes response.body, "ant-content-record"
   end
 
   test "client cannot access staff website" do

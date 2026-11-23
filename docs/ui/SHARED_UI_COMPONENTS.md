@@ -12,10 +12,48 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `form-submit` | [`form_submit_controller.js`](../../app/javascript/controllers/form_submit_controller.js) | Submit loading / disable |
 | `ant_back_link` | [`_back_link.html.erb`](../../app/views/shared/ui/_back_link.html.erb) | Return navigation (studio **A05** outline + `left` icon) |
 | `ant_empty_state` | [`_empty_state.html.erb`](../../app/views/shared/ui/_empty_state.html.erb) + [`_empty_state_icon.html.erb`](../../app/views/shared/ui/_empty_state_icon.html.erb) | Reusable empty / zero-results panel (studio **Empty** states) |
+| `ant_page_header` | [`_page_header.html.erb`](../../app/views/shared/ui/_page_header.html.erb) | Studio **app-head** title, description, primary/secondary actions |
+| `ant_section_tabs` | [`_section_tabs.html.erb`](../../app/views/shared/ui/_section_tabs.html.erb) | Section switcher (e.g. Services / Website pages) |
+| `ant_status_badge` | [`_status_badge.html.erb`](../../app/views/shared/ui/_status_badge.html.erb) | Editorial status pill (uses `.ant-badge--*`) |
+| `ant_content_record` | [`_content_record.html.erb`](../../app/views/shared/ui/_content_record.html.erb) | Studio **list-item** row: icon, title, status, guidance, actions |
 | Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
 | Client workspace shell | [`layouts/client_portal.html.erb`](../../app/views/layouts/client_portal.html.erb), [`shared/client/*`](../../app/views/shared/client/) | Studio **C01** sidebar + header (client routes) |
 | Public site shell | [`layouts/public_site.html.erb`](../../app/views/layouts/public_site.html.erb), [`shared/public/*`](../../app/views/shared/public/) | Studio **P01** header/footer + homepage entry |
 | Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link`, `.staff-*` |
+
+## Staff website list hub (F4-01A)
+
+`staff/website/services` and `staff/website/pages` share:
+
+- `staff/website/_management_header.html.erb` — `ant_page_header` + `ant_section_tabs`
+- `staff/website/_content_list_panel.html.erb` — grouped records + footer notice
+- `StaffBreadcrumb` concern — one breadcrumb in the staff header (no duplicate trail in the body)
+
+```erb
+<%= ant_page_header(
+      title: "Manage website content",
+      description: "Keep your services and website pages accurate and up to date.",
+      primary_action: { label: "Create service", path: new_staff_website_service_path }
+    ) %>
+<%= ant_section_tabs(
+      tabs: [
+        { label: "Services", path: staff_website_services_path, active: true },
+        { label: "Website pages", path: staff_website_pages_path, active: false }
+      ]
+    ) %>
+<%= ant_content_record(
+      title: service.title,
+      description: service.summary,
+      guidance: public_content_list_guidance(service.status),
+      status_label: public_content_status_label(service.status),
+      status_badge_class: public_content_status_badge_class(service.status),
+      primary_action: service_list_primary_action(service),
+      secondary_action: service_list_secondary_action(service),
+      icon: :layers
+    ) %>
+```
+
+Breadcrumbs: set in `Staff::Website::*` controllers via `assign_staff_breadcrumb` / `assign_website_section_breadcrumb` (rendered once in `shared/staff/_header.html.erb`).
 
 ## Empty state
 
@@ -62,7 +100,7 @@ Markup uses `role="status"`, a single `h2` title, and responsive action stacking
 ```
 
 - Uses a normal `link_to` to an **application path** only (`validate_back_path!` rejects external URLs).
-- **Staff shell breadcrumb** (`staff-app-bread`) shows `Team workspace › {page title}` via `content_for :staff_page_title`.
+- **Staff shell breadcrumb** (`staff-app-bread`) shows `Team workspace › {page title}` via `content_for :staff_page_title`, or a full trail when `assign_staff_breadcrumb` is used (website CMS).
 - **Back links** provide a clear primary return action on nested staff/client pages.
 - **Workspace rule (staff):** show `ant_back_link "Back to workspaces"` → `workspace_selection_path` and sidebar “Switch workspace” **only when** `Current.user.portal_eligible_memberships.size > 1`.
 - **When to skip:** do not add a back link if it would duplicate the only navigation affordance with no added clarity (e.g. top-level auth entry with no safe parent).

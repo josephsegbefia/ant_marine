@@ -6,15 +6,18 @@ module Staff
       before_action :set_service, except: %i[index new create]
 
       def index
+        assign_website_section_breadcrumb(current: "Services")
         authorize Service
         @services = policy_scope(Service).order(:display_order, :title)
       end
 
       def show
         authorize @service
+        assign_service_editor_breadcrumb(current: @service.title)
       end
 
       def new
+        assign_service_editor_breadcrumb(current: "New service")
         @service = @organization.services.build(
           display_order: next_display_order,
           category: "marine_surveys",
@@ -37,11 +40,13 @@ module Staff
         if @service.save
           redirect_after_save(@service, created: true)
         else
+          assign_service_editor_breadcrumb(current: "New service")
           render :new, status: :unprocessable_entity
         end
       end
 
       def edit
+        assign_service_editor_breadcrumb(current: @service.title.presence || "Edit service")
         @editor_step = editor_step_param
         authorize @service
       end
@@ -57,6 +62,7 @@ module Staff
         if @service.save
           redirect_after_save(@service, created: false)
         else
+          assign_service_editor_breadcrumb(current: @service.title.presence || "Edit service")
           render :edit, status: :unprocessable_entity
         end
       end

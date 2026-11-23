@@ -1,45 +1,43 @@
 <% content_for :staff_nav, :website %>
-<% content_for :staff_page_title, "Website" %>
-<%= staff_website_breadcrumb_trail(
-      crumbs: [
-        { label: "Website", path: staff_website_services_path }
-      ],
-      current: "Services"
-    ) %>
-<%= render "staff/website/header", title: "Service pages", subtitle: "Manage what visitors read about your services." %>
 
-<% if @services.any? %>
-  <% if policy(Service).create? %>
-    <div class="mt-6 flex justify-end">
-      <%= link_to "New service draft", new_staff_website_service_path, class: "ant-btn-primary ant-btn-primary--compact" %>
-    </div>
-  <% end %>
-  <div class="mt-4 space-y-3">
-    <% @services.each do |service| %>
-      <%= link_to staff_website_service_path(service), class: "portal-card block hover:border-[#25877f]" do %>
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <h2 class="text-base font-semibold text-[#102c43]"><%= service.title %></h2>
-            <p class="text-sm text-[#5f7d8c]"><%= service.slug %> · <%= service.status.humanize %></p>
-          </div>
-          <span class="text-sm text-[#25877f]">Edit</span>
-        </div>
+<div class="staff-website-hub">
+  <%= render "staff/website/management_header",
+        active_tab: :services,
+        primary_action: (policy(Service).create? ? { label: "Create service", path: new_staff_website_service_path } : nil) %>
+
+  <% if @services.any? %>
+    <%= render layout: "staff/website/content_list_panel",
+              locals: {
+                section_title: "Service pages",
+                heading_id: "staff-website-services-list",
+                notice: "Changes to public service descriptions should be reviewed before publishing."
+              } do %>
+      <% @services.each do |service| %>
+        <%= ant_content_record(
+              title: service.title,
+              description: service_record_description(service),
+              guidance: public_content_list_guidance(service.status),
+              meta: service_record_meta(service),
+              icon: service_record_icon(service),
+              status_label: public_content_status_label(service.status),
+              status_badge_class: public_content_status_badge_class(service.status),
+              primary_action: service_list_primary_action(service),
+              secondary_action: service_list_secondary_action(service)
+            ) %>
       <% end %>
     <% end %>
-  </div>
-<% else %>
-  <div class="mt-6">
-    <%= ant_empty_state(
-          icon: :layers,
-          title: "No service pages yet",
-          description: "Create a draft service page when you are ready to add to the public catalogue.",
-          guidance: "Nothing is visible on the public website until a service is reviewed and published.",
-          primary_action: (policy(Service).create? ? { label: "Create a service", path: new_staff_website_service_path } : nil),
-          secondary_action: { label: "View website pages", path: staff_website_pages_path },
-          variant: :default,
-          size: :spacious
-        ) %>
-  </div>
-<% end %>
-
-<p class="mt-6 text-sm"><%= link_to "Website pages", staff_website_pages_path, class: "font-semibold text-[#25877f]" %></p>
+  <% else %>
+    <div class="staff-website-hub__empty">
+      <%= ant_empty_state(
+            icon: :layers,
+            title: "No service pages yet",
+            description: "Create a draft service page when you are ready to add to the public catalogue.",
+            guidance: "Nothing is visible on the public website until a service is reviewed and published.",
+            primary_action: (policy(Service).create? ? { label: "Create a service", path: new_staff_website_service_path } : nil),
+            secondary_action: { label: "View website pages", path: staff_website_pages_path },
+            variant: :default,
+            size: :spacious
+          ) %>
+    </div>
+  <% end %>
+</div>

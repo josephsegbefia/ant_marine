@@ -29,6 +29,13 @@
 
 Publishing workflow, permissions, and `published_*` snapshot semantics are unchanged. **Product owner visual acceptance pending.**
 
+### Staff list UX (M02/M03 alignment — local)
+
+- Unified hub header: **Manage website content** with Services / Website pages tabs (studio M02/M03 navigation pattern).
+- Populated lists use shared `ant_content_record` rows (studio **list-item**): title, summary, status badge, plain-English guidance, authorized actions — no prominent slugs.
+- Single breadcrumb trail via `StaffBreadcrumb` in the staff header (`Team workspace › Website › Services`).
+- Empty states remain `ant_empty_state`; populated and empty are mutually exclusive per collection.
+
 **Public nav (PO):** Home, Services, About, Industries, How we work, Contact, Sign in — working routes only.
 
 ## Data model

@@ -1,0 +1,11 @@
+<section class="ant-content-list portal-card" aria-labelledby="<%= local_assigns[:heading_id] || "content-list-heading" %>">
+  <% if local_assigns[:section_title].present? %>
+    <h2 class="ant-content-list__heading" id="<%= local_assigns[:heading_id] || "content-list-heading" %>"><%= section_title %></h2>
+  <% end %>
+  <div class="ant-content-list__items">
+    <%= yield %>
+  </div>
+  <% if local_assigns[:notice].present? %>
+    <p class="ant-content-list__notice"><%= notice %></p>
+  <% end %>
+</section>

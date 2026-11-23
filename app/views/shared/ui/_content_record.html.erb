@@ -1,0 +1,44 @@
+<% icon = local_assigns[:icon] %>
+<% status_label = local_assigns[:status_label] %>
+<% status_class = local_assigns[:status_badge_class] %>
+<% primary = local_assigns[:primary_action] %>
+<% secondary = local_assigns[:secondary_action] %>
+<article class="ant-content-record">
+  <% if icon.present? %>
+    <div class="ant-content-record__icon" aria-hidden="true">
+      <%= render "shared/ui/empty_state_icon", name: icon, size: 18 %>
+    </div>
+  <% end %>
+  <div class="ant-content-record__body">
+    <div class="ant-content-record__title-row">
+      <h2 class="ant-content-record__title"><%= title %></h2>
+      <% if status_label.present? %>
+        <%= ant_status_badge(label: status_label, badge_class: status_class) %>
+      <% end %>
+    </div>
+    <% if local_assigns[:description].present? %>
+      <p class="ant-content-record__description"><%= description %></p>
+    <% end %>
+    <% if local_assigns[:guidance].present? %>
+      <p class="ant-content-record__guidance"><%= guidance %></p>
+    <% end %>
+    <% if local_assigns[:meta].present? %>
+      <p class="ant-content-record__meta"><%= meta %></p>
+    <% end %>
+  </div>
+  <% if primary.present? || secondary.present? %>
+    <div class="ant-content-record__actions">
+      <% if primary.present? %>
+        <%= link_to primary.label, primary.path, class: primary.class.presence || "ant-btn-outline ant-btn-outline--compact", data: primary.data %>
+      <% end %>
+      <% if secondary.present? %>
+        <% secondary_link_opts = { class: secondary.class.presence || "ant-btn-outline ant-btn-outline--compact ant-content-record__secondary", data: secondary.data } %>
+        <% if secondary.external %>
+          <% secondary_link_opts[:target] = "_blank" %>
+          <% secondary_link_opts[:rel] = "noopener" %>
+        <% end %>
+        <%= link_to secondary.label, secondary.path, **secondary_link_opts %>
+      <% end %>
+    </div>
+  <% end %>
+</article>

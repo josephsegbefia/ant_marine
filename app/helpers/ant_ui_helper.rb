@@ -69,6 +69,46 @@ module AntUiHelper
   end
 
   EmptyStateAction = Struct.new(:label, :path, :class, :data, keyword_init: true)
+  PageHeaderAction = Struct.new(:label, :path, :class, :data, keyword_init: true)
+  ContentRecordAction = Struct.new(:label, :path, :class, :data, :external, keyword_init: true)
+
+  def ant_page_header(title:, description: nil, eyebrow: nil, title_id: nil,
+                      primary_action: nil, secondary_action: nil)
+    render partial: "shared/ui/page_header",
+           locals: {
+             title: title,
+             description: description,
+             eyebrow: eyebrow,
+             title_id: title_id,
+             primary_action: normalize_page_header_action(primary_action),
+             secondary_action: normalize_page_header_action(secondary_action)
+           }
+  end
+
+  def ant_section_tabs(tabs:, aria_label: "Sections")
+    render partial: "shared/ui/section_tabs", locals: { tabs: tabs, aria_label: aria_label }
+  end
+
+  def ant_status_badge(label:, badge_class: "ant-badge--muted")
+    render partial: "shared/ui/status_badge", locals: { label: label, badge_class: badge_class }
+  end
+
+  def ant_content_record(title:, description: nil, guidance: nil, meta: nil, icon: nil,
+                         status_label: nil, status_badge_class: nil,
+                         primary_action: nil, secondary_action: nil)
+    render partial: "shared/ui/content_record",
+           locals: {
+             title: title,
+             description: description,
+             guidance: guidance,
+             meta: meta,
+             icon: icon,
+             status_label: status_label,
+             status_badge_class: status_badge_class,
+             primary_action: normalize_content_record_action(primary_action),
+             secondary_action: normalize_content_record_action(secondary_action)
+           }
+  end
 
   def ant_empty_state(title:, description: nil, guidance: nil, icon: nil,
                       variant: :default, size: :default, tone: :neutral,
@@ -114,6 +154,33 @@ module AntUiHelper
         path: path,
         class: action[:class] || action["class"],
         data: action[:data] || action["data"] || {}
+      )
+    end
+
+    def normalize_page_header_action(action)
+      return nil if action.blank?
+      return action if action.is_a?(PageHeaderAction)
+
+      path = validate_back_path!(action[:path] || action["path"])
+      PageHeaderAction.new(
+        label: (action[:label] || action["label"]).to_s,
+        path: path,
+        class: action[:class] || action["class"],
+        data: action[:data] || action["data"] || {}
+      )
+    end
+
+    def normalize_content_record_action(action)
+      return nil if action.blank?
+      return action if action.is_a?(ContentRecordAction)
+
+      path = validate_back_path!(action[:path] || action["path"])
+      ContentRecordAction.new(
+        label: (action[:label] || action["label"]).to_s,
+        path: path,
+        class: action[:class] || action["class"],
+        data: action[:data] || action["data"] || {},
+        external: action[:external] || action["external"]
       )
     end
 

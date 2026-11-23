@@ -1,10 +1,2 @@
 <% content_for :staff_nav, :website %>
-<% content_for :staff_page_title, "Website" %>
-<%= staff_website_breadcrumb_trail(
-      crumbs: [
-        { label: "Website", path: staff_website_services_path },
-        { label: "Services", path: staff_website_services_path }
-      ],
-      current: @service.title.presence || "Edit service"
-    ) %>
 <%= render "editor", service: @service, editor_step: @editor_step %>

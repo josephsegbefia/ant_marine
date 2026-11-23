@@ -9,16 +9,31 @@ module Staff
       ]
 
       def index
+        assign_website_section_breadcrumb(current: "Website pages")
         authorize PublicSitePage
         @pages = policy_scope(PublicSitePage).order(:page_key)
       end
 
       def show
         authorize @page
+        assign_staff_breadcrumb(
+          crumbs: [
+            { label: "Website", path: staff_website_services_path },
+            { label: "Website pages", path: staff_website_pages_path }
+          ],
+          current: @page.title
+        )
       end
 
       def edit
         authorize @page
+        assign_staff_breadcrumb(
+          crumbs: [
+            { label: "Website", path: staff_website_services_path },
+            { label: "Website pages", path: staff_website_pages_path }
+          ],
+          current: @page.title
+        )
       end
 
       def update

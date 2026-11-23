@@ -1,34 +1,40 @@
 <% content_for :staff_nav, :website %>
-<% content_for :staff_page_title, "Website" %>
-<%= staff_website_breadcrumb_trail(
-      crumbs: [
-        { label: "Website", path: staff_website_services_path }
-      ],
-      current: "Pages"
-    ) %>
-<%= render "staff/website/header", title: "Website content", subtitle: "Update public page sections and contact information." %>
 
-<% if @pages.any? %>
-  <div class="mt-6 space-y-3">
-    <% @pages.each do |page| %>
-      <%= link_to staff_website_page_path(page), class: "portal-card block hover:border-[#25877f]" do %>
-        <h2 class="text-base font-semibold text-[#102c43]"><%= page.title %></h2>
-        <p class="text-sm text-[#5f7d8c]"><%= page.page_key.humanize %> · <%= page.status.humanize %></p>
+<div class="staff-website-hub">
+  <%= render "staff/website/management_header", active_tab: :pages %>
+
+  <% if @pages.any? %>
+    <%= render layout: "staff/website/content_list_panel",
+              locals: {
+                section_title: "Website sections",
+                heading_id: "staff-website-pages-list",
+                notice: "Draft changes only appear publicly after approval and publishing."
+              } do %>
+      <% @pages.each do |page| %>
+        <%= ant_content_record(
+              title: page.title,
+              description: public_site_page_description(page),
+              guidance: public_content_list_guidance(page.status),
+              meta: (page.updated_at.present? ? "Last saved #{l(page.updated_at, format: :short)}" : nil),
+              icon: :globe,
+              status_label: public_content_status_label(page.status),
+              status_badge_class: public_content_status_badge_class(page.status),
+              primary_action: public_site_page_list_primary_action(page),
+              secondary_action: public_site_page_list_secondary_action(page)
+            ) %>
       <% end %>
     <% end %>
-  </div>
-<% else %>
-  <div class="mt-6">
-    <%= ant_empty_state(
-          icon: :globe,
-          title: "No website pages yet",
-          description: "Homepage, about, industries and contact sections appear here once your team adds them.",
-          guidance: "Use your organisation’s seed or import process to add the first page drafts.",
-          secondary_action: { label: "View service pages", path: staff_website_services_path },
-          variant: :muted,
-          tone: :info
-        ) %>
-  </div>
-<% end %>
-
-<p class="mt-6 text-sm"><%= link_to "Service pages", staff_website_services_path, class: "font-semibold text-[#25877f]" %></p>
+  <% else %>
+    <div class="staff-website-hub__empty">
+      <%= ant_empty_state(
+            icon: :globe,
+            title: "No website pages yet",
+            description: "Homepage, about, industries and contact sections appear here once your team adds them.",
+            guidance: "Use your organisation’s seed or import process to add the first page drafts.",
+            secondary_action: { label: "View service pages", path: staff_website_services_path },
+            variant: :muted,
+            tone: :info
+          ) %>
+    </div>
+  <% end %>
+</div>

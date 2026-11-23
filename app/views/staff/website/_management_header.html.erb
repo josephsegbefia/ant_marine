@@ -1,0 +1,13 @@
+<%= ant_page_header(
+      title: "Manage website content",
+      description: "Keep your services and website pages accurate and up to date.",
+      title_id: "staff-website-management-heading",
+      primary_action: local_assigns[:primary_action]
+    ) %>
+<%= ant_section_tabs(
+      aria_label: "Website management",
+      tabs: [
+        { label: "Services", path: staff_website_services_path, active: local_assigns[:active_tab] == :services },
+        { label: "Website pages", path: staff_website_pages_path, active: local_assigns[:active_tab] == :pages }
+      ]
+    ) %>

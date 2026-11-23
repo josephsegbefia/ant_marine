@@ -785,6 +785,107 @@
     @apply text-[#173244];
   }
 
+  .staff-website-hub {
+    @apply mx-auto w-full max-w-3xl;
+  }
+
+  .staff-website-hub__empty {
+    @apply mt-6;
+  }
+
+  .ant-page-header {
+    @apply flex flex-col gap-4 border-b border-[#e2eaeb] pb-5 sm:flex-row sm:items-start sm:justify-between;
+  }
+
+  .ant-page-header__eyebrow {
+    @apply text-xs font-bold tracking-wide text-[#5f7d8c] uppercase;
+  }
+
+  .ant-page-header__title {
+    @apply text-2xl font-extrabold tracking-tight text-[#173244];
+  }
+
+  .ant-page-header__description {
+    @apply mt-2 max-w-2xl text-sm leading-relaxed text-[#5f7d8c];
+  }
+
+  .ant-page-header__actions {
+    @apply flex shrink-0 flex-wrap items-center gap-2 sm:justify-end;
+  }
+
+  .ant-section-tabs {
+    @apply mt-5 flex flex-wrap gap-2 border-b border-[#e2eaeb] pb-0;
+  }
+
+  .ant-section-tabs__tab {
+    @apply inline-flex cursor-pointer items-center rounded-t-lg border border-b-0 border-transparent px-4 py-2.5 text-xs font-bold text-[#5f7d8c] no-underline transition-colors;
+  }
+
+  .ant-section-tabs__tab:hover {
+    @apply border-[#d8e6ea] bg-white/70 text-[#173244];
+  }
+
+  .ant-section-tabs__tab--active {
+    @apply cursor-default border-[#d8e6ea] border-b-white bg-white text-[#173244];
+    margin-bottom: -1px;
+  }
+
+  .ant-content-list {
+    @apply mt-6 overflow-hidden p-0;
+  }
+
+  .ant-content-list__heading {
+    @apply border-b border-[#e2eaeb] px-4 py-3 text-sm font-bold text-[#173244] sm:px-5;
+  }
+
+  .ant-content-list__items {
+    @apply divide-y divide-[#e2eaeb];
+  }
+
+  .ant-content-list__notice {
+    @apply border-t border-[#e2eaeb] bg-[#f6fafb] px-4 py-3 text-xs leading-relaxed text-[#5f7d8c] sm:px-5;
+  }
+
+  .ant-content-record {
+    @apply flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-start sm:gap-4 sm:px-5;
+  }
+
+  .ant-content-record__icon {
+    @apply grid size-10 shrink-0 place-items-center rounded-[11px] border border-[#d8e6ea] bg-[#f6fafb] text-[#25877f];
+  }
+
+  .ant-content-record__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .ant-content-record__title-row {
+    @apply flex flex-wrap items-start gap-2 gap-y-1;
+  }
+
+  .ant-content-record__title {
+    @apply text-base font-bold text-[#102c43];
+  }
+
+  .ant-content-record__description {
+    @apply mt-1 text-sm leading-relaxed text-[#5f7d8c];
+  }
+
+  .ant-content-record__guidance {
+    @apply mt-1 text-xs font-semibold text-[#39728e];
+  }
+
+  .ant-content-record__meta {
+    @apply mt-2 text-[11px] text-[#8799a3];
+  }
+
+  .ant-content-record__actions {
+    @apply flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:min-w-[9.5rem] sm:items-stretch;
+  }
+
+  .ant-content-record__secondary {
+    @apply text-center;
+  }
+
   .staff-overview-head h1 {
     @apply text-2xl font-extrabold tracking-tight text-[#173244];
   }

@@ -51,6 +51,7 @@
 | P3 final acceptance (local) | 2026-11-23 | **ACCEPTED** | Engineering foundation closed; SeaweedFS + ClamAV PoC verified; **203 / 741** with PoC env; **production deployment NOT AUTHORISED** |
 | F4-01A Public content foundation | 2026-11-23 | **Complete — local `main` only** | `services` + `public_site_pages`, staff Website (M02/M03), public routes/SEO/sitemap, draft catalogue seeder; `verify_foundation.sh` pass; docs `F4_01A_PUBLIC_CONTENT.md`; **content publish still PO-blocked**; **not pushed** |
 | F4-01A Service draft-save correction | 2026-11-23 | **Code complete — PO browser gate open** | Auto slug, list normalization, snapshot protection, draft vs `:editorial` validation; tests extended; **not pushed** |
+| F4-01A Website list UX (M02/M03) | 2026-11-23 | **Code complete — PO browser gate open** | Shared list hub components, single breadcrumb, record cards; integration tests; **not pushed** |
 | F4-01A Service editor UX | 2026-11-23 | **Delivered — PO visual sign-off pending** | Guided four-step editor + list builders + staff draft preview; Pundit fix `32503c1`; automated suite green; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |

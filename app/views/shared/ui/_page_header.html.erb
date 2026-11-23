@@ -1,0 +1,23 @@
+<% primary = local_assigns[:primary_action] %>
+<% secondary = local_assigns[:secondary_action] %>
+<header class="ant-page-header">
+  <div class="ant-page-header__text">
+    <% if local_assigns[:eyebrow].present? %>
+      <p class="ant-page-header__eyebrow"><%= eyebrow %></p>
+    <% end %>
+    <h1 class="ant-page-header__title" id="<%= local_assigns[:title_id] %>"><%= title %></h1>
+    <% if local_assigns[:description].present? %>
+      <p class="ant-page-header__description"><%= description %></p>
+    <% end %>
+  </div>
+  <% if primary.present? || secondary.present? %>
+    <div class="ant-page-header__actions">
+      <% if secondary.present? %>
+        <%= link_to secondary.label, secondary.path, class: secondary.class.presence || "ant-btn-outline ant-btn-outline--compact", data: secondary.data %>
+      <% end %>
+      <% if primary.present? %>
+        <%= link_to primary.label, primary.path, class: primary.class.presence || "ant-btn-primary ant-btn-primary--compact", data: primary.data %>
+      <% end %>
+    </div>
+  <% end %>
+</header>
