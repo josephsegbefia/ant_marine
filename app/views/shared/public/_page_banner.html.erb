@@ -1,0 +1,10 @@
+<%# locals: eyebrow:, title:, lede: %>
+<section class="public-page-banner" aria-labelledby="public-page-banner-heading">
+  <% if local_assigns[:eyebrow].present? %>
+    <p class="public-eyebrow"><%= eyebrow %></p>
+  <% end %>
+  <h1 id="public-page-banner-heading"><%= title %></h1>
+  <% if local_assigns[:lede].present? %>
+    <p class="public-page-banner__lede"><%= lede %></p>
+  <% end %>
+</section>

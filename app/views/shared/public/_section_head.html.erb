@@ -1,0 +1,12 @@
+<%# locals: title:, subtitle: nil, link_label: nil, link_path: nil %>
+<header class="public-section__head">
+  <div>
+    <h2><%= title %></h2>
+    <% if local_assigns[:subtitle].present? %>
+      <p><%= subtitle %></p>
+    <% end %>
+  </div>
+  <% if local_assigns[:link_path].present? %>
+    <%= link_to link_label, link_path, class: "public-text-link" %>
+  <% end %>
+</header>

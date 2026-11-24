@@ -32,7 +32,7 @@ end %>
 <%= form_with(**form_options) do |f| %>
   <input type="hidden" name="editor_step" value="<%= editor_step %>" data-staff-editorial-wizard-target="stepField">
 
-  <div class="staff-editor-stepper" role="tablist" aria-label="Editor steps">
+  <div class="staff-editor-stepper staff-editor-stepper--steps-<%= config[:step_count] %>" role="tablist" aria-label="Editor steps">
     <% config[:steps].each_with_index do |label, index| %>
       <% step_number = index + 1 %>
       <button type="button" role="tab" class="staff-editor-step__tab <%= "staff-editor-step__tab--current" if step_number == editor_step %>"
@@ -69,7 +69,7 @@ end %>
 <% end %>
 
 <% if editor_step == config[:step_count] && record.persisted? %>
-  <div class="staff-editor-workflow-below mt-4" data-staff-editorial-wizard-target="submitReviewBlock">
+  <div class="staff-editor-workflow-below mt-4 max-w-3xl" data-staff-editorial-wizard-target="submitReviewBlock">
     <%= render "staff/website/editorial_workspace/workflow_status", record: record %>
   </div>
 <% end %>

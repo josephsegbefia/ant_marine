@@ -1,7 +1,7 @@
 <% content_for :public_nav, "home" %>
 <% h = @homepage.data %>
 
-<section class="public-hero">
+<section class="public-hero public-hero--home">
   <div class="public-hero__copy">
     <p class="public-eyebrow"><%= h[:eyebrow] %></p>
     <h1><%= h[:title] %></h1>
@@ -11,46 +11,47 @@
       <%= link_to h[:secondary_cta_label], h[:secondary_cta_path], class: "ant-btn-outline ant-btn-primary--compact public-hero__btn" %>
     </div>
   </div>
-  <div class="public-hero__art" aria-hidden="true"></div>
+  <div class="public-hero__art public-hero-art" aria-hidden="true">
+    <%= render "shared/public/hero_art" %>
+  </div>
 </section>
 
-<div class="public-trust-bar" role="list" aria-label="Service areas">
-  <span role="listitem">Thoughtful, careful work</span>
-  <span role="listitem">Marine industry focus</span>
-  <span role="listitem">West African reach</span>
-  <span role="listitem">Clear, useful reports</span>
+<div class="public-trust-bar" role="list" aria-label="What we stand for">
+  <span role="listitem"><%= render "shared/public/icon", name: "shield", size: 18 %> Thoughtful, careful work</span>
+  <span role="listitem"><%= render "shared/public/icon", name: "ship", size: 18 %> Marine industry focus</span>
+  <span role="listitem"><%= render "shared/public/icon", name: "globe", size: 18 %> West African reach</span>
+  <span role="listitem"><%= render "shared/public/icon", name: "file", size: 18 %> Clear, useful reports</span>
 </div>
 
 <section class="public-section" id="services">
-  <header class="public-section__head">
-    <h2>How we can help</h2>
-    <p><%= link_to "See all services", public_services_path %></p>
-  </header>
+  <%= render "shared/public/section_head",
+        title: "How we can help",
+        link_label: "See all services",
+        link_path: public_services_path %>
   <% if @featured_services.any? %>
     <div class="public-service-grid">
       <% @featured_services.each do |service| %>
-        <article class="portal-card public-service-card">
-          <h3><%= service.public_title %></h3>
-          <p><%= service.public_summary %></p>
-          <p><%= link_to "Learn more", public_service_path(service.slug) %></p>
-        </article>
+        <%= render "shared/public/service_card", service: service %>
       <% end %>
     </div>
   <% else %>
-    <div class="portal-card public-contact-card">
-      <p class="text-sm leading-relaxed text-[#5f7d8c]">Published service listings will appear here once approved through the website editor.</p>
-    </div>
+    <%= render "shared/public/empty_state",
+          icon: "layers",
+          title: "Service pages are being prepared",
+          description: "Published service descriptions will appear here after editorial review.",
+          guidance: "You can still reach us to discuss your marine project.",
+          primary_action: { label: "Contact the team", path: contact_path } %>
   <% end %>
 </section>
 
 <section class="public-section public-section--muted" id="contact">
-  <header class="public-section__head">
-    <h2>Contact</h2>
-    <p>Tell us about your project. Existing clients can use the secure portal for ongoing work.</p>
-  </header>
-  <div class="portal-card public-contact-card">
-    <p class="text-sm leading-relaxed text-[#5f7d8c]">
-      Online quote and booking forms are not available yet. <%= link_to "Contact ANT Marine", contact_path %> through verified channels,
+  <%= render "shared/public/section_head",
+        title: "Get in touch",
+        subtitle: "Tell us about your project. Existing clients can use the secure portal for ongoing work." %>
+  <div class="public-notice">
+    <p>
+      Online quote and booking forms are not available yet.
+      <%= link_to "Contact ANT Marine", contact_path %> through verified channels,
       or <%= link_to "sign in", new_session_path %> if you already have a workspace invitation.
     </p>
   </div>

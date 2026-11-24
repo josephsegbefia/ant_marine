@@ -19,10 +19,18 @@ module Staff
         end
 
         def assign_service_editor_breadcrumb(current:)
+          assign_content_editor_breadcrumb(
+            section_label: "Services",
+            section_path: staff_website_services_path,
+            current: current
+          )
+        end
+
+        def assign_content_editor_breadcrumb(section_label:, section_path:, current:)
           assign_staff_breadcrumb(
             crumbs: [
               { label: "Website", path: staff_website_services_path },
-              { label: "Services", path: staff_website_services_path }
+              { label: section_label, path: section_path }
             ],
             current: current
           )

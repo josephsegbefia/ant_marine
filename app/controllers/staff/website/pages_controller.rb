@@ -21,11 +21,9 @@ module Staff
 
       def show
         authorize @page
-        assign_staff_breadcrumb(
-          crumbs: [
-            { label: "Website", path: staff_website_services_path },
-            { label: "Website pages", path: staff_website_pages_path }
-          ],
+        assign_content_editor_breadcrumb(
+          section_label: "Website pages",
+          section_path: staff_website_pages_path,
           current: @page.title
         )
       end
@@ -34,12 +32,10 @@ module Staff
         authorize @page
         @editor_step = editorial_editor_step
         @editor_config = editorial_workspace_config(@page)
-        assign_staff_breadcrumb(
-          crumbs: [
-            { label: "Website", path: staff_website_services_path },
-            { label: "Website pages", path: staff_website_pages_path }
-          ],
-          current: @page.title
+        assign_content_editor_breadcrumb(
+          section_label: "Website pages",
+          section_path: staff_website_pages_path,
+          current: @page.title.presence || "Edit page"
         )
       end
 

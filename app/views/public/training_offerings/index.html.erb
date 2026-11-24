@@ -1,21 +1,29 @@
 <% content_for :public_nav, "training" %>
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Training</p>
-  <h1>Training and workshops.</h1>
-  <p class="public-hero__lede">Explore what ANT Marine can offer. Registration and scheduling are arranged separately.</p>
-</section>
-<section class="public-section">
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Training",
+      title: "Training and workshops.",
+      lede: "Explore what ANT Marine can offer. Registration and scheduling are arranged separately." %>
+
+<section class="public-section public-section--tight-top">
   <% if @training_offerings.any? %>
     <div class="public-service-grid">
       <% @training_offerings.each do |training| %>
-        <article class="portal-card public-service-card">
-          <h2><%= training.public_title %></h2>
-          <p><%= training.public_summary %></p>
-          <p><%= link_to "View details", public_training_offering_path(training.slug) %></p>
+        <article class="public-service-card">
+          <span class="public-service-card__icon" aria-hidden="true"><%= render "shared/public/icon", name: "book", size: 22 %></span>
+          <h3 class="public-service-card__title">
+            <%= link_to training.public_title, public_training_offering_path(training.slug), class: "public-service-card__title-link" %>
+          </h3>
+          <p class="public-service-card__summary"><%= training.public_summary %></p>
+          <%= link_to "View details", public_training_offering_path(training.slug), class: "public-text-link" %>
         </article>
       <% end %>
     </div>
   <% else %>
-    <div class="portal-card"><p>No training courses are published yet. <%= link_to "Contact us", contact_path %> to discuss your needs.</p></div>
+    <%= render "shared/public/empty_state",
+          icon: "book",
+          title: "No published training offerings yet",
+          description: "Course descriptions appear here after editorial review. Dates and registration are confirmed with the ANT Marine team.",
+          primary_action: { label: "Ask about training", path: contact_path } %>
   <% end %>
 </section>

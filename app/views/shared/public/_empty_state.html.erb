@@ -1,0 +1,16 @@
+<%# locals: icon:, title:, description:, guidance: nil, primary_action: nil %>
+<div class="public-empty-state" role="status">
+  <div class="public-empty-state__icon" aria-hidden="true">
+    <%= render "shared/public/icon", name: icon, size: 28 %>
+  </div>
+  <h2 class="public-empty-state__title"><%= title %></h2>
+  <p class="public-empty-state__description"><%= description %></p>
+  <% if local_assigns[:guidance].present? %>
+    <p class="public-empty-state__guidance"><%= guidance %></p>
+  <% end %>
+  <% if local_assigns[:primary_action].present? %>
+    <div class="public-empty-state__actions">
+      <%= link_to primary_action[:label], primary_action[:path], class: "ant-btn-primary ant-btn-primary--compact" %>
+    </div>
+  <% end %>
+</div>

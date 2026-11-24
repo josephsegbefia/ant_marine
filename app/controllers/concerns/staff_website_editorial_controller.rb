@@ -18,7 +18,11 @@ module StaffWebsiteEditorialController
 
   def show
     authorize @record
-    assign_website_section_breadcrumb(current: @record.title)
+    assign_content_editor_breadcrumb(
+      section_label: editorial_section_label,
+      section_path: editorial_index_path,
+      current: @record.title
+    )
     render "staff/website/editorial/show"
   end
 
@@ -27,7 +31,7 @@ module StaffWebsiteEditorialController
     authorize @record
     @editor_step = editorial_editor_step
     @editor_config = editorial_workspace_config(@record)
-    assign_website_section_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
+    assign_editorial_editor_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
     render "staff/website/editorial/new"
   end
 
@@ -41,7 +45,7 @@ module StaffWebsiteEditorialController
     if @record.save
       redirect_editorial_after_save(created: true)
     else
-      assign_website_section_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
+      assign_editorial_editor_breadcrumb(current: "New #{editorial_section_label.singularize.downcase}")
       render "staff/website/editorial/new", status: :unprocessable_entity
     end
   end
@@ -50,7 +54,7 @@ module StaffWebsiteEditorialController
     authorize @record
     @editor_step = editorial_editor_step
     @editor_config = editorial_workspace_config(@record)
-    assign_website_section_breadcrumb(current: @record.title)
+    assign_editorial_editor_breadcrumb(current: @record.title.presence || "Edit content")
     render "staff/website/editorial/edit"
   end
 
@@ -63,7 +67,7 @@ module StaffWebsiteEditorialController
     if @record.save
       redirect_editorial_after_save(created: false)
     else
-      assign_website_section_breadcrumb(current: @record.title)
+      assign_editorial_editor_breadcrumb(current: @record.title.presence || "Edit content")
       render "staff/website/editorial/edit", status: :unprocessable_entity
     end
   end
@@ -124,5 +128,13 @@ module StaffWebsiteEditorialController
 
     def editorial_association
       editorial_record_class.model_name.collection.to_sym
+    end
+
+    def assign_editorial_editor_breadcrumb(current:)
+      assign_content_editor_breadcrumb(
+        section_label: editorial_section_label,
+        section_path: editorial_index_path,
+        current: current
+      )
     end
 end

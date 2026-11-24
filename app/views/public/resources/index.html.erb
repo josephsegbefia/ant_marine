@@ -1,22 +1,30 @@
 <% content_for :public_nav, "resources" %>
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Resources</p>
-  <h1>Guides and publications.</h1>
-  <p class="public-hero__lede">Approved resources will appear here. Downloads require a separate release step.</p>
-</section>
-<section class="public-section">
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Resources",
+      title: "Guides and publications.",
+      lede: "Approved resources will appear here. Public file downloads require a separate release step." %>
+
+<section class="public-section public-section--tight-top">
   <% if @resources.any? %>
     <div class="public-service-grid">
       <% @resources.each do |resource| %>
-        <article class="portal-card public-service-card">
-          <p class="text-xs font-bold text-[#5f7d8c]"><%= resource.public_resource_category %></p>
-          <h2><%= resource.public_title %></h2>
-          <p><%= resource.public_summary %></p>
-          <p><%= link_to "View details", public_resource_path(resource.slug) %></p>
+        <article class="public-service-card">
+          <span class="public-service-card__icon" aria-hidden="true"><%= render "shared/public/icon", name: "file", size: 22 %></span>
+          <p class="public-eyebrow public-service-card__eyebrow"><%= resource.public_resource_category %></p>
+          <h3 class="public-service-card__title">
+            <%= link_to resource.public_title, public_resource_path(resource.slug), class: "public-service-card__title-link" %>
+          </h3>
+          <p class="public-service-card__summary"><%= resource.public_summary %></p>
+          <%= link_to "View details", public_resource_path(resource.slug), class: "public-text-link" %>
         </article>
       <% end %>
     </div>
   <% else %>
-    <div class="portal-card"><p>No resources are published yet.</p></div>
+    <%= render "shared/public/empty_state",
+          icon: "file",
+          title: "No public resources available yet",
+          description: "Catalogue entries and downloads are published only after storage and release approval.",
+          primary_action: { label: "Contact the team", path: contact_path } %>
   <% end %>
 </section>

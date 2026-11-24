@@ -1,38 +1,72 @@
 <% content_for :public_nav, "services" %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Our services</p>
-  <h1><%= @service.public_title %></h1>
-  <p class="public-hero__lede"><%= @service.public_summary %></p>
-</section>
+<%= render "shared/public/page_banner",
+      eyebrow: public_service_category_label(@service),
+      title: @service.public_title,
+      lede: @service.public_summary %>
 
-<section class="public-section">
-  <p class="text-sm text-[#5f7d8c] mb-4"><%= link_to "Services", public_services_path %> › <%= @service.public_title %></p>
-  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
-    <article class="portal-card">
-      <h2>How we can help</h2>
-      <%= public_render_rich_text(@service.public_body.presence || "<p>Every project is different. Our team works with you to understand the scope, confirm what is needed and provide clear next steps.</p>") %>
+<section class="public-detail">
+  <nav class="public-breadcrumb" aria-label="Breadcrumb">
+    <%= link_to "Services", public_services_path %>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page"><%= @service.public_title %></span>
+  </nav>
+
+  <div class="public-detail__layout">
+    <article class="public-detail__main">
+      <% if @service.public_body.present? %>
+        <section class="public-detail__block">
+          <h2 class="public-detail__heading">How we can help</h2>
+          <%= public_render_rich_text(@service.public_body) %>
+        </section>
+      <% end %>
+
       <% items = @service.public_scope_items %>
       <% if items.any? %>
-        <ul class="mt-4 space-y-2 text-sm text-[#466270]">
-          <% items.each do |item| %>
-            <li><%= item %></li>
-          <% end %>
-        </ul>
+        <section class="public-detail__block">
+          <h2 class="public-detail__heading">What this service includes</h2>
+          <ul class="public-check-list">
+            <% items.each do |item| %>
+              <li>
+                <span class="public-check-list__icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 16 %></span>
+                <span><%= item %></span>
+              </li>
+            <% end %>
+          </ul>
+        </section>
       <% end %>
-      <h2 class="mt-8">What happens next?</h2>
+
       <% steps = @service.public_process_steps %>
       <% if steps.any? %>
-        <%= public_format_text(steps.join("\n\n")) %>
+        <section class="public-detail__block">
+          <h2 class="public-detail__heading">What happens next?</h2>
+          <ol class="public-process-steps">
+            <% steps.each_with_index do |step, index| %>
+              <li>
+                <span class="public-process-steps__num" aria-hidden="true"><%= index + 1 %></span>
+                <span><%= step %></span>
+              </li>
+            <% end %>
+          </ol>
+        </section>
       <% else %>
-        <p>Tell us about the work. We will review your request, confirm any missing details, and provide a quotation where appropriate. A preferred date is not a confirmed booking until agreed in writing.</p>
+        <section class="public-detail__block">
+          <h2 class="public-detail__heading">What happens next?</h2>
+          <p class="public-detail__lede">Tell us about the work. We will review your request, confirm any missing details, and provide a quotation where appropriate. A preferred date is not a confirmed booking until agreed in writing.</p>
+        </section>
       <% end %>
     </article>
-    <aside class="portal-card">
-      <h2 class="text-base font-semibold">Who this service is for</h2>
-      <p class="text-sm text-[#5f7d8c] mt-2"><%= @service.public_audience.presence || "Marine operators and project teams." %></p>
-      <div class="mt-6">
-        <%= link_to "Contact the team", contact_path, class: "ant-btn-primary ant-btn-primary--compact" %>
+
+    <aside class="public-detail__aside" aria-labelledby="service-audience-heading">
+      <div class="public-detail-aside">
+        <span class="public-service-card__icon public-detail-aside__icon" aria-hidden="true">
+          <%= render "shared/public/icon", name: "users", size: 24 %>
+        </span>
+        <h2 id="service-audience-heading" class="public-detail-aside__title">Who this service is for</h2>
+        <p class="public-detail-aside__text"><%= @service.public_audience.presence || "Marine operators and project teams working on vessels, facilities and offshore projects." %></p>
+        <div class="public-detail-aside__actions">
+          <%= link_to "Contact the team", contact_path, class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+        </div>
       </div>
     </aside>
   </div>

@@ -1,28 +1,25 @@
 <% content_for :public_nav, "services" %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Our services</p>
-  <h1>Practical help on and off the water.</h1>
-  <p class="public-hero__lede">Find the right support for vessels, marine facilities, offshore operations and technical projects.</p>
-</section>
+<%= render "shared/public/page_banner",
+      eyebrow: "Our services",
+      title: "Practical help on and off the water.",
+      lede: "Find the right support for vessels, marine facilities, offshore operations and technical projects." %>
 
-<section class="public-section">
+<section class="public-section public-section--tight-top">
   <% if @services.any? %>
     <div class="public-service-grid">
       <% @services.each do |service| %>
-        <article class="portal-card public-service-card">
-          <h2><%= service.public_title %></h2>
-          <p><%= service.public_summary %></p>
-          <p><%= link_to "Learn more", public_service_path(service.slug) %></p>
-        </article>
+        <%= render "shared/public/service_card", service: service %>
       <% end %>
     </div>
   <% else %>
-    <div class="portal-card public-contact-card">
-      <p>No services are published yet. Check back soon or <%= link_to "contact us", contact_path %>.</p>
-    </div>
+    <%= render "shared/public/empty_state",
+          icon: "layers",
+          title: "No services published yet",
+          description: "Service descriptions appear here once they are reviewed and published.",
+          guidance: "Describe your needs and we will help you find the right support.",
+          primary_action: { label: "Contact the team", path: contact_path } %>
   <% end %>
-  <div class="portal-card public-contact-card" style="margin-top: 1.5rem;">
-    <p>Not sure which service is right? <%= link_to "Contact the team", contact_path %> and describe your needs.</p>
-  </div>
+  <p class="public-notice public-notice--spaced">Not sure which service is right?
+    <%= link_to "Describe your needs", contact_path %> and we will help you choose.</p>
 </section>

@@ -22,6 +22,11 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
 | Client workspace shell | [`layouts/client_portal.html.erb`](../../app/views/layouts/client_portal.html.erb), [`shared/client/*`](../../app/views/shared/client/) | Studio **C01** sidebar + header (client routes) |
 | Public site shell | [`layouts/public_site.html.erb`](../../app/views/layouts/public_site.html.erb), [`shared/public/*`](../../app/views/shared/public/) | Studio **P01** header/footer + homepage entry |
+| `public_service_card` | [`shared/public/_service_card.html.erb`](../../app/views/shared/public/_service_card.html.erb) | Studio **P02/P03** service cards (icon, title, summary, learn-more link, hover/focus) |
+| `public_empty_state` | [`shared/public/_empty_state.html.erb`](../../app/views/shared/public/_empty_state.html.erb) | Intentional empty catalogue states (icon circle, title, copy, optional CTA to Contact/Services) |
+| `public_page_banner` | [`shared/public/_page_banner.html.erb`](../../app/views/shared/public/_page_banner.html.erb) | Studio **page-banner** gradient band for public indexes |
+| `public_hero_art` | [`shared/public/_hero_art.html.erb`](../../app/views/shared/public/_hero_art.html.erb) | Branded SVG seascape (no stock photos) for **P01** hero |
+| `PublicUiHelper` | [`public_ui_helper.rb`](../../app/helpers/public_ui_helper.rb) | Single source for public primary/secondary nav and service labels |
 | Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link`, `.staff-*` |
 
 ## Staff website list hub (F4-01A)

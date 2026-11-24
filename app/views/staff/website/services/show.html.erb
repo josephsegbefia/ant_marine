@@ -1,16 +1,8 @@
 <% content_for :staff_nav, :website %>
 <%= render "staff/website/header", title: @service.title, subtitle: public_content_status_label(@service.status) %>
 
-<div class="mt-6 max-w-3xl portal-card">
-  <h2 class="text-base font-semibold text-[#102c43]">Editorial workflow</h2>
-  <p class="mt-2 text-sm text-[#5f7d8c]"><%= service_status_guidance(@service) %></p>
-  <div class="mt-4">
-    <%= render "staff/website/workflow_actions", record: @service %>
-  </div>
-</div>
-
-<div class="portal-card mt-6 max-w-3xl text-sm text-[#5f7d8c]">
-  <p>Public preview is available only after publishing. Draft and in-review content never appears on the public website.</p>
-</div>
-
-<%= link_to "Back to services", staff_website_services_path, class: "mt-6 inline-block text-sm font-semibold text-[#25877f]" %>
+<%= render "staff/website/content_review",
+      record: @service,
+      back_label: "Back to services",
+      back_path: staff_website_services_path,
+      guidance: service_status_guidance(@service) %>

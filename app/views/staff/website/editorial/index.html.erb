@@ -6,7 +6,11 @@
 
   <% if @records.any? %>
     <%= render layout: "staff/website/content_list_panel",
-              locals: { section_title: @hub_section_title, notice: @hub_section_notice } do %>
+              locals: {
+                section_title: @hub_section_title,
+                heading_id: "staff-website-#{editorial_record_class.model_name.plural}-list",
+                notice: @hub_section_notice
+              } do %>
       <% @records.each do |record| %>
         <%= ant_content_record(
               title: record.title,

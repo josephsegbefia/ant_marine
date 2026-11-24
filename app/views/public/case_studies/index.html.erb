@@ -1,21 +1,30 @@
 <% content_for :public_nav, "projects" %>
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Our work</p>
-  <h1>Projects and experience.</h1>
-  <p class="public-hero__lede">Examples are published only with appropriate client permission.</p>
-</section>
-<section class="public-section">
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Our work",
+      title: "Projects and experience.",
+      lede: "Examples are published only with appropriate client permission." %>
+
+<section class="public-section public-section--tight-top">
   <% if @case_studies.any? %>
     <div class="public-service-grid">
       <% @case_studies.each do |study| %>
-        <article class="portal-card public-service-card">
-          <h2><%= study.public_title %></h2>
-          <p><%= study.public_summary %></p>
-          <p><%= link_to "View story", public_project_path(study.slug) %></p>
+        <article class="public-service-card">
+          <span class="public-service-card__icon" aria-hidden="true"><%= render "shared/public/icon", name: "brief", size: 22 %></span>
+          <h3 class="public-service-card__title">
+            <%= link_to study.public_title, public_project_path(study.slug), class: "public-service-card__title-link" %>
+          </h3>
+          <p class="public-service-card__summary"><%= study.public_summary %></p>
+          <%= link_to "View story", public_project_path(study.slug), class: "public-text-link" %>
         </article>
       <% end %>
     </div>
   <% else %>
-    <div class="portal-card"><p>We will share approved project stories here when they are ready. <%= link_to "Contact us", contact_path %> in the meantime.</p></div>
+    <%= render "shared/public/empty_state",
+          icon: "brief",
+          title: "Approved project stories are not available yet",
+          description: "We share case studies only when clients have given permission and content has passed editorial review.",
+          guidance: "You can still discuss a similar project with our team.",
+          primary_action: { label: "Contact the team", path: contact_path } %>
   <% end %>
 </section>

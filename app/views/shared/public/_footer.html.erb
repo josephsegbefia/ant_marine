@@ -5,12 +5,19 @@
       <p>Marine consulting, surveys, technical support and training for Ghana and West Africa.</p>
     </div>
     <div>
-      <b>Get in touch</b>
-      <p>Use the contact section on this site or speak with your ANT Marine contact when you are already working with us.</p>
+      <b>Explore</b>
+      <p class="public-footer__links">
+        <%= link_to "Services", public_services_path %>
+        · <%= link_to "Our work", public_projects_path %>
+        · <%= link_to "Insights", public_insights_path %>
+        · <%= link_to "Training", public_training_path %>
+        · <%= link_to "Resources", public_resources_path %>
+      </p>
     </div>
     <div>
-      <b>Client and team access</b>
-      <p><%= link_to "Sign in to your workspace", new_session_path %></p>
+      <b>Get in touch</b>
+      <p><%= link_to "Contact ANT Marine", contact_path %> or sign in if you already work with us.</p>
+      <p class="mt-2"><%= link_to "Sign in to your workspace", new_session_path %></p>
     </div>
   </div>
   <p class="public-footer__meta">ANT Marine W.A. · Ghana &amp; West Africa</p>
