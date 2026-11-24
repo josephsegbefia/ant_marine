@@ -13,6 +13,14 @@
     <% end %>
   <% end %>
 
+  <% if staff_can_manage_quotations? %>
+    <%= link_to staff_quotations_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:quotations)}" do %>
+      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <span>Quotations</span>
+    <% end %>
+  <% end %>
+
   <p class="staff-side-label staff-side-label--spaced">ADMINISTRATION</p>
   <% if staff_can_manage_website? %>
     <%= link_to staff_website_services_path,

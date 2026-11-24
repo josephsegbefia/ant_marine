@@ -1,0 +1,27 @@
+<%# locals: item, index: optional %>
+<div class="staff-quote-line grid gap-2 border border-[#e2eaed] rounded-xl p-3 sm:grid-cols-12">
+  <input type="hidden" name="quote_revision[line_items_attributes][][id]" value="<%= item.id %>">
+  <p class="text-[10px] font-bold uppercase text-[#8197a1] sm:col-span-12">Line item</p>
+  <div class="sm:col-span-12">
+    <label class="ant-field__label">Description</label>
+    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][description]" value="<%= item.description %>" required>
+  </div>
+  <div class="sm:col-span-3">
+    <label class="ant-field__label">Quantity</label>
+    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][quantity]" value="<%= item.quantity || 1 %>" inputmode="decimal">
+  </div>
+  <div class="sm:col-span-3">
+    <label class="ant-field__label">Unit</label>
+    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][unit]" value="<%= item.unit.presence || "each" %>">
+  </div>
+  <div class="sm:col-span-3">
+    <label class="ant-field__label">Unit price (cents)</label>
+    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][unit_price_cents]" value="<%= item.unit_price_cents %>" inputmode="numeric">
+  </div>
+  <div class="sm:col-span-3 flex items-end">
+    <label class="flex items-center gap-2 text-xs text-[#5f7d8c]">
+      <input type="checkbox" name="quote_revision[line_items_attributes][][_destroy]" value="1">
+      Remove
+    </label>
+  </div>
+</div>

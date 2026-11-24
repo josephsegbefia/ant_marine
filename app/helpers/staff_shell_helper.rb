@@ -25,6 +25,15 @@ module StaffShellHelper
     )
   end
 
+  def staff_can_manage_quotations?
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "quotes.view_all"
+    )
+  end
+
   def staff_can_manage_website?
     return false unless Current.membership&.staff_domain?
 

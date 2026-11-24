@@ -4,7 +4,7 @@ module Authorization
   # Default permission keys per canonical role — sourced from DEFAULT_ROLE_MATRIX.md
   module RoleDefaults
     OPS_MANAGER = %w[
-      inquiries.view_all inquiries.qualify quotes.view_all quotes.create quotes.send quotes.withdraw
+      inquiries.view_all inquiries.qualify quotes.view_all quotes.create quotes.approve quotes.send quotes.withdraw
       bookings.view_all bookings.confirm projects.view_all projects.create projects.manage projects.assign
       vessels.view_all vessels.manage inspections.view documents.manage documents.request_upload
       documents.download documents.preview reports.review reports.release reports.view_draft_staff
@@ -14,7 +14,7 @@ module Authorization
     ].freeze
 
     PROJECT_COORDINATOR = %w[
-      inquiries.view_all inquiries.qualify quotes.view_all quotes.create quotes.send quotes.withdraw
+      inquiries.view_all inquiries.qualify quotes.view_all quotes.create quotes.approve quotes.send quotes.withdraw
       bookings.view_all bookings.confirm projects.view_all projects.create projects.manage projects.assign
       vessels.view_all vessels.manage documents.upload documents.download documents.preview documents.manage
       documents.request_upload reports.view_draft_staff reports.release billing.view messages.view

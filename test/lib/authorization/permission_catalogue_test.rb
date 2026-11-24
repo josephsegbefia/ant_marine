@@ -3,10 +3,10 @@
 require "test_helper"
 
 class AuthorizationPermissionCatalogueTest < ActiveSupport::TestCase
-  test "catalogue defines 71 stable permission keys" do
+  test "catalogue defines 72 stable permission keys" do
     keys = Authorization::PermissionCatalogue.all_keys
-    assert_equal 71, keys.size
-    assert_equal 71, keys.uniq.size
+    assert_equal 72, keys.size
+    assert_equal 72, keys.uniq.size
   end
 
   test "fetch raises on unknown key" do

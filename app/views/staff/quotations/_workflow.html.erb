@@ -1,0 +1,30 @@
+<aside class="portal-card mt-4" aria-label="Workflow actions">
+  <h2 class="text-base font-extrabold text-[#173244]">Workflow</h2>
+  <p class="mt-2 text-sm text-[#5f7d8c]">Internal approval is separate from sending to a client. Email delivery remains gated.</p>
+
+  <ul class="mt-4 space-y-2 text-sm text-[#466270]">
+    <li>Version <%= revision.version_number %></li>
+    <li>Total <%= format_quote_money(revision.total_cents, revision.currency) %></li>
+    <li>Delivery state: <%= quote.delivery_state.tr("_", " ") %></li>
+  </ul>
+
+  <div class="mt-4 flex flex-col gap-2">
+    <% if policy(quote).submit_for_review? %>
+      <%= button_to "Submit for review", submit_for_review_staff_quotation_path(quote), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+    <% end %>
+    <% if policy(quote).return_for_correction? %>
+      <%= button_to "Return for correction", return_for_correction_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-primary--compact" %>
+    <% end %>
+    <% if policy(quote).approve? %>
+      <%= button_to "Approve for issuance", approve_staff_quotation_path(quote), method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
+    <% end %>
+    <% if policy(quote).issue? %>
+      <%= button_to "Mark as issued", issue_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-primary--compact",
+            form: { data: { turbo_confirm: "This records an issuance without sending email. Continue?" } } %>
+    <% end %>
+    <% if policy(quote).withdraw? %>
+      <%= button_to "Withdraw quotation", withdraw_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-primary--compact",
+            form: { data: { turbo_confirm: "Withdraw this quotation?" } } %>
+    <% end %>
+  </div>
+</aside>

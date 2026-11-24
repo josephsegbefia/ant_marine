@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_143000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_143000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -299,6 +299,71 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_143000) do
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'in_review'::character varying, 'approved'::character varying, 'published'::character varying, 'archived'::character varying]::text[])", name: "public_site_pages_status_check"
   end
 
+  create_table "quote_line_items", force: :cascade do |t|
+    t.bigint "quote_revision_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "description", null: false
+    t.decimal "quantity", precision: 12, scale: 3, default: "1.0", null: false
+    t.string "unit", default: "each", null: false
+    t.bigint "unit_price_cents", default: 0, null: false
+    t.bigint "line_total_cents", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quote_revision_id", "position"], name: "index_quote_line_items_on_quote_revision_id_and_position"
+    t.index ["quote_revision_id"], name: "index_quote_line_items_on_quote_revision_id"
+  end
+
+  create_table "quote_revisions", force: :cascade do |t|
+    t.bigint "quote_id", null: false
+    t.integer "version_number", null: false
+    t.string "revision_status", default: "draft", null: false
+    t.string "title"
+    t.text "scope_description"
+    t.text "deliverables"
+    t.text "exclusions"
+    t.text "additional_requirements"
+    t.string "currency", default: "GHS", null: false
+    t.bigint "subtotal_cents", default: 0, null: false
+    t.bigint "total_cents", default: 0, null: false
+    t.date "valid_until"
+    t.text "payment_terms"
+    t.text "commercial_exclusions"
+    t.text "additional_conditions"
+    t.text "internal_notes"
+    t.jsonb "recipient_snapshot", default: {}, null: false
+    t.datetime "frozen_at"
+    t.bigint "approved_by_membership_id"
+    t.datetime "approved_at"
+    t.bigint "issued_by_membership_id"
+    t.datetime "issued_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quote_id", "version_number"], name: "index_quote_revisions_on_quote_id_and_version_number", unique: true
+    t.index ["quote_id"], name: "index_quote_revisions_on_quote_id"
+  end
+
+  create_table "quotes", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "client_organization_id"
+    t.bigint "service_id"
+    t.string "reference_number", null: false
+    t.string "status", default: "draft", null: false
+    t.string "delivery_state", default: "not_prepared", null: false
+    t.jsonb "prospective_client", default: {}, null: false
+    t.bigint "created_by_membership_id"
+    t.bigint "updated_by_membership_id"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "current_revision_id"
+    t.index ["client_organization_id"], name: "index_quotes_on_client_organization_id"
+    t.index ["current_revision_id"], name: "index_quotes_on_current_revision_id"
+    t.index ["organization_id", "reference_number"], name: "index_quotes_on_organization_id_and_reference_number", unique: true
+    t.index ["organization_id"], name: "index_quotes_on_organization_id"
+    t.index ["service_id"], name: "index_quotes_on_service_id"
+    t.index ["status"], name: "index_quotes_on_status"
+  end
+
   create_table "role_permissions", force: :cascade do |t|
     t.string "role_key", null: false
     t.bigint "permission_id", null: false
@@ -479,6 +544,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_143000) do
   add_foreign_key "public_site_pages", "memberships", column: "published_by_membership_id"
   add_foreign_key "public_site_pages", "memberships", column: "updated_by_membership_id"
   add_foreign_key "public_site_pages", "organizations"
+  add_foreign_key "quote_line_items", "quote_revisions"
+  add_foreign_key "quote_revisions", "quotes"
+  add_foreign_key "quotes", "organizations"
+  add_foreign_key "quotes", "organizations", column: "client_organization_id"
+  add_foreign_key "quotes", "quote_revisions", column: "current_revision_id"
+  add_foreign_key "quotes", "services"
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "services", "memberships", column: "approved_by_membership_id"
   add_foreign_key "services", "memberships", column: "created_by_membership_id"

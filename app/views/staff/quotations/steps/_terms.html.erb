@@ -1,0 +1,13 @@
+<fieldset class="space-y-4" <%= "disabled" unless editable %>>
+  <legend class="sr-only">Terms and validity</legend>
+  <div>
+    <label class="ant-field__label" for="quote_revision_valid_until">Valid until</label>
+    <input type="date" class="ant-control" id="quote_revision_valid_until" name="quote_revision[valid_until]" value="<%= revision.valid_until %>">
+  </div>
+  <% { payment_terms: "Payment terms", commercial_exclusions: "Commercial exclusions", additional_conditions: "Additional conditions", internal_notes: "Internal notes (not shown on PDF)" }.each do |field, label| %>
+    <div>
+      <label class="ant-field__label" for="quote_revision_<%= field %>"><%= label %></label>
+      <textarea class="ant-control w-full" rows="3" id="quote_revision_<%= field %>" name="quote_revision[<%= field %>]"><%= revision.public_send(field) %></textarea>
+    </div>
+  <% end %>
+</fieldset>

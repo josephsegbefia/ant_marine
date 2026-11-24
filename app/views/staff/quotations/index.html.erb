@@ -1,0 +1,52 @@
+<% content_for :staff_nav, :quotations %>
+
+<%= ant_page_header(
+      title: "Quotations",
+      description: "Prepare, review and issue commercial quotations for clients and prospective clients.",
+      primary_action: policy(Quote).create? ? { label: "Create quotation", path: new_staff_quotation_path } : nil
+    ) %>
+
+<section class="staff-website-hub mt-6">
+  <%= form_with url: staff_quotations_path, method: :get, class: "staff-filter-bar mb-4 flex flex-wrap gap-3 items-end", local: true do %>
+    <div class="flex-1 min-w-[12rem]">
+      <label class="ant-field__label" for="q">Search</label>
+      <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, client or title">
+    </div>
+    <div>
+      <label class="ant-field__label" for="status">Status</label>
+      <select name="status" id="status" class="ant-control">
+        <option value="all" <%= "selected" if params[:status].blank? || params[:status] == "all" %>>All statuses</option>
+        <% Quote::STATUSES.each do |status| %>
+          <option value="<%= status %>" <%= "selected" if params[:status] == status %>><%= quote_status_label(status) %></option>
+        <% end %>
+      </select>
+    </div>
+    <button type="submit" class="ant-btn-outline ant-btn-primary--compact">Apply</button>
+  <% end %>
+
+  <% if @quotes.any? %>
+    <div class="staff-content-list">
+      <% @quotes.each do |quote| %>
+        <%= ant_content_record(
+              title: quote.display_title,
+              description: quote.reference_number,
+              meta: "#{quote.client_label} · #{format_quote_money(quote.total_amount, quote.currency)}",
+              guidance: quote.next_action_label,
+              icon: "layers",
+              status_label: quote_status_label(quote.status),
+              status_badge_class: quote_status_badge_variant(quote.status),
+              primary_action: { label: "Open", path: edit_staff_quotation_path(quote) }
+            ) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :layers,
+          title: "No quotations yet",
+          description: "Create a draft quotation when you are ready to prepare a commercial offer.",
+          primary_action: policy(Quote).create? ? { label: "Create quotation", path: new_staff_quotation_path } : nil,
+          variant: :default,
+          size: :spacious
+        ) %>
+  <% end %>
+</section>

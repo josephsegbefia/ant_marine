@@ -2,7 +2,7 @@
 
 module Authorization
   class CatalogueSeeder
-    CATALOGUE_VERSION = 1
+    CATALOGUE_VERSION = 2
 
     @seeded = false
 

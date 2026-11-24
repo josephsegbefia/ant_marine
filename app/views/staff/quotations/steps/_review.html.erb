@@ -1,0 +1,11 @@
+<div class="space-y-4">
+  <h2 class="text-lg font-extrabold text-[#173244]">Quotation review</h2>
+  <p class="text-sm text-[#5f7d8c]">Check recipient details, scope and pricing before you submit for internal review.</p>
+  <dl class="staff-review-dl space-y-2 text-sm text-[#466270]">
+    <div><dt class="font-bold">Client</dt><dd><%= quote.client_label %></dd></div>
+    <div><dt class="font-bold">Title</dt><dd><%= revision.title %></dd></div>
+    <div><dt class="font-bold">Total</dt><dd><%= format_quote_money(revision.total_cents, revision.currency) %></dd></div>
+    <div><dt class="font-bold">Valid until</dt><dd><%= revision.valid_until || "Not set" %></dd></div>
+    <div><dt class="font-bold">Status</dt><dd><%= quote_status_label(quote.status) %></dd></div>
+  </dl>
+</div>

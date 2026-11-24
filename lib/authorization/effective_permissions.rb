@@ -20,7 +20,8 @@ module Authorization
       return false unless PermissionCatalogue.known?(key)
       return false unless ProtectedRules.membership_may_check?(@membership, key)
 
-      permission = Permission.find_by!(key: key)
+      permission = Permission.find_by(key: key)
+      return false unless permission
       return false if ProtectedRules.client_cannot_hold_staff_only?(@membership, permission)
 
       override = overrides_by_permission_id[permission.id]

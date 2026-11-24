@@ -1,0 +1,27 @@
+<fieldset class="space-y-4" <%= "disabled" unless editable %>>
+  <legend class="sr-only">Pricing</legend>
+
+  <div>
+    <label class="ant-field__label" for="quote_revision_currency">Currency</label>
+    <select name="quote_revision[currency]" id="quote_revision_currency" class="ant-control">
+      <% Quote::SUPPORTED_CURRENCIES.each do |code| %>
+        <option value="<%= code %>" <%= "selected" if revision.currency == code %>><%= code %></option>
+      <% end %>
+    </select>
+  </div>
+
+  <p class="ant-field__label">Line items</p>
+  <div class="space-y-3">
+    <% items = revision.line_items.to_a %>
+    <% items = [revision.line_items.build] if items.empty? %>
+    <% items.each do |item| %>
+      <%= render "staff/quotations/line_item_fields", item: item %>
+    <% end %>
+    <% if editable %>
+      <%= render "staff/quotations/line_item_fields", item: revision.line_items.build(description: "", quantity: 1, unit: "each", unit_price_cents: 0) %>
+    <% end %>
+  </div>
+
+  <p class="text-sm font-bold text-[#173244]">Total: <%= format_quote_money(revision.total_cents, revision.currency) %></p>
+  <p class="text-xs text-[#5f7d8c]">Totals are calculated on the server. Taxes are not applied until commercial tax rules are approved.</p>
+</fieldset>

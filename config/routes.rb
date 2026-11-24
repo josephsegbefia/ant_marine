@@ -44,6 +44,16 @@ Rails.application.routes.draw do
       end
     end
     resources :client_invitations, only: %i[new create]
+    resources :quotations do
+      member do
+        post :submit_for_review
+        post :return_for_correction
+        post :approve
+        post :issue
+        post :withdraw
+        get :pdf
+      end
+    end
     namespace :website do
       resources :services do
         member do

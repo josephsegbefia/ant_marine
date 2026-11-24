@@ -29,6 +29,8 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 
 **P2.5B exit prep (2026-11-22):** P2-OD-040–042 **APPROVED** by product owner for Phase 3 foundation; see [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md). Phase 2 full exit still pending Phase 1 formal sign-off and ADR-010 implementation.
 
+| ADR-F4-02A-001 | Phase 4 sequencing | Staff quotation management ships in **F4-02A** per PO roadmap; master spec **F4-02** anonymous intake and **F4-03** full commercial client workflow remain scheduled—not deleted from spec | **APPROVED** 2026-11-24 | PO F4-02A authorisation; documented in `docs/architecture/F4_02A_QUOTATIONS.md` |
+
 **F4-01A public content (2026-11-23):**
 
 - **`services.status` workflow** extended to `draft`, `in_review`, `approved`, `published`, `archived` with `published_*` snapshot columns for live site reads (supersedes P2.3 catalogue three-value enum for marketing services in this app).

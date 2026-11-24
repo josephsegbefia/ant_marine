@@ -19,6 +19,7 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `ant_section_tabs` | [`_section_tabs.html.erb`](../../app/views/shared/ui/_section_tabs.html.erb) | Section switcher (e.g. Services / Website pages) |
 | `ant_status_badge` | [`_status_badge.html.erb`](../../app/views/shared/ui/_status_badge.html.erb) | Editorial status pill (uses `.ant-badge--*`) |
 | `ant_content_record` | [`_content_record.html.erb`](../../app/views/shared/ui/_content_record.html.erb) | Studio **list-item** row: icon, title, status, guidance, actions |
+| Staff quotations (F4-02A) | [`staff/quotations/*`](../../app/views/staff/quotations/), `Commercial::*` | S05 dashboard + 5-step editor; Prawn PDF; not website CMS |
 | Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
 | Client workspace shell | [`layouts/client_portal.html.erb`](../../app/views/layouts/client_portal.html.erb), [`shared/client/*`](../../app/views/shared/client/) | Studio **C01** sidebar + header (client routes) |
 | Public site shell | [`layouts/public_site.html.erb`](../../app/views/layouts/public_site.html.erb), [`shared/public/*`](../../app/views/shared/public/) | Studio **P01** header/footer + homepage entry |
