@@ -9,14 +9,13 @@
   <% if @articles.any? %>
     <div class="public-service-grid">
       <% @articles.each do |article| %>
-        <article class="public-service-card">
-          <p class="public-eyebrow public-service-card__eyebrow"><%= article.public_category %></p>
-          <h3 class="public-service-card__title">
-            <%= link_to article.public_title, public_insight_path(article.slug), class: "public-service-card__title-link" %>
-          </h3>
-          <p class="public-service-card__summary"><%= article.public_summary %></p>
-          <%= link_to "Read article", public_insight_path(article.slug), class: "public-text-link" %>
-        </article>
+        <%= render "shared/public/content_card",
+              title: article.public_title,
+              summary: article.public_summary,
+              url: public_insight_path(article.slug),
+              icon: "file",
+              eyebrow: article.public_category,
+              link_label: "Read article" %>
       <% end %>
     </div>
   <% else %>

@@ -10,14 +10,9 @@ module StaffWebsiteHelper
     "training" => "Training"
   }.freeze
 
-  ICON_KEY_OPTIONS = {
-    "ship" => "Ship",
-    "brief" => "Briefcase",
-    "leaf" => "Leaf",
-    "wrench" => "Wrench",
-    "file" => "Document",
-    "book" => "Book"
-  }.freeze
+  def icon_key_options
+    PublicContent::IconCatalog.labels
+  end
 
   PAGE_KEY_LABELS = {
     "homepage" => "Homepage",
@@ -162,7 +157,7 @@ module StaffWebsiteHelper
   end
 
   def service_icon_options
-    ICON_KEY_OPTIONS.map { |key, label| [ label, key ] }
+    PublicContent::IconCatalog.select_choices
   end
 
   def service_status_guidance(service)

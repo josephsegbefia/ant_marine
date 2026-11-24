@@ -1,0 +1,15 @@
+<%# locals: title:, summary:, url:, icon:, eyebrow: nil, link_label: "Learn more" %>
+<article class="public-service-card public-service-card--premium public-pattern-surface public-pattern-surface--card">
+  <span class="public-service-card__pattern" aria-hidden="true"></span>
+  <span class="public-service-card__icon" aria-hidden="true">
+    <%= render "shared/public/icon", name: icon, size: 24 %>
+  </span>
+  <% if local_assigns[:eyebrow].present? %>
+    <p class="public-eyebrow public-service-card__eyebrow"><%= eyebrow %></p>
+  <% end %>
+  <h3 class="public-service-card__title">
+    <%= link_to title, url, class: "public-service-card__title-link" %>
+  </h3>
+  <p class="public-service-card__summary"><%= summary %></p>
+  <%= link_to link_label, url, class: "public-text-link public-text-link--card" %>
+</article>

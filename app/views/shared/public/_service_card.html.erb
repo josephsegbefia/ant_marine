@@ -1,11 +1,8 @@
 <%# locals: service %>
-<article class="public-service-card">
-  <span class="public-service-card__icon" aria-hidden="true">
-    <%= render "shared/public/icon", name: public_service_icon_key(service) %>
-  </span>
-  <h3 class="public-service-card__title">
-    <%= link_to service.public_title, public_service_path(service.slug), class: "public-service-card__title-link" %>
-  </h3>
-  <p class="public-service-card__summary"><%= service.public_summary %></p>
-  <%= link_to "Learn more", public_service_path(service.slug), class: "public-text-link" %>
-</article>
+<%= render "shared/public/content_card",
+      title: service.public_title,
+      summary: service.public_summary,
+      url: public_service_path(service.slug),
+      icon: public_service_icon_key(service),
+      eyebrow: public_service_category_label(service),
+      link_label: "Learn more" %>

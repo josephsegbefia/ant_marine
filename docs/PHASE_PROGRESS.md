@@ -58,6 +58,7 @@
 | F4-01B Expanded WYSIWYG toolbar | 2026-11-23 | **Code complete — PO browser retest** | Underline/strike/code/More menu; Trix 2.1.19 extensions; format sanitizer tests; **not pushed** |
 | F4-01B Unified editor UX | 2026-11-23 | **Code complete — PO visual review** | Editorial workspace for all F4-01B types + website pages; `verify_foundation.sh` PASS; browser screenshots **unverified**; **not pushed** |
 | F4-01 Public website UI refinement | 2026-11-23 | **Code complete — PO visual review** | P01–P17-aligned hero, service cards, detail layout, empty states, nav grouping; public UI tests; browser QA **unverified**; **not pushed** |
+| F4-01 Public UI amendment (hero + cards + icons) | 2026-11-24 | **Code complete — PO retest** | AI hero image, premium patterned cards, 16-icon catalog, staff visual icon picker; `verify_foundation.sh` PASS; browser QA **unverified**; **not pushed** |
 | F4-01A Service editor UX | 2026-11-23 | **Delivered — PO visual sign-off pending** | Guided four-step editor + list builders + staff draft preview; Pundit fix `32503c1`; automated suite green; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |

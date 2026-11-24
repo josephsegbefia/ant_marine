@@ -82,6 +82,7 @@
         <div class="mt-4 space-y-4">
           <%= ant_field f, :title, label: "Service title", required: true, context: :portal, hint: "Use plain language — e.g. “Marine surveys”.", html_options: { data: { staff_service_editor_target: "titleField", action: "input->staff-service-editor#titleInput" } } %>
           <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences for service cards and search results.", html_options: { rows: 3 } %>
+          <%= ant_icon_picker f, :icon_key, label: "Card icon", hint: "Shown on public service cards. Pick the option that best matches this service." %>
           <div class="rounded-lg border border-[#e2eaeb] bg-[#f6fafb] px-4 py-3 text-sm text-[#5f7d8c]">
             <p class="font-semibold text-[#102c43]">Page address</p>
             <% if service.persisted? %>
@@ -174,7 +175,6 @@
         <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
         <div class="mt-4 space-y-4">
           <%= ant_select f, :category, choices: service_category_options, label: "Service category", required: true, context: :portal, hint: "Groups this page in the public catalogue." %>
-          <%= ant_select f, :icon_key, choices: service_icon_options, label: "Icon", context: :portal, hint: "Shown on service cards." %>
           <div class="ant-field ant-field--portal">
             <%= f.label :seo_title, "Search title (optional)", class: "ant-field__label" %>
             <%= f.text_field :seo_title, value: service.seo["title"], class: "ant-control w-full" %>

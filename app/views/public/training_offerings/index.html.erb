@@ -9,14 +9,12 @@
   <% if @training_offerings.any? %>
     <div class="public-service-grid">
       <% @training_offerings.each do |training| %>
-        <article class="public-service-card">
-          <span class="public-service-card__icon" aria-hidden="true"><%= render "shared/public/icon", name: "book", size: 22 %></span>
-          <h3 class="public-service-card__title">
-            <%= link_to training.public_title, public_training_offering_path(training.slug), class: "public-service-card__title-link" %>
-          </h3>
-          <p class="public-service-card__summary"><%= training.public_summary %></p>
-          <%= link_to "View details", public_training_offering_path(training.slug), class: "public-text-link" %>
-        </article>
+        <%= render "shared/public/content_card",
+              title: training.public_title,
+              summary: training.public_summary,
+              url: public_training_offering_path(training.slug),
+              icon: "book",
+              link_label: "View details" %>
       <% end %>
     </div>
   <% else %>

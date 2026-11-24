@@ -25,7 +25,9 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `public_service_card` | [`shared/public/_service_card.html.erb`](../../app/views/shared/public/_service_card.html.erb) | Studio **P02/P03** service cards (icon, title, summary, learn-more link, hover/focus) |
 | `public_empty_state` | [`shared/public/_empty_state.html.erb`](../../app/views/shared/public/_empty_state.html.erb) | Intentional empty catalogue states (icon circle, title, copy, optional CTA to Contact/Services) |
 | `public_page_banner` | [`shared/public/_page_banner.html.erb`](../../app/views/shared/public/_page_banner.html.erb) | Studio **page-banner** gradient band for public indexes |
-| `public_hero_art` | [`shared/public/_hero_art.html.erb`](../../app/views/shared/public/_hero_art.html.erb) | Branded SVG seascape (no stock photos) for **P01** hero |
+| `public_hero_image` | [`shared/public/_hero_image.html.erb`](../../app/views/shared/public/_hero_image.html.erb) + `app/assets/images/public/hero-maritime.jpg` | AI-generated generic maritime hero (not a client vessel); SVG fallback in `_hero_art` |
+| `public_content_card` | [`shared/public/_content_card.html.erb`](../../app/views/shared/public/_content_card.html.erb) | Premium patterned card shell (icon badge, CTA arrow hover) |
+| `ant_icon_picker` | [`shared/ui/_icon_picker.html.erb`](../../app/views/shared/ui/_icon_picker.html.erb) + `icon_picker_controller.js` | Visual grid picker for `icon_key`; catalog in `PublicContent::IconCatalog` |
 | `PublicUiHelper` | [`public_ui_helper.rb`](../../app/helpers/public_ui_helper.rb) | Single source for public primary/secondary nav and service labels |
 | Styles | [`app/assets/tailwind/application.css`](../../app/assets/tailwind/application.css) | `.ant-control`, `.ant-select*`, `.ant-toast*`, `.ant-back-link`, `.staff-*` |
 

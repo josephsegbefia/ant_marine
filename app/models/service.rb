@@ -129,5 +129,8 @@ class Service < ApplicationRecord
       errors.add(:body, "Describe what this service involves.") if rich_text_blank?(:body)
       errors.add(:audience, "Tell us who this service is for.") if audience.blank?
       errors.add(:category, "Choose a service category.") if category.blank?
+      if icon_key.present? && !PublicContent::IconCatalog.valid?(icon_key)
+        errors.add(:icon_key, "Choose a recognised icon.")
+      end
     end
 end

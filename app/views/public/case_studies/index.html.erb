@@ -9,14 +9,12 @@
   <% if @case_studies.any? %>
     <div class="public-service-grid">
       <% @case_studies.each do |study| %>
-        <article class="public-service-card">
-          <span class="public-service-card__icon" aria-hidden="true"><%= render "shared/public/icon", name: "brief", size: 22 %></span>
-          <h3 class="public-service-card__title">
-            <%= link_to study.public_title, public_project_path(study.slug), class: "public-service-card__title-link" %>
-          </h3>
-          <p class="public-service-card__summary"><%= study.public_summary %></p>
-          <%= link_to "View story", public_project_path(study.slug), class: "public-text-link" %>
-        </article>
+        <%= render "shared/public/content_card",
+              title: study.public_title,
+              summary: study.public_summary,
+              url: public_project_path(study.slug),
+              icon: "brief",
+              link_label: "View story" %>
       <% end %>
     </div>
   <% else %>

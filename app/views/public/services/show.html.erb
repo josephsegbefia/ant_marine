@@ -58,9 +58,10 @@
     </article>
 
     <aside class="public-detail__aside" aria-labelledby="service-audience-heading">
-      <div class="public-detail-aside">
+      <div class="public-detail-aside public-pattern-surface public-pattern-surface--card">
+        <span class="public-service-card__pattern" aria-hidden="true"></span>
         <span class="public-service-card__icon public-detail-aside__icon" aria-hidden="true">
-          <%= render "shared/public/icon", name: "users", size: 24 %>
+          <%= render "shared/public/icon", name: public_service_icon_key(@service), size: 24 %>
         </span>
         <h2 id="service-audience-heading" class="public-detail-aside__title">Who this service is for</h2>
         <p class="public-detail-aside__text"><%= @service.public_audience.presence || "Marine operators and project teams working on vessels, facilities and offshore projects." %></p>

@@ -49,6 +49,16 @@ module AntUiHelper
            }
   end
 
+  def ant_icon_picker(form, method, **options)
+    render partial: "shared/ui/icon_picker",
+           locals: {
+             form: form,
+             method: method,
+             label: options.delete(:label) || method.to_s.humanize,
+             hint: options.delete(:hint)
+           }
+  end
+
   def ant_select(form, method, choices:, **options)
     render partial: "shared/ui/select",
            locals: {

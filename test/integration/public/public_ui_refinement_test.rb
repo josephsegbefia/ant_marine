@@ -7,7 +7,8 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select ".public-hero--home"
-    assert_select ".public-hero-art__svg"
+    assert_select ".public-hero-image__photo"
+    assert_includes response.body, "hero-maritime"
     assert_select ".public-service-card", minimum: 0
     assert_select "a.public-text-link", text: /Learn more/, minimum: 0
   end
@@ -16,8 +17,8 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     get public_services_path
     assert_response :success
     assert_select ".public-page-banner h1", text: /Practical help/
-    assert_select ".public-service-card", minimum: 1
-    assert_includes response.body, "public-service-card__icon"
+    assert_select ".public-service-card--premium", minimum: 1
+    assert_includes response.body, "public-service-card__pattern"
   end
 
   test "service detail uses structured layout and contact cta" do

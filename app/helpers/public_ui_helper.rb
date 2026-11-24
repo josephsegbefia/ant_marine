@@ -35,6 +35,6 @@ module PublicUiHelper
   end
 
   def public_service_icon_key(service)
-    (service.published_icon_key.presence || service.icon_key.presence || "ship").to_s
+    PublicContent::IconCatalog.resolve(service.published_icon_key.presence || service.icon_key)
   end
 end

@@ -1,0 +1,31 @@
+<%# locals: form:, method:, label:, hint: %>
+<% field_id = "#{form.object_name}_#{method}" %>
+<% selected = form.object.public_send(method).presence || "ship" %>
+
+<div class="ant-field ant-field--portal ant-icon-picker"
+     data-controller="icon-picker"
+     role="group"
+     aria-labelledby="<%= field_id %>_legend">
+  <span class="ant-field__label" id="<%= field_id %>_legend"><%= label %></span>
+  <% if hint.present? %>
+    <p class="ant-field__hint mb-3" id="<%= field_id %>_hint"><%= hint %></p>
+  <% end %>
+
+  <% PublicContent::IconCatalog.grouped_entries.each do |group_name, entries| %>
+    <p class="ant-icon-picker__group-label"><%= group_name %></p>
+    <div class="ant-icon-picker__grid" data-icon-picker-target="grid">
+      <% entries.each do |entry| %>
+        <% input_id = "#{field_id}_#{entry.key}" %>
+        <label class="ant-icon-picker__option<%= " ant-icon-picker__option--selected" if selected == entry.key %>"
+               data-icon-picker-target="option"
+               data-action="keydown->icon-picker#navigate">
+          <%= form.radio_button method, entry.key, checked: selected == entry.key, id: input_id, class: "ant-icon-picker__input", data: { icon_picker_target: "input", action: "change->icon-picker#select" } %>
+          <span class="ant-icon-picker__preview" aria-hidden="true">
+            <%= render "shared/public/icon", name: entry.key, size: 22 %>
+          </span>
+          <span class="ant-icon-picker__label"><%= entry.label %></span>
+        </label>
+      <% end %>
+    </div>
+  <% end %>
+</div>
