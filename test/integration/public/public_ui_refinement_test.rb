@@ -25,6 +25,8 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     get public_service_path("published-surveys")
     assert_response :success
     assert_select ".public-detail__layout"
+    assert_select ".public-detail__article"
+    assert_select "a[href=?]", contact_path, text: "Enquire about this service"
     assert_select "a[href=?]", contact_path, text: "Contact the team"
     assert_select ".public-breadcrumb a", text: "Services"
   end

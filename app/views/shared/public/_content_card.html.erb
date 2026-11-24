@@ -11,5 +11,7 @@
     <%= link_to title, url, class: "public-service-card__title-link" %>
   </h3>
   <p class="public-service-card__summary"><%= summary %></p>
-  <%= link_to link_label, url, class: "public-text-link public-text-link--card" %>
+  <footer class="public-service-card__footer">
+    <%= link_to link_label, url, class: "public-text-link public-text-link--card" %>
+  </footer>
 </article>
