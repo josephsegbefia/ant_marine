@@ -43,7 +43,7 @@
   </div>
 
   <footer class="staff-editor-footer mt-4 flex flex-wrap gap-2">
-    <%= ant_back_link "Back to quotations", staff_quotations_path %>
+    <%= ant_back_link label: "Back to quotations", path: staff_quotations_path %>
     <% if editable %>
       <button type="submit" name="commit" value="save" class="ant-btn-outline ant-btn-primary--compact">Save draft</button>
       <button type="submit" name="commit" value="save_continue" class="ant-btn-outline ant-btn-primary--compact">Save and continue</button>

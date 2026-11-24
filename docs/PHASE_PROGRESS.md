@@ -62,6 +62,7 @@
 | F4-01 Public service UI refinement (final) | 2026-11-24 | **Accepted locally — PO sign-off** | Patterned cards, unified detail article, sticky aside, **Enquire about this service** → contact; responsive spot-check @1440/768/390; **302 tests**; commit on `main`; **not pushed** |
 | F4-01 final visual / editorial acceptance | — | **Open** | PO browser and content richness checks; not marked complete in F4-02A |
 | F4-02A Quotation management foundation | 2026-11-24 | **Code complete — PO acceptance** | Staff dashboard, 5-step editor, transitions, PDF (Prawn), `quotes.approve`; delivery gated; **not pushed** |
+| F4-02A Quotation editor policy fix | 2026-11-24 | **Code complete — PO retest** | `edit?` policy; POST-only draft creation; regression tests; browser **unverified**; **not pushed** |
 | F4-01A Service editor UX | 2026-11-23 | **Delivered — PO visual sign-off pending** | Guided four-step editor + list builders + staff draft preview; Pundit fix `32503c1`; automated suite green; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |

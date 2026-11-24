@@ -17,6 +17,10 @@ class QuotePolicy < ApplicationPolicy
     create?
   end
 
+  def edit?
+    view?
+  end
+
   def update?
     manage_draft?
   end

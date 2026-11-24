@@ -39,6 +39,14 @@ Statuses: `draft` → `pending_review` → `approved_for_issuance` → `issued` 
 
 - Public hero/cards/editorial content visual sign-off remains open in `docs/PHASE_PROGRESS.md` — not closed by F4-02A.
 
+## Quotation editor routing & policy (2026-11-24 fix)
+
+**Root cause:** `Staff::QuotationsController#edit` called `authorize @quote` (implicit `edit?`) but `QuotePolicy` had no `edit?`, raising `NoMethodError`.
+
+**Policy mapping:** `edit?` → `view?` (open workspace for review/PDF/workflow); `update?` → `manage_draft?` (mutable draft only). Explicit queries on controller actions.
+
+**New quotation:** `GET /staff/quotations/new` renders a begin screen only; `POST /staff/quotations` creates the draft via `QuoteBuilder` and redirects to step 1. No record on GET `new` or refresh.
+
 ## F4-02B recommended
 
 - Public enquiry funnel (master F4-02), quote–inquiry linking, revision branching, issuance mailer, client portal C04.

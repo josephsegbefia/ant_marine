@@ -3,7 +3,7 @@
 module Staff
   class QuotationsController < BaseController
     before_action :set_ant_marine_organization
-    before_action :set_quote, except: %i[index new]
+    before_action :set_quote, except: %i[index new create]
     before_action :set_revision, only: %i[edit update submit_for_review return_for_correction approve issue withdraw pdf]
 
     STEPS = {
@@ -21,18 +21,22 @@ module Staff
     end
 
     def show
-      authorize @quote
+      authorize @quote, :show?
       redirect_to edit_staff_quotation_path(@quote, editor_step: review_step)
     end
 
     def new
-      authorize Quote
-      @quote = Commercial::QuoteBuilder.create!(organization: @organization, membership: Current.membership)
-      redirect_to edit_staff_quotation_path(@quote, editor_step: 1)
+      authorize Quote, :new?
+    end
+
+    def create
+      authorize Quote, :create?
+      quote = Commercial::QuoteBuilder.create!(organization: @organization, membership: Current.membership)
+      redirect_to edit_staff_quotation_path(quote, editor_step: 1), notice: "Draft quotation started."
     end
 
     def edit
-      authorize @quote
+      authorize @quote, :edit?
       assign_editor_lookups!
       @editor_step = editor_step_param
     end
@@ -43,7 +47,7 @@ module Staff
     end
 
     def update
-      authorize @quote
+      authorize @quote, :update?
       @editor_step = editor_step_param
 
       unless @quote.editable?
