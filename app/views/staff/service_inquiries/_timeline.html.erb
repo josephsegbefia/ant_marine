@@ -1,18 +1,23 @@
-<section class="portal-card" id="enquiry-activity" aria-labelledby="enquiry-activity-heading">
-  <h2 id="enquiry-activity-heading">Activity</h2>
-  <% if @timeline.any? %>
-    <ol class="ant-timeline">
-      <% @timeline.each do |entry| %>
-        <li class="ant-timeline__item ant-timeline__item--<%= entry.kind %>">
-          <p class="ant-timeline__title"><%= entry.title %></p>
-          <% if entry.detail.present? %>
-            <p class="ant-timeline__detail whitespace-pre-line"><%= entry.detail %></p>
-          <% end %>
-          <p class="ant-timeline__meta"><%= entry.actor_name.presence || "Website" %> · <time datetime="<%= entry.occurred_at.iso8601 %>"><%= l(entry.occurred_at, format: :short) %></time></p>
-        </li>
-      <% end %>
-    </ol>
-  <% else %>
-    <p class="staff-enquiry-note">No activity recorded yet.</p>
-  <% end %>
+<section class="staff-quote-side-panel" id="enquiry-activity" aria-labelledby="enquiry-activity-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Activity",
+        heading_id: "enquiry-activity-heading",
+        icon: "clock" %>
+  <div class="staff-quote-side-panel__body">
+    <% if @timeline.any? %>
+      <ol class="ant-timeline">
+        <% @timeline.each do |entry| %>
+          <li class="ant-timeline__item ant-timeline__item--<%= entry.kind %>">
+            <p class="ant-timeline__title"><%= entry.title %></p>
+            <% if entry.detail.present? %>
+              <p class="ant-timeline__detail whitespace-pre-line"><%= entry.detail %></p>
+            <% end %>
+            <p class="ant-timeline__meta"><%= entry.actor_name.presence || "Website" %> · <time datetime="<%= entry.occurred_at.iso8601 %>"><%= l(entry.occurred_at, format: :short) %></time></p>
+          </li>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="staff-enquiry-note">No activity recorded yet.</p>
+    <% end %>
+  </div>
 </section>

@@ -1,63 +1,83 @@
-<section id="editor-step-panel-1" role="tabpanel" class="staff-editor-panel portal-card" data-step="1" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-1" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="1" data-staff-editorial-wizard-target="panel"
          data-validate="title:Enter a title.|summary:Add a short overview.|body:Add the main story."
          aria-labelledby="editor-step-tab-1" <%= "hidden" unless editor_step == 1 %>>
-  <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Overview</h2>
-  <p class="text-sm text-[#5f7d8c] mt-1">Introduce the project story visitors will read.</p>
-  <div class="mt-4 space-y-4">
-    <%= ant_field form, :title, label: "Story title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
-    <%= ant_field form, :summary, type: :textarea, label: "Short overview", required: true, context: :portal, html_options: { rows: 3 } %>
-    <%= ant_rich_text_field form, :body, label: "Main narrative", required: true %>
-    <%= render "staff/website/editorial_workspace/address_card", record: record %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Overview",
+        heading_id: "editor-step-heading-1",
+        icon: "brief" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Introduce the project story visitors will read.</p>
+    <div class="mt-4 space-y-4">
+      <%= ant_field form, :title, label: "Story title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
+      <%= ant_field form, :summary, type: :textarea, label: "Short overview", required: true, context: :portal, html_options: { rows: 3 } %>
+      <%= ant_rich_text_field form, :body, label: "Main narrative", required: true %>
+      <%= render "staff/website/editorial_workspace/address_card", record: record %>
+    </div>
   </div>
 </section>
 
-<section id="editor-step-panel-2" role="tabpanel" class="staff-editor-panel portal-card" data-step="2" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-2" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="2" data-staff-editorial-wizard-target="panel"
          data-validate="client_challenge:Describe the client situation.|approach:Describe ANT Marine's approach."
          aria-labelledby="editor-step-tab-2" <%= "hidden" unless editor_step == 2 %>>
-  <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Challenge & approach</h2>
-  <p class="text-sm text-[#5f7d8c] mt-1">Share only permission-cleared details. Never copy confidential project records.</p>
-  <div class="mt-4 space-y-4">
-    <%= ant_select form, :service_category, choices: service_category_options, label: "Related service area", context: :portal %>
-    <%= ant_field form, :industry, label: "Industry or sector", context: :portal %>
-    <%= ant_rich_text_field form, :client_challenge, label: "Client challenge" %>
-    <%= ant_rich_text_field form, :approach, label: "ANT Marine's approach" %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Challenge & approach",
+        heading_id: "editor-step-heading-2",
+        icon: "compass" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Share only permission-cleared details. Never copy confidential project records.</p>
+    <div class="mt-4 space-y-4">
+      <%= ant_select form, :service_category, choices: service_category_options, label: "Related service area", context: :portal %>
+      <%= ant_field form, :industry, label: "Industry or sector", context: :portal %>
+      <%= ant_rich_text_field form, :client_challenge, label: "Client challenge" %>
+      <%= ant_rich_text_field form, :approach, label: "ANT Marine's approach" %>
+    </div>
   </div>
 </section>
 
-<section id="editor-step-panel-3" role="tabpanel" class="staff-editor-panel portal-card" data-step="3" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-3" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="3" data-staff-editorial-wizard-target="panel"
          data-validate="work_performed:Describe the work performed.|outcome:Describe the outcome."
          aria-labelledby="editor-step-tab-3" <%= "hidden" unless editor_step == 3 %>>
-  <h2 id="editor-step-heading-3" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Outcomes</h2>
-  <p class="text-sm text-[#5f7d8c] mt-1">Record verified results and internal publication permission.</p>
-  <div class="mt-4 space-y-4">
-    <%= ant_rich_text_field form, :work_performed, label: "Work performed" %>
-    <%= ant_rich_text_field form, :outcome, label: "Outcome" %>
-    <%= ant_field form, :release_basis, type: :textarea, label: "Publication permission (internal note)", hint: "Who approved sharing this story — not shown publicly.", context: :portal, html_options: { rows: 2 } %>
-    <details class="staff-editor-page-settings">
-      <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
-      <div class="mt-4 space-y-4">
-        <div class="ant-field ant-field--portal">
-          <label class="ant-field__label" for="<%= form.object_name %>_seo_title">Preferred search title</label>
-          <%= text_field_tag "#{form.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full" %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Outcomes",
+        heading_id: "editor-step-heading-3",
+        icon: "chart" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Record verified results and internal publication permission.</p>
+    <div class="mt-4 space-y-4">
+      <%= ant_rich_text_field form, :work_performed, label: "Work performed" %>
+      <%= ant_rich_text_field form, :outcome, label: "Outcome" %>
+      <%= ant_field form, :release_basis, type: :textarea, label: "Publication permission (internal note)", hint: "Who approved sharing this story — not shown publicly.", context: :portal, html_options: { rows: 2 } %>
+      <details class="staff-editor-page-settings staff-editor-page-settings--nested">
+        <summary class="staff-editor-page-settings__link">Page settings</summary>
+        <div class="mt-4 space-y-4">
+          <div class="ant-field ant-field--portal">
+            <label class="ant-field__label" for="<%= form.object_name %>_seo_title">Preferred search title</label>
+            <%= text_field_tag "#{form.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full" %>
+          </div>
+          <div class="ant-field ant-field--portal">
+            <label class="ant-field__label" for="<%= form.object_name %>_seo_description">Preferred search summary</label>
+            <%= text_area_tag "#{form.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full" %>
+          </div>
         </div>
-        <div class="ant-field ant-field--portal">
-          <label class="ant-field__label" for="<%= form.object_name %>_seo_description">Preferred search summary</label>
-          <%= text_area_tag "#{form.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full" %>
-        </div>
-      </div>
-    </details>
+      </details>
+    </div>
   </div>
 </section>
 
-<section id="editor-step-panel-4" role="tabpanel" class="staff-editor-panel portal-card" data-step="4" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-4" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="4" data-staff-editorial-wizard-target="panel"
          aria-labelledby="editor-step-tab-4" <%= "hidden" unless editor_step == 4 %>>
-  <h2 id="editor-step-heading-4" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review</h2>
-  <p class="text-sm text-[#5f7d8c] mt-1">Confirm permission notes and content before submitting for review.</p>
-  <div class="mt-4 portal-card bg-[#f6fafb] hidden" data-staff-editorial-wizard-target="missingPanel">
-    <p class="text-sm font-semibold text-[#102c43]">Still needed:</p>
-    <ul class="mt-2 list-disc pl-5 text-sm text-[#466270]" data-staff-editorial-wizard-target="missingList"></ul>
-  </div>
-  <div class="mt-6 lg:hidden">
-    <%= render "staff/website/editorial_workspace/previews/case_study", record: record, config: editorial_workspace_config(record) %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Review",
+        heading_id: "editor-step-heading-4",
+        icon: "check" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Confirm permission notes and content before submitting for review.</p>
+    <div class="staff-editor-missing hidden" data-staff-editorial-wizard-target="missingPanel">
+      <p class="staff-editor-missing__label">Still needed:</p>
+      <ul class="staff-editor-missing__list" data-staff-editorial-wizard-target="missingList"></ul>
+    </div>
+    <div class="mt-6 lg:hidden">
+      <%= render "staff/website/editorial_workspace/previews/case_study", record: record, config: editorial_workspace_config(record), heading_id: "case-study-draft-preview-mobile" %>
+    </div>
   </div>
 </section>

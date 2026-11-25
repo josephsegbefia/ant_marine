@@ -1,0 +1,13 @@
+<%# locals: title, heading_id, icon, badge_label (optional), badge_class (optional) %>
+<div class="staff-quote-side-panel__head">
+  <div class="staff-quote-side-panel__title">
+    <span class="staff-quote-side-panel__glyph" aria-hidden="true">
+      <%= render "shared/public/icon", name: icon, size: 15 %>
+    </span>
+    <h2 id="<%= heading_id %>" tabindex="-1"><%= title %></h2>
+  </div>
+  <% if local_assigns[:badge_label].present? %>
+    <%= ant_status_badge(label: badge_label, badge_class: local_assigns.fetch(:badge_class, "ant-badge--muted")) %>
+  <% end %>
+  <%= yield if block_given? %>
+</div>

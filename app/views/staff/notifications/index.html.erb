@@ -16,7 +16,7 @@
         ) %>
     <% if @unread_count.positive? %>
       <%= button_to "Mark all as read", mark_all_read_staff_notifications_path, method: :post,
-                    class: "ant-btn-outline ant-btn-outline--compact" %>
+                    class: "staff-notifications__mark-all" %>
     <% end %>
   </div>
   <h2 id="notifications-list-heading" class="sr-only">Notification list</h2>
@@ -25,6 +25,9 @@
     <ul class="staff-notification-list">
       <% @notifications.each do |notification| %>
         <li class="staff-notification<%= " staff-notification--unread" unless notification.read? %>">
+          <span class="staff-notification__mark" aria-hidden="true">
+            <%= render "shared/public/icon", name: staff_notification_icon(notification.kind), size: 16 %>
+          </span>
           <span class="staff-notification__dot" aria-hidden="true"></span>
           <div class="staff-notification__body">
             <p class="staff-notification__kind">
@@ -34,7 +37,7 @@
             <p class="staff-notification__time"><%= time_ago_in_words(notification.created_at) %> ago · <%= l(notification.created_at, format: :short) %></p>
           </div>
           <%= button_to "Open", open_staff_notification_path(notification), method: :post,
-                        class: "ant-btn-outline ant-btn-outline--compact staff-notification__open",
+                        class: "staff-notification__open",
                         aria: { label: "Open: #{notification.title}" } %>
         </li>
       <% end %>

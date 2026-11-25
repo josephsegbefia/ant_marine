@@ -2,106 +2,112 @@
 <% quote_policy = policy(quote) %>
 <% history = AuditEvent.where(subject_type: "Quote", subject_id: quote.id).where("event_type LIKE 'quote.%'").includes(actor_membership: :user).order(occurred_at: :desc).limit(10) %>
 
-<aside class="portal-card" aria-labelledby="quote-workflow-heading">
-  <h2 id="quote-workflow-heading" class="text-base font-extrabold text-[#173244]">Approval</h2>
-  <p class="mt-2 text-sm text-[#5f7d8c]">
-    A reviewer must approve the quotation before it can be used. Approval locks this version. Approval does not send anything to the client.
-  </p>
+<aside class="staff-quote-side-panel" aria-labelledby="quote-workflow-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Approval",
+        heading_id: "quote-workflow-heading",
+        icon: "shield" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">
+      A reviewer must approve the quotation before it can be used. Approval locks this version. Approval does not send anything to the client.
+    </p>
 
-  <div class="mt-4 space-y-4">
-    <% if quote_policy.submit_for_review? %>
-      <div>
-        <%= button_to "Submit for review", submit_for_review_staff_quotation_path(quote),
+    <div class="mt-4 space-y-4">
+      <% if quote_policy.submit_for_review? %>
+        <div>
+          <%= button_to "Submit for review", submit_for_review_staff_quotation_path(quote),
+                method: :post,
+                class: "ant-btn-primary ant-btn-primary--compact",
+                disabled: !readiness.ready?,
+                form: { data: { turbo_confirm: "Submit this quotation for review? You will not be able to edit it while it is being reviewed." } } %>
+          <% unless readiness.ready? %>
+            <p class="staff-quote-summary__hint mt-2">Complete the checklist above, save, then submit.</p>
+          <% end %>
+        </div>
+      <% elsif quote.editable? %>
+        <p class="staff-quote-versions__lede">You can prepare this draft, but another colleague with quotation access must submit it.</p>
+      <% end %>
+
+      <% expected_version = { expected_revision_id: revision.id, expected_lock_version: quote.lock_version } %>
+      <% if quote_policy.approve? %>
+        <%= button_to "Approve this version", approve_staff_quotation_path(quote),
               method: :post,
+              params: expected_version,
               class: "ant-btn-primary ant-btn-primary--compact",
               disabled: !readiness.ready?,
-              form: { data: { turbo_confirm: "Submit this quotation for review? You will not be able to edit it while it is being reviewed." } } %>
-        <% unless readiness.ready? %>
-          <p class="mt-2 text-xs text-[#5f7d8c]">Complete the checklist above, save, then submit.</p>
+              form: { data: { turbo_confirm: "Approve version #{revision.version_number}? It will be locked and cannot be edited." } } %>
+      <% elsif quote_policy.another_reviewer_required? %>
+        <div class="staff-quote-notice staff-quote-notice--warn" id="quote-another-reviewer" role="status">
+          <p class="font-semibold text-[#102c43]">Another reviewer must approve this version</p>
+          <p class="mt-1 text-sm text-[#466270]">
+            You prepared, submitted or edited version <%= revision.version_number %>, so you cannot approve it.
+            Ask a colleague with approval permission to review it. You can still return it for correction.
+          </p>
+        </div>
+      <% elsif quote.status == "pending_review" %>
+        <p class="staff-quote-versions__lede">Waiting for a reviewer with approval permission who did not prepare this version.</p>
+      <% end %>
+
+      <% if quote_policy.return_for_correction? %>
+        <%= form_with url: return_for_correction_staff_quotation_path(quote), method: :post, class: "space-y-2" do %>
+          <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
+          <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
+          <label class="ant-field__label" for="quote_return_reason">What needs to be corrected?</label>
+          <textarea class="ant-control w-full" rows="3" id="quote_return_reason" name="reason" maxlength="1000"></textarea>
+          <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Return for correction</button>
         <% end %>
-      </div>
-    <% elsif quote.editable? %>
-      <p class="text-sm text-[#5f7d8c]">You can prepare this draft, but another colleague with quotation access must submit it.</p>
-    <% end %>
-
-    <% expected_version = { expected_revision_id: revision.id, expected_lock_version: quote.lock_version } %>
-    <% if quote_policy.approve? %>
-      <%= button_to "Approve this version", approve_staff_quotation_path(quote),
-            method: :post,
-            params: expected_version,
-            class: "ant-btn-primary ant-btn-primary--compact",
-            disabled: !readiness.ready?,
-            form: { data: { turbo_confirm: "Approve version #{revision.version_number}? It will be locked and cannot be edited." } } %>
-    <% elsif quote_policy.another_reviewer_required? %>
-      <div class="staff-quote-notice staff-quote-notice--warn" id="quote-another-reviewer" role="status">
-        <p class="font-semibold text-[#102c43]">Another reviewer must approve this version</p>
-        <p class="mt-1 text-sm text-[#466270]">
-          You prepared, submitted or edited version <%= revision.version_number %>, so you cannot approve it.
-          Ask a colleague with approval permission to review it. You can still return it for correction.
-        </p>
-      </div>
-    <% elsif quote.status == "pending_review" %>
-      <p class="text-sm text-[#5f7d8c]">Waiting for a reviewer with approval permission who did not prepare this version.</p>
-    <% end %>
-
-    <% if quote_policy.return_for_correction? %>
-      <%= form_with url: return_for_correction_staff_quotation_path(quote), method: :post, class: "space-y-2" do %>
-        <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
-        <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
-        <label class="ant-field__label" for="quote_return_reason">What needs to be corrected?</label>
-        <textarea class="ant-control w-full" rows="3" id="quote_return_reason" name="reason" maxlength="1000"></textarea>
-        <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Return for correction</button>
       <% end %>
-    <% end %>
 
-    <% if quote_policy.issuance? %>
-      <div class="border-t border-[#e2eaed] pt-4" id="quote-issuance-link">
-        <p class="text-sm text-[#466270]"><span class="font-semibold text-[#102c43]">Client delivery:</span> <%= quote_delivery_summary(quote) %></p>
-        <%= link_to quote.status == "approved_for_issuance" ? "Prepare to send" : "View delivery record", staff_quotation_issuance_path(quote),
-              class: "ant-btn-primary ant-btn-primary--compact mt-2" %>
-      </div>
-    <% elsif quote.status == "approved_for_issuance" %>
-      <p class="text-sm text-[#5f7d8c]">Approved — not sent. Sending to the client needs permission to send quotations.</p>
-    <% end %>
-
-    <% if quote_policy.issue? %>
-      <%= button_to "Issue to client", issue_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-outline--compact" %>
-    <% end %>
-
-    <% if quote_policy.create_revision? %>
-      <%= form_with url: create_revision_staff_quotation_path(quote), method: :post, class: "space-y-2 border-t border-[#e2eaed] pt-4", id: "quote-create-revision" do %>
-        <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
-        <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
-        <p class="text-sm font-semibold text-[#102c43]">Need to change this quotation?</p>
-        <p class="text-xs text-[#5f7d8c]">
-          Start version <%= quote.quote_revisions.maximum(:version_number).to_i + 1 %> as a draft. Version <%= revision.version_number %> stays exactly as approved<%= " and remains the client’s offer until the new version is sent" if revision.revision_status == "issued" %>.
-        </p>
-        <label class="ant-field__label" for="quote_revision_reason">Why is a new version needed?</label>
-        <textarea class="ant-control w-full" rows="2" id="quote_revision_reason" name="revision_reason" maxlength="<%= QuoteRevision::REVISION_REASON_LIMIT %>" required></textarea>
-        <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Create new version</button>
+      <% if quote_policy.issuance? %>
+        <div class="staff-quote-summary__next" id="quote-issuance-link">
+          <p class="staff-quote-summary__next-label">Client delivery</p>
+          <p class="staff-quote-summary__next-value"><%= quote_delivery_summary(quote) %></p>
+          <%= link_to quote.status == "approved_for_issuance" ? "Prepare to send" : "View delivery record", staff_quotation_issuance_path(quote),
+                class: "ant-btn-primary ant-btn-primary--compact mt-3" %>
+        </div>
+      <% elsif quote.status == "approved_for_issuance" %>
+        <p class="staff-quote-versions__lede">Approved — not sent. Sending to the client needs permission to send quotations.</p>
       <% end %>
-    <% end %>
 
-    <% if quote_policy.withdraw? %>
-      <%= button_to "Withdraw quotation", withdraw_staff_quotation_path(quote),
-            method: :post,
-            class: "ant-btn-outline ant-btn-outline--compact",
-            form: { data: { turbo_confirm: "Withdraw this quotation? It cannot be reopened." } } %>
+      <% if quote_policy.issue? %>
+        <%= button_to "Issue to client", issue_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-outline--compact" %>
+      <% end %>
+
+      <% if quote_policy.create_revision? %>
+        <%= form_with url: create_revision_staff_quotation_path(quote), method: :post, class: "space-y-2 border-t border-[#e4eef1] pt-4", id: "quote-create-revision" do %>
+          <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
+          <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
+          <p class="text-[13px] font-medium text-[#173244]">Need to change this quotation?</p>
+          <p class="staff-quote-versions__lede">
+            Start version <%= quote.quote_revisions.maximum(:version_number).to_i + 1 %> as a draft. Version <%= revision.version_number %> stays exactly as approved<%= " and remains the client’s offer until the new version is sent" if revision.revision_status == "issued" %>.
+          </p>
+          <label class="ant-field__label" for="quote_revision_reason">Why is a new version needed?</label>
+          <textarea class="ant-control w-full" rows="2" id="quote_revision_reason" name="revision_reason" maxlength="<%= QuoteRevision::REVISION_REASON_LIMIT %>" required></textarea>
+          <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Create new version</button>
+        <% end %>
+      <% end %>
+
+      <% if quote_policy.withdraw? %>
+        <%= button_to "Withdraw quotation", withdraw_staff_quotation_path(quote),
+              method: :post,
+              class: "ant-btn-outline ant-btn-outline--compact",
+              form: { data: { turbo_confirm: "Withdraw this quotation? It cannot be reopened." } } %>
+      <% end %>
+    </div>
+
+    <% if history.any? %>
+      <h3 class="mt-6 text-[13px] font-medium text-[#173244]">History</h3>
+      <ol class="staff-quote-history">
+        <% history.each do |event| %>
+          <li>
+            <span class="font-medium text-[#173244]"><%= quote_history_label(event.event_type) %></span>
+            <span class="text-[#8799a3]">· <%= event.actor_membership&.user&.full_name.presence || "Staff" %> · <%= l(event.occurred_at, format: :short) %></span>
+            <% if event.metadata["reason"].present? %>
+              <p class="text-[#466270]">“<%= event.metadata["reason"] %>”</p>
+            <% end %>
+          </li>
+        <% end %>
+      </ol>
     <% end %>
   </div>
-
-  <% if history.any? %>
-    <h3 class="mt-6 text-sm font-semibold text-[#102c43]">History</h3>
-    <ol class="staff-quote-history">
-      <% history.each do |event| %>
-        <li>
-          <span class="font-semibold text-[#102c43]"><%= quote_history_label(event.event_type) %></span>
-          <span class="text-[#5f7d8c]">· <%= event.actor_membership&.user&.full_name.presence || "Staff" %> · <%= l(event.occurred_at, format: :short) %></span>
-          <% if event.metadata["reason"].present? %>
-            <p class="text-[#466270]">“<%= event.metadata["reason"] %>”</p>
-          <% end %>
-        </li>
-      <% end %>
-    </ol>
-  <% end %>
 </aside>

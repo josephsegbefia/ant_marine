@@ -6,12 +6,16 @@
       primary_action: nil
     ) %>
 
-<section class="staff-website-hub mt-6 max-w-2xl">
-  <div class="portal-card p-6 sm:p-8">
-    <p class="text-sm leading-relaxed text-[#5f7d8c]">
+<section class="staff-quote-side-panel mt-6 max-w-2xl" aria-labelledby="new-quotation-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Start a draft",
+        heading_id: "new-quotation-heading",
+        icon: "file" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">
       You will enter client details, scope, pricing and terms in a guided editor. A reference number is assigned when you start the draft.
     </p>
-    <div class="mt-6 flex flex-wrap gap-3">
+    <div class="mt-5 flex flex-wrap items-center gap-3">
       <%= button_to "Begin draft quotation", staff_quotations_path, method: :post, class: "ant-btn-primary ant-btn-primary--compact" %>
       <%= ant_back_link label: "Back to quotations", path: staff_quotations_path %>
     </div>

@@ -5,20 +5,6 @@ module Staff
     def show
       @greeting = greeting
       @summary = Staff::OverviewSummary.new(Current.membership)
-      @can_invite = Authorization::EffectivePermissions.allowed?(
-        membership: Current.membership,
-        permission_key: "team.invite"
-      )
-
-      return unless @can_invite
-
-      policy = ::Invitations::Policy.new(inviter_membership: Current.membership)
-      ant_marine = Organization.ant_marine!
-      @pending_count = policy.visible_invitation_scope
-        .where(organization: ant_marine)
-        .merge(Invitation.pending)
-        .count
-      @can_invite_clients = Organization.active.client.exists?
     end
 
     private

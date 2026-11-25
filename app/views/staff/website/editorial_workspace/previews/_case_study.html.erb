@@ -1,11 +1,17 @@
-<div class="staff-editor-preview" aria-live="polite">
-  <p class="staff-editor-preview__label">Draft preview</p>
-  <p class="staff-editor-preview__note">Project story preview — drafts stay private until published.</p>
-  <article class="staff-editor-preview__card">
-    <p class="public-eyebrow"><%= config[:eyebrow] %></p>
-    <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Story title</h2>
-    <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Overview</p>
-    <div class="public-rich-text mt-3 text-sm" data-staff-editorial-wizard-target="previewBody">Main narrative</div>
-  </article>
-  <p class="text-xs text-[#5f7d8c] mt-4">Page address: <span data-staff-editorial-wizard-target="previewUrl">/projects/example</span></p>
-</div>
+<% preview_heading_id = local_assigns.fetch(:heading_id, "case-study-draft-preview-heading") %>
+<section class="staff-quote-side-panel staff-editor-preview" aria-live="polite" aria-labelledby="<%= preview_heading_id %>">
+  <%= render "shared/ui/side_panel_head",
+        title: "Draft preview",
+        heading_id: preview_heading_id,
+        icon: "compass" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Project story preview — drafts stay private until published.</p>
+    <article class="staff-editor-preview__card">
+      <p class="public-eyebrow"><%= config[:eyebrow] %></p>
+      <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Story title</h2>
+      <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Overview</p>
+      <div class="public-rich-text mt-3 text-sm" data-staff-editorial-wizard-target="previewBody">Main narrative</div>
+    </article>
+    <p class="staff-quote-summary__hint mt-4">Page address: <span data-staff-editorial-wizard-target="previewUrl">/projects/example</span></p>
+  </div>
+</section>

@@ -1,7 +1,9 @@
 <% can_manage = @inquiry_policy.triage? %>
-<section class="portal-card" id="enquiry-clarifications" aria-labelledby="enquiry-clarifications-heading">
-  <div class="staff-enquiry-section-head">
-    <h2 id="enquiry-clarifications-heading">Questions for the client</h2>
+<section class="staff-quote-side-panel" id="enquiry-clarifications" aria-labelledby="enquiry-clarifications-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Questions for the client",
+        heading_id: "enquiry-clarifications-heading",
+        icon: "mail" do %>
     <% if can_manage && @inquiry.open? %>
       <%= ant_dialog(id: "dialog-clarification", title: "Ask the client for more information", trigger_label: "Ask a question",
                      description: "Write down what you need to know. This system does not send it — contact the client by phone or from your own email, then record that you did.") do %>
@@ -19,21 +21,22 @@
         <% end %>
       <% end %>
     <% end %>
-  </div>
+  <% end %>
 
+  <div class="staff-quote-side-panel__body">
   <% if @clarifications.any? %>
     <ol class="staff-enquiry-clarifications">
       <% @clarifications.each do |clarification| %>
         <li class="staff-enquiry-clarification">
           <div class="staff-enquiry-clarification__head">
-            <p class="font-semibold text-[#102c43]"><%= clarification.subject %></p>
+            <p class="staff-enquiry-clarification__title"><%= clarification.subject %></p>
             <%= ant_status_badge(label: clarification.status_label, badge_class: clarification.badge_variant) %>
           </div>
           <p class="staff-enquiry-row__sub">Prepared by <%= enquiry_member_name(clarification.created_by_membership) %> · <%= l(clarification.created_at, format: :short) %></p>
           <div class="staff-enquiry-clarification__body whitespace-pre-line"><%= clarification.questions %></div>
           <% if clarification.prepared_message.present? %>
             <details class="mt-2">
-              <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Prepared message (not sent by this system)</summary>
+              <summary class="staff-enquiry-clarification__summary">Prepared message (not sent by this system)</summary>
               <div class="staff-enquiry-clarification__body whitespace-pre-line"><%= clarification.prepared_message %></div>
             </details>
           <% end %>
@@ -45,7 +48,7 @@
           <% end %>
           <% if clarification.status == "answered" %>
             <div class="staff-enquiry-answer">
-              <p class="text-xs font-semibold uppercase tracking-wide text-[#5f7d8c]">Client’s answer</p>
+              <p class="staff-enquiry-answer__label">Client’s answer</p>
               <div class="whitespace-pre-line"><%= clarification.response_text %></div>
               <p class="staff-enquiry-row__sub mt-1">
                 Received by <%= ServiceInquiryClarification::RESPONSE_SOURCES[clarification.response_source].downcase %> on <%= l(clarification.response_received_at.to_date, format: :long) %>
@@ -105,4 +108,5 @@
   <% else %>
     <p class="staff-enquiry-note">No questions have been prepared for this enquiry.</p>
   <% end %>
+  </div>
 </section>

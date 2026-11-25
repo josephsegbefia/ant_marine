@@ -2,19 +2,29 @@
 <% status_label = public_content_status_label(record.status) %>
 <% guidance_text = local_assigns[:guidance] || public_content_list_guidance(record.status) %>
 
-<div class="mt-6 max-w-3xl portal-card">
-  <h2 class="text-base font-semibold text-[#102c43]">Editorial workflow</h2>
-  <p class="mt-2 text-sm text-[#5f7d8c]">
-    <span class="font-semibold text-[#173244]"><%= status_label %></span>
-    — <%= guidance_text %>
-  </p>
-  <div class="mt-4">
-    <%= render "staff/website/workflow_actions", record: record %>
+<section class="staff-quote-side-panel mt-6 max-w-3xl" aria-labelledby="editorial-workflow-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Editorial workflow",
+        heading_id: "editorial-workflow-heading",
+        icon: "globe",
+        badge_label: status_label,
+        badge_class: public_content_status_badge_class(record.status) %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede"><%= guidance_text %></p>
+    <div class="mt-4">
+      <%= render "staff/website/workflow_actions", record: record %>
+    </div>
   </div>
-</div>
+</section>
 
-<div class="portal-card mt-6 max-w-3xl text-sm text-[#5f7d8c]">
-  <p>Public preview is available only after publishing. Draft and in-review content never appears on the public website.</p>
-</div>
+<section class="staff-quote-side-panel mt-4 max-w-3xl" aria-labelledby="editorial-preview-note-heading">
+  <%= render "shared/ui/side_panel_head",
+        title: "Public preview",
+        heading_id: "editorial-preview-note-heading",
+        icon: "compass" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Public preview is available only after publishing. Draft and in-review content never appears on the public website.</p>
+  </div>
+</section>
 
 <%= link_to back_label, back_path, class: "mt-6 inline-block text-sm font-semibold text-[#25877f]" %>

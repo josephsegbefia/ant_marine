@@ -1,8 +1,14 @@
+<% empty_title = local_assigns.fetch(:empty_title, "No invitations yet") %>
+<% empty_description = local_assigns.fetch(:empty_description, "Use the form to invite the first person to this organisation.") %>
+
 <% if invitations.any? %>
   <ul class="invitation-list" role="list">
     <% invitations.each do |invitation| %>
       <li class="invitation-row">
-        <div class="min-w-0">
+        <span class="invitation-row__mark" aria-hidden="true">
+          <%= render "shared/public/icon", name: "mail", size: 15 %>
+        </span>
+        <div class="invitation-row__copy">
           <div class="invitation-row__title"><%= invitation.email %></div>
           <div class="invitation-row__meta">
             <% if show_organization %>
@@ -11,7 +17,7 @@
             <%= invitation_sent_summary(invitation) %>
           </div>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="invitation-row__aside">
           <% display_status = invitation.public_state %>
           <span class="ant-badge <%= invitation_status_badge_class(display_status) %>">
             <%= invitation_status_label(display_status) %>
@@ -27,5 +33,5 @@
     <% end %>
   </ul>
 <% else %>
-  <%= render "shared/invitations/empty" %>
+  <%= render "shared/invitations/empty", title: empty_title, description: empty_description %>
 <% end %>

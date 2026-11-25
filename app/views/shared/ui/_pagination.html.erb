@@ -4,20 +4,18 @@
     <p class="ant-pagination__summary">
       Showing <%= pagination.first_item %>–<%= pagination.last_item %> of <%= pagination.total_count %> <%= label %>
     </p>
-    <% if pagination.many_pages? %>
-      <div class="ant-pagination__controls">
-        <% if pagination.previous_page %>
-          <%= link_to "Previous", path_for.call(pagination.previous_page), class: "ant-btn-outline ant-btn-outline--compact", rel: "prev" %>
-        <% else %>
-          <span class="ant-btn-outline ant-btn-outline--compact is-disabled" aria-disabled="true">Previous</span>
-        <% end %>
-        <span class="ant-pagination__page" aria-current="page">Page <%= pagination.page %> of <%= pagination.total_pages %></span>
-        <% if pagination.next_page %>
-          <%= link_to "Next", path_for.call(pagination.next_page), class: "ant-btn-outline ant-btn-outline--compact", rel: "next" %>
-        <% else %>
-          <span class="ant-btn-outline ant-btn-outline--compact is-disabled" aria-disabled="true">Next</span>
-        <% end %>
-      </div>
-    <% end %>
+    <div class="ant-pagination__controls">
+      <% if pagination.previous_page %>
+        <%= link_to "Previous", path_for.call(pagination.previous_page), class: "ant-btn-outline ant-btn-outline--compact", rel: "prev" %>
+      <% else %>
+        <span class="ant-btn-outline ant-btn-outline--compact is-disabled" aria-disabled="true">Previous</span>
+      <% end %>
+      <span class="ant-pagination__page" aria-current="page">Page <%= pagination.page %> of <%= pagination.total_pages %></span>
+      <% if pagination.next_page %>
+        <%= link_to "Next", path_for.call(pagination.next_page), class: "ant-btn-outline ant-btn-outline--compact", rel: "next" %>
+      <% else %>
+        <span class="ant-btn-outline ant-btn-outline--compact is-disabled" aria-disabled="true">Next</span>
+      <% end %>
+    </div>
   </nav>
 <% end %>

@@ -30,7 +30,7 @@ module Staff
       assert_select "a", text: "Quotations"
     end
 
-    test "an operations manager sees quotations waiting for independent approval and team access" do
+    test "an operations manager sees quotations waiting for independent approval" do
       quote = create_ready_quote
       Commercial::QuoteTransition.apply!(quote: quote, action: :submit_for_review, membership: memberships(:dual_staff))
 
@@ -40,7 +40,7 @@ module Staff
       assert_response :success
       assert_select ".staff-enquiry-stat[aria-label^=?]", "Waiting for your approval: 1"
       assert_select ".staff-overview-row .ant-badge", text: "Needs your approval"
-      assert_select "#overview-access-heading", text: "Team access"
+      assert_select "#overview-access-heading", count: 0
     end
 
     test "general staff only see assigned work and have no team enquiry or quotation cards" do

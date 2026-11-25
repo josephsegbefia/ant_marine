@@ -61,4 +61,27 @@ module StaffShellHelper
   def staff_nav_active?(key)
     (content_for?(:staff_nav) ? content_for(:staff_nav) : "overview") == key.to_s
   end
+
+  def staff_stat_icon(key)
+    {
+      new_enquiries: "clipboard",
+      assigned: "users",
+      approvals: "file",
+      unread: "mail",
+      new: "clipboard",
+      mine: "users",
+      unassigned: "users",
+      awaiting: "clock",
+      ready: "check"
+    }.fetch(key.to_sym, "chart")
+  end
+
+  def staff_notification_icon(kind)
+    {
+      "new_enquiry" => "clipboard",
+      "enquiry_assigned" => "users",
+      "enquiry_reassigned_away" => "users",
+      "clarification_answered" => "mail"
+    }.fetch(kind.to_s, "mail")
+  end
 end

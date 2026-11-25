@@ -240,12 +240,13 @@ data: {
 ## Staff overview (S01)
 
 - [`Staff::OverviewSummary`](../../app/models/staff/overview_summary.rb) gathers permission-aware stats, work waiting and recent notifications through the same policy scopes as the full pages.
-- View: [`staff/home/show`](../../app/views/staff/home/show.html.erb) — greeting by time of day, summary cards, work list, recent updates, team access. No jobs, reports or schedule cards until those domains exist.
+- View: [`staff/home/show`](../../app/views/staff/home/show.html.erb) — greeting by time of day, summary cards, work list and recent updates. Team invitations stay in the sidebar / Invitations pages. No jobs, reports or schedule cards until those domains exist.
 - Styles: `.staff-overview-stats`, `.staff-overview-grid`, `.staff-overview-row`.
 
 ## Enquiry triage workspace (F4-03)
 
-- **Pagination:** `Pagination.new(scope, page:, per_page: 25)` (offset; malformed or out-of-range pages clamp to a valid page) + `ant_pagination(pagination, label:, path_for: ->(page) { ... })` → `shared/ui/_pagination.html.erb` ("Showing 1–25 of N", Previous/Next, `aria-label="Pages"`). Used by enquiries and notifications.
+- **Pagination:** `Pagination.new(scope, page:, per_page: 25)` (offset; malformed or out-of-range pages clamp to a valid page) + `ant_pagination(pagination, label:, path_for: ->(page) { ... })` → `shared/ui/_pagination.html.erb` ("Showing 1–25 of N", Previous/Next, `aria-label="Pages"`). Used by enquiries, notifications and invitation lists (6 per page inside the fixed-height Recent invitations card; Active/All filter; Cancel/Resend on pending only).
+
 - **Dialog:** `ant_dialog(id:, title:, trigger_label:, trigger_class:, description:) { form }` → `shared/ui/_dialog.html.erb`; native `<dialog>` opened with `showModal` by Stimulus `ant-dialog` (focus first field, backdrop click and close button dismiss, Escape native, focus returns to the opener). Use for any action that needs a reason or extra input; put warnings inside the dialog body.
 - **Filter toolbar:** `.ant-filter-toolbar` grid of labelled fields + `.ant-filter-toolbar__actions` (Apply `ant-btn-primary--compact`, Clear link only when filters are active). Buttons keep their natural width at every size. `.ant-btn-outline--compact` must come after `.ant-btn-outline` in the stylesheet (this was the cause of the full-width mobile Apply button).
 - **Stat cards:** `.staff-enquiry-stat` links with `aria-label="Label: N. caption"`.

@@ -10,41 +10,51 @@
   <%= render "staff/service_inquiries/sidebar" %>
 
   <div class="staff-enquiry-workspace__main">
-    <section class="portal-card" aria-labelledby="enquiry-contact-heading">
-      <h2 id="enquiry-contact-heading">Request information</h2>
-      <dl class="staff-enquiry-facts">
-        <div><dt>Company</dt><dd><%= @inquiry.company_name %></dd></div>
-        <div><dt>Contact</dt><dd><%= @inquiry.contact_name %></dd></div>
-        <div><dt>Email</dt><dd><%= mail_to @inquiry.contact_email, nil, class: "staff-quote-link break-all" %></dd></div>
-        <div><dt>Phone</dt><dd><%= @inquiry.contact_phone.presence || "Not provided" %></dd></div>
-        <div><dt>Location</dt><dd><%= @inquiry.location %></dd></div>
-        <div>
-          <dt>Preferred date</dt>
-          <dd>
-            <% if @inquiry.preferred_date %>
-              <%= l(@inquiry.preferred_date, format: :long) %>
-              <span class="block text-xs font-normal text-[#5f7d8c]">Requested by the client — not a confirmed booking</span>
-            <% else %>
-              No date given
-            <% end %>
-          </dd>
-        </div>
-      </dl>
-      <p class="staff-enquiry-note">An email address on an enquiry does not prove the person works for a client organisation or may accept an offer.</p>
+    <section class="staff-quote-side-panel" aria-labelledby="enquiry-contact-heading">
+      <%= render "shared/ui/side_panel_head",
+            title: "Request information",
+            heading_id: "enquiry-contact-heading",
+            icon: "users" %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-enquiry-facts">
+          <div><dt>Company</dt><dd><%= @inquiry.company_name %></dd></div>
+          <div><dt>Contact</dt><dd><%= @inquiry.contact_name %></dd></div>
+          <div><dt>Email</dt><dd><%= mail_to @inquiry.contact_email, nil, class: "staff-quote-link break-all" %></dd></div>
+          <div><dt>Phone</dt><dd><%= @inquiry.contact_phone.presence || "Not provided" %></dd></div>
+          <div><dt>Location</dt><dd><%= @inquiry.location %></dd></div>
+          <div>
+            <dt>Preferred date</dt>
+            <dd>
+              <% if @inquiry.preferred_date %>
+                <%= l(@inquiry.preferred_date, format: :long) %>
+                <span class="block text-xs font-normal text-[#8799a3]">Requested by the client — not a confirmed booking</span>
+              <% else %>
+                No date given
+              <% end %>
+            </dd>
+          </div>
+        </dl>
+        <p class="staff-enquiry-note">An email address on an enquiry does not prove the person works for a client organisation or may accept an offer.</p>
+      </div>
     </section>
 
-    <section class="portal-card" aria-labelledby="enquiry-work-heading">
-      <h2 id="enquiry-work-heading">What they need</h2>
-      <dl class="staff-enquiry-facts">
-        <div><dt>Service</dt><dd><%= @inquiry.requested_service_label %></dd></div>
-        <div><dt>Project</dt><dd><%= @inquiry.project_name.presence || "Not provided" %></dd></div>
-        <div><dt>Vessel or facility</dt><dd><%= @inquiry.vessel_name.presence || "Not provided" %></dd></div>
-      </dl>
-      <div class="staff-enquiry-description mt-4">
-        <%= simple_format(h(@inquiry.description), {}, sanitize: false) %>
+    <section class="staff-quote-side-panel" aria-labelledby="enquiry-work-heading">
+      <%= render "shared/ui/side_panel_head",
+            title: "What they need",
+            heading_id: "enquiry-work-heading",
+            icon: "compass" %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-enquiry-facts">
+          <div><dt>Service</dt><dd><%= @inquiry.requested_service_label %></dd></div>
+          <div><dt>Project</dt><dd><%= @inquiry.project_name.presence || "Not provided" %></dd></div>
+          <div><dt>Vessel or facility</dt><dd><%= @inquiry.vessel_name.presence || "Not provided" %></dd></div>
+        </dl>
+        <div class="staff-enquiry-description mt-4">
+          <%= simple_format(h(@inquiry.description), {}, sanitize: false) %>
+        </div>
+        <p class="staff-enquiry-note">This is the request exactly as the client sent it. It cannot be edited — add an internal note if something needs explaining.</p>
+        <p class="staff-enquiry-note">Attachments cannot be sent through the website yet. If the client mentions documents, agree a secure way to receive them.</p>
       </div>
-      <p class="staff-enquiry-note">This is the request exactly as the client sent it. It cannot be edited — add an internal note if something needs explaining.</p>
-      <p class="staff-enquiry-note">Attachments cannot be sent through the website yet. If the client mentions documents, agree a secure way to receive them.</p>
     </section>
 
     <% if @duplicate_candidates.any? || @duplicates.any? %>

@@ -20,6 +20,8 @@ class Invitation < ApplicationRecord
 
   scope :pending, -> { where(status: "pending") }
   scope :usable, -> { pending.where("expires_at > ?", Time.current) }
+  # Still waiting for a response — excludes accepted, revoked and time-expired rows.
+  scope :active, -> { usable }
 
   class InvalidToken < StandardError; end
 

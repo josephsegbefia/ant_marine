@@ -1,18 +1,24 @@
-<div class="staff-editor-preview" aria-live="polite">
-  <p class="staff-editor-preview__label">Draft preview</p>
-  <p class="staff-editor-preview__note">How visitors may see this insight after publishing. Drafts stay private.</p>
-  <article class="staff-editor-preview__card">
-    <p class="public-eyebrow"><%= config[:eyebrow] %></p>
-    <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Article title</h2>
-    <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Short introduction</p>
-    <div class="public-rich-text mt-3 text-sm text-[#466270]" data-staff-editorial-wizard-target="previewBody">Main content</div>
-  </article>
-  <div class="staff-editor-preview__meta mt-4">
-    <p class="text-xs text-[#5f7d8c]">Page address: <span data-staff-editorial-wizard-target="previewUrl">/insights/example</span></p>
-    <div class="mt-3 rounded-lg border border-[#e2eaeb] bg-white p-3">
-      <p class="text-xs font-semibold uppercase tracking-wide text-[#5f7d8c]">Search preview</p>
-      <p class="text-sm font-semibold text-[#1a0dab] mt-1" data-staff-editorial-wizard-target="previewSeoTitle">Page title</p>
-      <p class="text-sm text-[#4d5156] mt-1" data-staff-editorial-wizard-target="previewSeoDescription">Description preview</p>
+<% preview_heading_id = local_assigns.fetch(:heading_id, "editorial-draft-preview-heading") %>
+<section class="staff-quote-side-panel staff-editor-preview" aria-live="polite" aria-labelledby="<%= preview_heading_id %>">
+  <%= render "shared/ui/side_panel_head",
+        title: "Draft preview",
+        heading_id: preview_heading_id,
+        icon: "compass" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">How visitors may see this insight after publishing. Drafts stay private.</p>
+    <article class="staff-editor-preview__card">
+      <p class="public-eyebrow"><%= config[:eyebrow] %></p>
+      <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Article title</h2>
+      <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Short introduction</p>
+      <div class="public-rich-text mt-3 text-sm text-[#466270]" data-staff-editorial-wizard-target="previewBody">Main content</div>
+    </article>
+    <div class="staff-editor-preview__meta">
+      <p class="staff-quote-summary__hint">Page address: <span data-staff-editorial-wizard-target="previewUrl">/insights/example</span></p>
+      <div class="staff-editor-preview__search">
+        <p class="staff-quote-summary__next-label">Search preview</p>
+        <p class="staff-editor-preview__search-title" data-staff-editorial-wizard-target="previewSeoTitle">Page title</p>
+        <p class="staff-editor-preview__search-desc" data-staff-editorial-wizard-target="previewSeoDescription">Description preview</p>
+      </div>
     </div>
   </div>
-</div>
+</section>

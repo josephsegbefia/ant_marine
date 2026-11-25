@@ -45,24 +45,28 @@
   </div>
 
   <div
-    class="staff-editor-error portal-card"
+    class="staff-editor-error staff-quote-side-panel"
     hidden
     tabindex="-1"
     role="alert"
     data-staff-service-editor-target="errorSummary"
   >
-    <p class="font-semibold text-[#102c43]">Please fix the following before continuing:</p>
-    <ul class="mt-2 list-disc pl-5 text-sm text-red-900" data-staff-service-editor-target="errorList"></ul>
+    <div class="staff-quote-side-panel__body">
+      <p class="font-semibold text-[#102c43]">Please fix the following before continuing:</p>
+      <ul class="mt-2 list-disc pl-5 text-sm text-red-900" data-staff-service-editor-target="errorList"></ul>
+    </div>
   </div>
 
   <% if service.errors.any? %>
-    <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900" role="alert" tabindex="-1" id="server-error-summary">
-      <p class="font-semibold">We could not save your draft:</p>
-      <ul class="mt-2 list-disc pl-5">
-        <% service.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+    <div class="staff-quote-side-panel border-red-200 bg-red-50 text-sm text-red-900" role="alert" tabindex="-1" id="server-error-summary">
+      <div class="staff-quote-side-panel__body">
+        <p class="font-semibold">We could not save your draft:</p>
+        <ul class="mt-2 list-disc pl-5">
+          <% service.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
     </div>
   <% end %>
 
@@ -72,26 +76,31 @@
         id="editor-step-panel-1"
         role="tabpanel"
         aria-labelledby="editor-step-tab-1"
-        class="staff-editor-panel portal-card"
+        class="staff-quote-side-panel staff-editor-panel"
         data-step="1"
         data-staff-service-editor-target="panel"
         <%= "hidden" unless editor_step == 1 %>
       >
-        <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">The basics</h2>
-        <p class="text-sm text-[#5f7d8c] mt-1">Give this service a clear name and a short introduction for visitors.</p>
-        <div class="mt-4 space-y-4">
-          <%= ant_field f, :title, label: "Service title", required: true, context: :portal, hint: "Use plain language — e.g. “Marine surveys”.", html_options: { data: { staff_service_editor_target: "titleField", action: "input->staff-service-editor#titleInput" } } %>
-          <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences of plain text for service cards and search results. Formatting marks such as ** are shown exactly as typed.", html_options: { rows: 3 } %>
-          <%= ant_icon_picker f, :icon_key, label: "Card icon", hint: "Shown on public service cards. Pick the option that best matches this service." %>
-          <div class="rounded-lg border border-[#e2eaeb] bg-[#f6fafb] px-4 py-3 text-sm text-[#5f7d8c]">
-            <p class="font-semibold text-[#102c43]">Page address</p>
-            <% if service.persisted? %>
-              <p class="mt-1 font-mono text-xs text-[#173244]"><%= service.public_page_path %></p>
-              <p class="mt-1 text-xs">Set when this draft was first saved. It does not change if you edit the title.</p>
-            <% else %>
-              <p class="mt-1" data-staff-service-editor-target="suggestedPath">We will assign an address when you save this draft.</p>
-              <p class="mt-1 text-xs">Based on your service name — you do not need to choose it yourself.</p>
-            <% end %>
+        <%= render "shared/ui/side_panel_head",
+              title: "The basics",
+              heading_id: "editor-step-heading-1",
+              icon: "brief" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-versions__lede">Give this service a clear name and a short introduction for visitors.</p>
+          <div class="mt-4 space-y-4">
+            <%= ant_field f, :title, label: "Service title", required: true, context: :portal, hint: "Use plain language — e.g. “Marine surveys”.", html_options: { data: { staff_service_editor_target: "titleField", action: "input->staff-service-editor#titleInput" } } %>
+            <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences of plain text for service cards and search results. Formatting marks such as ** are shown exactly as typed.", html_options: { rows: 3 } %>
+            <%= ant_icon_picker f, :icon_key, label: "Card icon", hint: "Shown on public service cards. Pick the option that best matches this service." %>
+            <div class="staff-editor-address">
+              <p class="staff-editor-address__label">Page address</p>
+              <% if service.persisted? %>
+                <p class="staff-editor-address__path"><%= service.public_page_path %></p>
+                <p class="staff-editor-address__hint">Set when this draft was first saved. It does not change if you edit the title.</p>
+              <% else %>
+                <p class="staff-editor-address__value" data-staff-service-editor-target="suggestedPath">We will assign an address when you save this draft.</p>
+                <p class="staff-editor-address__hint">Based on your service name — you do not need to choose it yourself.</p>
+              <% end %>
+            </div>
           </div>
         </div>
       </section>
@@ -100,15 +109,20 @@
         id="editor-step-panel-2"
         role="tabpanel"
         aria-labelledby="editor-step-tab-2"
-        class="staff-editor-panel portal-card"
+        class="staff-quote-side-panel staff-editor-panel"
         data-step="2"
         data-staff-service-editor-target="panel"
         <%= "hidden" unless editor_step == 2 %>
       >
-        <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Describe the service</h2>
-        <div class="mt-4 space-y-4">
-          <%= ant_rich_text_field f, :body, label: "What does this service involve?", required: true, hint: "Explain what you do, how you work and what clients can expect. Images and uploads are not available yet." %>
-          <%= ant_field f, :audience, type: :textarea, label: "Who is this service for?", required: true, context: :portal, hint: "e.g. shipowners, offshore contractors, insurers.", html_options: { rows: 3 } %>
+        <%= render "shared/ui/side_panel_head",
+              title: "Describe the service",
+              heading_id: "editor-step-heading-2",
+              icon: "file" %>
+        <div class="staff-quote-side-panel__body">
+          <div class="space-y-4">
+            <%= ant_rich_text_field f, :body, label: "What does this service involve?", required: true, hint: "Explain what you do, how you work and what clients can expect. Images and uploads are not available yet." %>
+            <%= ant_field f, :audience, type: :textarea, label: "Who is this service for?", required: true, context: :portal, hint: "e.g. shipowners, offshore contractors, insurers.", html_options: { rows: 3 } %>
+          </div>
         </div>
       </section>
 
@@ -116,26 +130,31 @@
         id="editor-step-panel-3"
         role="tabpanel"
         aria-labelledby="editor-step-tab-3"
-        class="staff-editor-panel portal-card"
+        class="staff-quote-side-panel staff-editor-panel"
         data-step="3"
         data-staff-service-editor-target="panel"
         <%= "hidden" unless editor_step == 3 %>
       >
-        <h2 id="editor-step-heading-3" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Scope and process</h2>
-        <p class="text-sm text-[#5f7d8c] mt-1">List what is included and the steps clients can expect. Use short, friendly phrases.</p>
-        <div class="mt-4 space-y-6">
-          <%= render "list_editor",
-                attribute: :scope_items,
-                label: "What's included?",
-                hint: "Each line becomes a bullet on the public page.",
-                placeholder: "e.g. Warranty surveys",
-                items: service_editor_list(service, :scope_items).presence || [""] %>
-          <%= render "list_editor",
-                attribute: :process_steps,
-                label: "How does the process work?",
-                hint: "Describe the journey in order — what happens first, next, and so on.",
-                placeholder: "e.g. We review your request",
-                items: service_editor_list(service, :process_steps).presence || [""] %>
+        <%= render "shared/ui/side_panel_head",
+              title: "Scope and process",
+              heading_id: "editor-step-heading-3",
+              icon: "layers" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-versions__lede">List what is included and the steps clients can expect. Use short, friendly phrases.</p>
+          <div class="mt-4 space-y-6">
+            <%= render "list_editor",
+                  attribute: :scope_items,
+                  label: "What's included?",
+                  hint: "Each line becomes a bullet on the public page.",
+                  placeholder: "e.g. Warranty surveys",
+                  items: service_editor_list(service, :scope_items).presence || [""] %>
+            <%= render "list_editor",
+                  attribute: :process_steps,
+                  label: "How does the process work?",
+                  hint: "Describe the journey in order — what happens first, next, and so on.",
+                  placeholder: "e.g. We review your request",
+                  items: service_editor_list(service, :process_steps).presence || [""] %>
+          </div>
         </div>
       </section>
 
@@ -143,37 +162,47 @@
         id="editor-step-panel-4"
         role="tabpanel"
         aria-labelledby="editor-step-tab-4"
-        class="staff-editor-panel portal-card"
+        class="staff-quote-side-panel staff-editor-panel"
         data-step="4"
         data-staff-service-editor-target="panel"
         <%= "hidden" unless editor_step == 4 %>
       >
-        <h2 id="editor-step-heading-4" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review your service page</h2>
-        <p class="text-sm text-[#5f7d8c] mt-1">Check content and publishing status before you leave. Previewing is not publishing.</p>
+        <%= render "shared/ui/side_panel_head",
+              title: "Review your service page",
+              heading_id: "editor-step-heading-4",
+              icon: "check" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-versions__lede">Check content and publishing status before you leave. Previewing is not publishing.</p>
 
-        <div class="mt-4 portal-card bg-[#f6fafb] hidden" data-staff-service-editor-target="missingPanel">
-          <p class="text-sm font-semibold text-[#102c43]">Still needed:</p>
-          <ul class="mt-2 list-disc pl-5 text-sm text-[#466270]" data-staff-service-editor-target="missingList"></ul>
+          <div class="staff-editor-missing hidden" data-staff-service-editor-target="missingPanel">
+            <p class="staff-editor-missing__label">Still needed:</p>
+            <ul class="staff-editor-missing__list" data-staff-service-editor-target="missingList"></ul>
+          </div>
+
+          <% unless service_editor_missing_items(service).empty? %>
+            <p class="staff-quote-summary__hint mt-4">Complete the highlighted items on earlier steps, then save your draft.</p>
+          <% end %>
+
+          <div class="mt-6 lg:hidden">
+            <%= render "draft_preview", heading_id: "service-draft-preview-mobile" %>
+          </div>
+
+          <% if service.persisted? && service.draft? %>
+            <p class="staff-quote-versions__lede mt-6">
+              When everything looks right, use <strong>Submit for review</strong> below the editor. A colleague with publish permission can approve and publish.
+            </p>
+          <% end %>
         </div>
-
-        <% unless service_editor_missing_items(service).empty? %>
-          <p class="mt-4 text-sm text-[#5f7d8c]">Complete the highlighted items on earlier steps, then save your draft.</p>
-        <% end %>
-
-        <div class="mt-6 lg:hidden">
-          <%= render "draft_preview" %>
-        </div>
-
-        <% if service.persisted? && service.draft? %>
-          <p class="mt-6 text-sm text-[#5f7d8c]">
-            When everything looks right, use <strong>Submit for review</strong> below the editor. A colleague with publish permission can approve and publish.
-          </p>
-        <% end %>
       </section>
 
-      <details class="staff-editor-page-settings portal-card mt-4">
-        <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
-        <div class="mt-4 space-y-4">
+      <details class="staff-quote-side-panel staff-editor-page-settings mt-4">
+        <summary class="staff-editor-page-settings__summary">
+          <span class="staff-quote-side-panel__glyph" aria-hidden="true">
+            <%= render "shared/public/icon", name: "globe", size: 15 %>
+          </span>
+          <span>Page settings</span>
+        </summary>
+        <div class="staff-quote-side-panel__body space-y-4">
           <%= ant_select f, :category, choices: service_category_options, label: "Service category", required: true, context: :portal, hint: "Groups this page in the public catalogue." %>
           <div class="ant-field ant-field--portal">
             <%= f.label :seo_title, "Search title (optional)", class: "ant-field__label" %>
@@ -192,7 +221,7 @@
     </div>
 
     <aside class="staff-editor-layout__aside hidden lg:block" aria-label="Live draft preview">
-      <%= render "draft_preview" %>
+      <%= render "draft_preview", heading_id: "service-draft-preview-aside" %>
     </aside>
   </div>
 <% end %>

@@ -22,6 +22,23 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", text: /Quotations/
     assert_includes response.body, quote.reference_number
+    assert_select ".staff-enquiry-table .staff-enquiry-row__ref", text: quote.reference_number
+    assert_select ".staff-enquiry-panel__footer .ant-pagination__summary", text: /quotations/
+  end
+
+  test "quotations index paginates" do
+    26.times do |i|
+      create_draft_quote.update_columns(created_at: i.minutes.ago)
+    end
+
+    get staff_quotations_path
+    assert_response :success
+    assert_select ".staff-enquiry-table tbody tr", count: 25
+    assert_select ".ant-pagination__summary", text: /1–25 of /
+    assert_select "a[rel=next]", text: "Next"
+
+    get staff_quotations_path(page: 2)
+    assert_select "a[rel=prev]", text: "Previous"
   end
 
   test "staff without quotes permission is denied" do

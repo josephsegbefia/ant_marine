@@ -18,9 +18,15 @@
                 when :approvals then staff_quotations_path(status: "pending_review")
                 when :unread then staff_notifications_path(show: "unread")
                 end %>
-      <%= link_to path, class: "staff-enquiry-stat",
+      <%= link_to path,
+                  class: "staff-enquiry-stat#{" staff-enquiry-stat--active" if stat.value.to_i.positive?}",
                   aria: { label: "#{stat.label}: #{stat.value}. #{stat.caption}" } do %>
-        <span class="staff-enquiry-stat__label"><%= stat.label %></span>
+        <span class="staff-enquiry-stat__top">
+          <span class="staff-enquiry-stat__icon" aria-hidden="true">
+            <%= render "shared/public/icon", name: staff_stat_icon(stat.key), size: 16 %>
+          </span>
+          <span class="staff-enquiry-stat__label"><%= stat.label %></span>
+        </span>
         <span class="staff-enquiry-stat__value"><%= stat.value %></span>
         <span class="staff-enquiry-stat__caption"><%= stat.caption %></span>
       <% end %>
@@ -29,94 +35,99 @@
 <% end %>
 
 <div class="staff-overview-grid">
-  <section class="portal-card staff-overview-panel" aria-labelledby="overview-work-heading">
+  <section class="staff-overview-panel" aria-labelledby="overview-work-heading">
     <div class="staff-overview-panel__head">
-      <h2 id="overview-work-heading">Work waiting for you</h2>
+      <div class="staff-overview-panel__title">
+        <span class="staff-overview-panel__glyph" aria-hidden="true">
+          <%= render "shared/public/icon", name: "clipboard", size: 16 %>
+        </span>
+        <h2 id="overview-work-heading">Work waiting for you</h2>
+      </div>
       <% if @summary.enquiries? %>
         <%= link_to "All enquiries", staff_service_inquiries_path, class: "staff-overview-panel__link" %>
       <% end %>
     </div>
 
-    <% items = @summary.work_items %>
-    <% if items.any? %>
-      <ul class="staff-overview-list">
-        <% items.each do |item| %>
-          <% path = item.kind == :enquiry ? staff_service_inquiry_path(item.record) : edit_staff_quotation_path(item.record) %>
-          <li>
-            <%= link_to path, class: "staff-overview-row" do %>
-              <span class="staff-overview-row__text">
-                <span class="staff-overview-row__title"><%= item.title %></span>
-                <span class="staff-overview-row__detail"><%= item.detail %></span>
-              </span>
-              <%= ant_status_badge label: item.badge, badge_class: item.badge_variant %>
-            <% end %>
-          </li>
+    <div class="staff-overview-panel__body">
+      <% items = @summary.work_items %>
+      <% if items.any? %>
+        <ul class="staff-overview-list">
+          <% items.each do |item| %>
+            <% path = item.kind == :enquiry ? staff_service_inquiry_path(item.record) : edit_staff_quotation_path(item.record) %>
+            <li>
+              <%= link_to path, class: "staff-overview-row staff-overview-row--#{item.kind}" do %>
+                <span class="staff-overview-row__mark" aria-hidden="true">
+                  <%= render "shared/public/icon", name: (item.kind == :enquiry ? "clipboard" : "file"), size: 15 %>
+                </span>
+                <span class="staff-overview-row__text">
+                  <span class="staff-overview-row__title"><%= item.title %></span>
+                  <span class="staff-overview-row__detail"><%= item.detail %></span>
+                </span>
+                <%= ant_status_badge label: item.badge, badge_class: item.badge_variant %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+        <% if @summary.more_work_count.positive? %>
+          <p class="staff-overview-more">
+            And <%= pluralize(@summary.more_work_count, "more item") %> waiting —
+            <%= safe_join([
+                  (@summary.enquiries? ? link_to("see enquiries", staff_service_inquiries_path, class: "staff-quote-link") : nil),
+                  (@summary.quotations? ? link_to("see quotations", staff_quotations_path, class: "staff-quote-link") : nil)
+                ].compact, " or ") %>.
+          </p>
         <% end %>
-      </ul>
-      <% if @summary.more_work_count.positive? %>
-        <p class="staff-overview-more">
-          And <%= pluralize(@summary.more_work_count, "more item") %> waiting —
-          <%= safe_join([
-                (@summary.enquiries? ? link_to("see enquiries", staff_service_inquiries_path, class: "staff-quote-link") : nil),
-                (@summary.quotations? ? link_to("see quotations", staff_quotations_path, class: "staff-quote-link") : nil)
-              ].compact, " or ") %>.
-        </p>
+      <% else %>
+        <div class="staff-overview-empty-state">
+          <span class="staff-overview-empty-state__icon" aria-hidden="true">
+            <%= render "shared/public/icon", name: "check", size: 18 %>
+          </span>
+          <p class="staff-overview-empty">Nothing is waiting for you.</p>
+        </div>
       <% end %>
-    <% else %>
-      <p class="staff-overview-empty">Nothing is waiting for you.</p>
-    <% end %>
+    </div>
   </section>
 
-  <section class="portal-card staff-overview-panel" aria-labelledby="overview-updates-heading">
+  <section class="staff-overview-panel" aria-labelledby="overview-updates-heading">
     <div class="staff-overview-panel__head">
-      <h2 id="overview-updates-heading">Recent updates</h2>
+      <div class="staff-overview-panel__title">
+        <span class="staff-overview-panel__glyph" aria-hidden="true">
+          <%= render "shared/public/icon", name: "mail", size: 16 %>
+        </span>
+        <h2 id="overview-updates-heading">Recent updates</h2>
+      </div>
       <%= link_to "All notifications", staff_notifications_path, class: "staff-overview-panel__link" %>
     </div>
 
-    <% updates = @summary.recent_updates %>
-    <% if updates.any? %>
-      <ul class="staff-overview-list">
-        <% updates.each do |notification| %>
-          <li>
-            <%= button_to open_staff_notification_path(notification), method: :post, class: "staff-overview-row staff-overview-row--button" do %>
-              <span class="staff-overview-row__text">
-                <span class="staff-overview-row__title"><%= notification.title %></span>
-                <span class="staff-overview-row__detail">
-                  <%= notification.kind_label %> · <%= time_ago_in_words(notification.created_at) %> ago
-                  <% unless notification.read? %><span class="sr-only"> (unread)</span><% end %>
+    <div class="staff-overview-panel__body">
+      <% updates = @summary.recent_updates %>
+      <% if updates.any? %>
+        <ul class="staff-overview-timeline">
+          <% updates.each do |notification| %>
+            <li class="staff-overview-timeline__item#{" staff-overview-timeline__item--unread" unless notification.read?}">
+              <%= button_to open_staff_notification_path(notification), method: :post, class: "staff-overview-row staff-overview-row--button staff-overview-row--timeline" do %>
+                <span class="staff-overview-timeline__rail" aria-hidden="true">
+                  <span class="staff-overview-row__dot"></span>
                 </span>
-              </span>
-              <% unless notification.read? %>
-                <span class="staff-overview-row__dot" aria-hidden="true"></span>
+                <span class="staff-overview-row__text">
+                  <span class="staff-overview-row__title"><%= notification.title %></span>
+                  <span class="staff-overview-row__detail">
+                    <%= notification.kind_label %> · <%= time_ago_in_words(notification.created_at) %> ago
+                    <% unless notification.read? %><span class="sr-only"> (unread)</span><% end %>
+                  </span>
+                </span>
               <% end %>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="staff-overview-empty">No updates yet.</p>
-    <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="staff-overview-empty-state">
+          <span class="staff-overview-empty-state__icon" aria-hidden="true">
+            <%= render "shared/public/icon", name: "mail", size: 18 %>
+          </span>
+          <p class="staff-overview-empty">No updates yet.</p>
+        </div>
+      <% end %>
+    </div>
   </section>
-
-  <% if @can_invite %>
-    <section class="portal-card staff-overview-panel" aria-labelledby="overview-access-heading">
-      <div class="staff-overview-panel__head">
-        <h2 id="overview-access-heading">Team access</h2>
-        <%= link_to "View invitations", staff_invitations_path, class: "staff-overview-panel__link" %>
-      </div>
-      <p class="staff-overview-empty">
-        <% if @pending_count.positive? %>
-          You have <%= pluralize(@pending_count, "pending invitation") %> awaiting a response.
-        <% else %>
-          No pending invitations right now.
-        <% end %>
-      </p>
-      <div class="staff-overview-panel__actions">
-        <%= link_to "View invitations", staff_invitations_path, class: "ant-btn-outline ant-btn-outline--compact" %>
-        <% if @can_invite_clients %>
-          <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "ant-btn-outline ant-btn-outline--compact" %>
-        <% end %>
-      </div>
-    </section>
-  <% end %>
 </div>

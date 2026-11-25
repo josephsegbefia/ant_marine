@@ -19,35 +19,46 @@
 </div>
 
 <div class="staff-editor-layout mt-4">
-  <section class="portal-card" aria-labelledby="version-content-heading">
-    <h2 id="version-content-heading" class="text-lg font-semibold text-[#102c43]">Version <%= version.version_number %> content</h2>
-    <%= render "staff/quotations/steps/review", quote: @quote, revision: version, readiness: nil, show_readiness: false %>
+  <section class="staff-quote-side-panel" aria-labelledby="version-content-heading">
+    <%= render "shared/ui/side_panel_head",
+          title: "Version #{version.version_number} content",
+          heading_id: "version-content-heading",
+          icon: "file" %>
+    <div class="staff-quote-side-panel__body">
+      <%= render "staff/quotations/steps/review", quote: @quote, revision: version, readiness: nil, show_readiness: false %>
+    </div>
   </section>
 
-  <aside class="staff-editor-layout__aside space-y-4" aria-label="Version record">
-    <div class="portal-card">
-      <p class="staff-editor-preview__label">Version record</p>
-      <dl class="staff-quote-summary__list">
-        <div><dt>Status</dt><dd><%= quote_revision_status_label(version, @quote) %></dd></div>
-        <div><dt>Created</dt><dd><%= l(version.created_at, format: :long) %></dd></div>
-        <div><dt>Prepared by</dt><dd><%= quote_member_name(version.prepared_by_membership) %></dd></div>
-        <div><dt>Submitted by</dt><dd><%= version.submitted_by_membership ? quote_member_name(version.submitted_by_membership) : "Not submitted" %></dd></div>
-        <div><dt>Approved by</dt><dd><%= version.approved_by_membership ? "#{quote_member_name(version.approved_by_membership)} · #{l(version.approved_at, format: :long)}" : "Not approved" %></dd></div>
-        <div><dt>Issued</dt><dd><%= version.issued_at ? l(version.issued_at, format: :long) : "Not sent to the client" %></dd></div>
-        <% if version.predecessor_revision %>
-          <div><dt>Revises</dt><dd><%= link_to "Version #{version.predecessor_revision.version_number}", version_staff_quotation_path(@quote, version_number: version.predecessor_revision.version_number), class: "staff-quote-link" %></dd></div>
-          <div><dt>Reason</dt><dd><%= version.revision_reason %></dd></div>
-        <% end %>
-        <% if version.superseded_by_revision %>
-          <div><dt>Replaced by</dt><dd><%= link_to "Version #{version.superseded_by_revision.version_number}", version_staff_quotation_path(@quote, version_number: version.superseded_by_revision.version_number), class: "staff-quote-link" %> · <%= l(version.superseded_at, format: :long) %></dd></div>
-        <% end %>
-        <div><dt>Total</dt><dd><%= format_quote_money(version.total_cents, version.currency) %></dd></div>
-      </dl>
-      <div class="mt-4 flex flex-col gap-2">
-        <%= link_to "Open PDF of version #{version.version_number}", pdf_staff_quotation_path(@quote, version: version.version_number),
-              class: "ant-btn-primary ant-btn-primary--compact justify-center", target: "_blank", rel: "noopener" %>
-        <%= link_to "Back to quotation", edit_staff_quotation_path(@quote), class: "ant-btn-outline ant-btn-outline--compact justify-center" %>
+  <aside class="staff-editor-layout__aside" aria-label="Version record">
+    <section class="staff-quote-side-panel staff-quote-summary">
+      <%= render "shared/ui/side_panel_head",
+            title: "Version record",
+            heading_id: "version-record-heading",
+            icon: "clipboard",
+            badge_label: quote_revision_status_label(version, @quote),
+            badge_class: quote_revision_badge_variant(version) %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-quote-summary__list">
+          <div><dt>Created</dt><dd><%= l(version.created_at, format: :long) %></dd></div>
+          <div><dt>Prepared by</dt><dd><%= quote_member_name(version.prepared_by_membership) %></dd></div>
+          <div><dt>Submitted by</dt><dd><%= version.submitted_by_membership ? quote_member_name(version.submitted_by_membership) : "Not submitted" %></dd></div>
+          <div><dt>Approved by</dt><dd><%= version.approved_by_membership ? "#{quote_member_name(version.approved_by_membership)} · #{l(version.approved_at, format: :long)}" : "Not approved" %></dd></div>
+          <div><dt>Issued</dt><dd><%= version.issued_at ? l(version.issued_at, format: :long) : "Not sent to the client" %></dd></div>
+          <% if version.predecessor_revision %>
+            <div><dt>Revises</dt><dd><%= link_to "Version #{version.predecessor_revision.version_number}", version_staff_quotation_path(@quote, version_number: version.predecessor_revision.version_number), class: "staff-quote-link" %></dd></div>
+            <div><dt>Reason</dt><dd><%= version.revision_reason %></dd></div>
+          <% end %>
+          <% if version.superseded_by_revision %>
+            <div><dt>Replaced by</dt><dd><%= link_to "Version #{version.superseded_by_revision.version_number}", version_staff_quotation_path(@quote, version_number: version.superseded_by_revision.version_number), class: "staff-quote-link" %> · <%= l(version.superseded_at, format: :long) %></dd></div>
+          <% end %>
+          <div><dt>Total</dt><dd><%= format_quote_money(version.total_cents, version.currency) %></dd></div>
+        </dl>
+        <div class="mt-4 flex flex-col gap-2">
+          <%= link_to "Open PDF of version #{version.version_number}", pdf_staff_quotation_path(@quote, version: version.version_number),
+                class: "ant-btn-primary ant-btn-primary--compact justify-center", target: "_blank", rel: "noopener" %>
+          <%= link_to "Back to quotation", edit_staff_quotation_path(@quote), class: "ant-btn-outline ant-btn-outline--compact justify-center" %>
+        </div>
       </div>
-    </div>
+    </section>
   </aside>
 </div>

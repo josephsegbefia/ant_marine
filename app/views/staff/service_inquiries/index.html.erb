@@ -14,9 +14,17 @@
        { key: :ready, label: "Ready to quote", caption: "Scope confirmed", path: staff_service_inquiries_path(status: "qualified") }
      ].compact %>
   <% stats.each do |stat| %>
-    <%= link_to stat[:path], class: "staff-enquiry-stat", aria: { label: "#{stat[:label]}: #{@counts[stat[:key]]}. #{stat[:caption]}" } do %>
-      <span class="staff-enquiry-stat__label"><%= stat[:label] %></span>
-      <span class="staff-enquiry-stat__value"><%= @counts[stat[:key]] %></span>
+    <% count = @counts[stat[:key]] %>
+    <%= link_to stat[:path],
+                class: "staff-enquiry-stat#{" staff-enquiry-stat--active" if count.to_i.positive?}",
+                aria: { label: "#{stat[:label]}: #{count}. #{stat[:caption]}" } do %>
+      <span class="staff-enquiry-stat__top">
+        <span class="staff-enquiry-stat__icon" aria-hidden="true">
+          <%= render "shared/public/icon", name: staff_stat_icon(stat[:key]), size: 16 %>
+        </span>
+        <span class="staff-enquiry-stat__label"><%= stat[:label] %></span>
+      </span>
+      <span class="staff-enquiry-stat__value"><%= count %></span>
       <span class="staff-enquiry-stat__caption"><%= stat[:caption] %></span>
     <% end %>
   <% end %>
@@ -67,64 +75,72 @@
   <% end %>
 
   <% if @pagination.records.any? %>
-    <div class="staff-enquiry-table-wrap">
-      <table class="staff-enquiry-table">
-        <thead>
-          <tr>
-            <th scope="col">Request</th>
-            <th scope="col">Company</th>
-            <th scope="col">Service</th>
-            <th scope="col">Received</th>
-            <th scope="col">Responsible</th>
-            <th scope="col">Status</th>
-            <th scope="col"><span class="sr-only">Action</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @pagination.records.each do |inquiry| %>
-            <tr class="staff-enquiry-row">
-              <td class="staff-enquiry-row__ref"><%= inquiry.reference_number %></td>
-              <td>
-                <span class="staff-enquiry-row__company"><%= inquiry.company_name %></span>
-                <span class="staff-enquiry-row__sub"><%= inquiry.contact_name %></span>
-              </td>
-              <td><%= inquiry.requested_service_label %></td>
-              <td class="whitespace-nowrap"><%= l(inquiry.submitted_at.to_date, format: :short) %></td>
-              <td><%= enquiry_assignee_name(inquiry.assigned_membership) %></td>
-              <td>
-                <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
-                <span class="staff-enquiry-row__sub staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></span>
-              </td>
-              <td class="text-right">
-                <%= link_to staff_service_inquiry_path(inquiry), class: "staff-enquiry-row__open" do %>
-                  Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
-                <% end %>
-              </td>
+    <div class="staff-enquiry-panel">
+      <div class="staff-enquiry-table-wrap">
+        <table class="staff-enquiry-table">
+          <thead>
+            <tr>
+              <th scope="col">Request</th>
+              <th scope="col">Company</th>
+              <th scope="col">Service</th>
+              <th scope="col">Received</th>
+              <th scope="col">Responsible</th>
+              <th scope="col">Status</th>
+              <th scope="col">Quote</th>
+              <th scope="col"><span class="sr-only">Action</span></th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% @pagination.records.each do |inquiry| %>
+              <tr class="staff-enquiry-row">
+                <td class="staff-enquiry-row__ref"><%= inquiry.reference_number %></td>
+                <td>
+                  <span class="staff-enquiry-row__company"><%= inquiry.company_name %></span>
+                  <span class="staff-enquiry-row__sub"><%= inquiry.contact_name %></span>
+                </td>
+                <td><%= inquiry.requested_service_label %></td>
+                <td class="whitespace-nowrap"><%= l(inquiry.submitted_at.to_date, format: :short) %></td>
+                <td><%= enquiry_assignee_name(inquiry.assigned_membership) %></td>
+                <td class="staff-enquiry-row__status">
+                  <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
+                </td>
+                <td class="staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></td>
+                <td class="staff-enquiry-row__action">
+                  <%= link_to staff_service_inquiry_path(inquiry), class: "staff-enquiry-row__open" do %>
+                    Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="staff-enquiry-cards" aria-label="Enquiries">
+        <% @pagination.records.each do |inquiry| %>
+          <li class="staff-enquiry-card">
+            <div class="staff-enquiry-card__head">
+              <span class="staff-enquiry-row__ref"><%= inquiry.reference_number %></span>
+              <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
+            </div>
+            <p class="staff-enquiry-row__company"><%= inquiry.company_name %></p>
+            <p class="staff-enquiry-row__sub"><%= inquiry.requested_service_label %> · Received <%= l(inquiry.submitted_at.to_date, format: :short) %></p>
+            <p class="staff-enquiry-row__sub">Responsible: <%= enquiry_assignee_name(inquiry.assigned_membership) %></p>
+            <p class="staff-enquiry-card__quote">
+              <span class="staff-enquiry-card__quote-label">Quote</span>
+              <span class="staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></span>
+            </p>
+            <%= link_to staff_service_inquiry_path(inquiry), class: "staff-enquiry-card__open" do %>
+              Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="staff-enquiry-panel__footer">
+        <%= ant_pagination(@pagination, label: "enquiries", path_for: ->(page) { enquiry_index_path_with(page: page) }) %>
+      </div>
     </div>
-
-    <ul class="staff-enquiry-cards" aria-label="Enquiries">
-      <% @pagination.records.each do |inquiry| %>
-        <li class="staff-enquiry-card">
-          <div class="staff-enquiry-card__head">
-            <span class="staff-enquiry-row__ref"><%= inquiry.reference_number %></span>
-            <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
-          </div>
-          <p class="staff-enquiry-row__company"><%= inquiry.company_name %></p>
-          <p class="staff-enquiry-row__sub"><%= inquiry.requested_service_label %> · Received <%= l(inquiry.submitted_at.to_date, format: :short) %></p>
-          <p class="staff-enquiry-row__sub">Responsible: <%= enquiry_assignee_name(inquiry.assigned_membership) %></p>
-          <p class="staff-enquiry-row__sub staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></p>
-          <%= link_to staff_service_inquiry_path(inquiry), class: "ant-btn-outline ant-btn-outline--compact staff-enquiry-card__open" do %>
-            Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-
-    <%= ant_pagination(@pagination, label: "enquiries", path_for: ->(page) { enquiry_index_path_with(page: page) }) %>
   <% else %>
     <% title, description = enquiry_empty_state_copy(@view, enquiry_filters_active?(@filters)) %>
     <%= ant_empty_state(

@@ -1,30 +1,40 @@
-<%= form_with model: [:staff, :website, record], class: "staff-editorial-form mt-6 space-y-6" do |f| %>
+<%= form_with model: [:staff, :website, record], class: "staff-editorial-form mt-6 space-y-4" do |f| %>
   <% if record.errors.any? %>
-    <div class="portal-card border-red-200 bg-red-50 text-sm text-red-900" role="alert">
-      <%= record.errors.full_messages.to_sentence %>
+    <div class="staff-quote-side-panel border-red-200 bg-red-50 text-sm text-red-900" role="alert">
+      <div class="staff-quote-side-panel__body"><%= record.errors.full_messages.to_sentence %></div>
     </div>
   <% end %>
-  <div class="portal-card space-y-5">
-  <p class="staff-editorial-form__section-label">Story details</p>
-    <%= ant_field f, :title, label: "Title", required: true, context: :portal %>
-    <%= ant_field f, :summary, type: :textarea, label: "Short introduction", required: true, context: :portal, html_options: { rows: 3 } %>
-    <%= ant_rich_text_field f, :body, label: "Main content", required: true, hint: "Write the full article here. Use section headings and lists where they help readers scan the page." %>
-    <%= render "staff/website/editorial/type_fields", record: record, form: f %>
-  </div>
-  <div class="portal-card space-y-4">
-    <p class="staff-editorial-form__section-label">Search appearance (optional)</p>
-    <p class="text-sm text-[#5f7d8c]">Helps search engines show a clear title and summary. Leave blank to use the title and introduction above.</p>
-    <div class="ant-field ant-field--portal">
-      <label class="ant-field__label" for="<%= f.object_name %>_seo_title">Preferred search title</label>
-      <%= text_field_tag "#{f.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{f.object_name}_seo_title" %>
+  <section class="staff-quote-side-panel" aria-labelledby="editorial-story-heading">
+    <%= render "shared/ui/side_panel_head",
+          title: "Story details",
+          heading_id: "editorial-story-heading",
+          icon: "book" %>
+    <div class="staff-quote-side-panel__body space-y-5">
+      <%= ant_field f, :title, label: "Title", required: true, context: :portal %>
+      <%= ant_field f, :summary, type: :textarea, label: "Short introduction", required: true, context: :portal, html_options: { rows: 3 } %>
+      <%= ant_rich_text_field f, :body, label: "Main content", required: true, hint: "Write the full article here. Use section headings and lists where they help readers scan the page." %>
+      <%= render "staff/website/editorial/type_fields", record: record, form: f %>
     </div>
-    <div class="ant-field ant-field--portal">
-      <label class="ant-field__label" for="<%= f.object_name %>_seo_description">Preferred search summary</label>
-      <%= text_area_tag "#{f.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{f.object_name}_seo_description" %>
+  </section>
+  <section class="staff-quote-side-panel" aria-labelledby="editorial-search-heading">
+    <%= render "shared/ui/side_panel_head",
+          title: "Search appearance",
+          heading_id: "editorial-search-heading",
+          icon: "globe" %>
+    <div class="staff-quote-side-panel__body space-y-4">
+      <p class="staff-quote-versions__lede">Helps search engines show a clear title and summary. Leave blank to use the title and introduction above.</p>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="<%= f.object_name %>_seo_title">Preferred search title</label>
+        <%= text_field_tag "#{f.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{f.object_name}_seo_title" %>
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="<%= f.object_name %>_seo_description">Preferred search summary</label>
+        <%= text_area_tag "#{f.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{f.object_name}_seo_description" %>
+      </div>
     </div>
-  </div>
+  </section>
   <div class="staff-editorial-form__footer">
-    <p class="text-sm text-[#5f7d8c]">Saving keeps this as a private draft until you publish it.</p>
+    <p class="staff-quote-versions__lede">Saving keeps this as a private draft until you publish it.</p>
     <%= f.submit "Save draft", class: "ant-btn-primary w-full sm:w-auto" %>
   </div>
 <% end %>

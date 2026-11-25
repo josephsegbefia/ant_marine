@@ -3,7 +3,7 @@
 require "test_helper"
 
 class StaffWorkspaceTest < ActionDispatch::IntegrationTest
-  test "super admin staff home renders refined shell with real team access data" do
+  test "super admin staff home renders refined shell with overview work panels" do
     sign_in_as(users(:super_admin), membership: memberships(:super_admin_membership))
 
     get staff_root_path
@@ -16,9 +16,9 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
     assert_match(/Good (morning|afternoon|evening), Super\./, response.body)
     assert_select ".staff-bottom-user", text: /Super Admin/
     assert_select ".staff-bottom-user", text: /Super Administrator/
-    assert_match(/1 pending invitation/, response.body)
-    assert_select "#overview-access-heading", text: "Team access"
     assert_select "#overview-work-heading", text: "Work waiting for you"
+    assert_select "#overview-access-heading", count: 0
+    assert_no_match(/Team access/, response.body)
     assert_no_match(/Jobs in progress/, response.body)
     assert_no_match(/Reports to review/, response.body)
     assert_no_match(/Today’s schedule/, response.body)

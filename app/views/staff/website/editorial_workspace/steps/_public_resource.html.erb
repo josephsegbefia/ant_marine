@@ -1,41 +1,56 @@
-<section id="editor-step-panel-1" role="tabpanel" class="staff-editor-panel portal-card" data-step="1" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-1" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="1" data-staff-editorial-wizard-target="panel"
          data-validate="title:Enter a title.|summary:Add a description.|body:Add resource details."
          aria-labelledby="editor-step-tab-1" <%= "hidden" unless editor_step == 1 %>>
-  <h2 id="editor-step-heading-1" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Resource details</h2>
-  <p class="text-sm text-[#5f7d8c] mt-1">Catalogue information only — file downloads are not enabled yet.</p>
-  <div class="mt-4 space-y-4">
-    <%= ant_field form, :title, label: "Resource title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
-    <%= ant_field form, :summary, type: :textarea, label: "Short description", required: true, context: :portal, html_options: { rows: 3 } %>
-    <%= ant_rich_text_field form, :body, label: "Full description" %>
-    <%= render "staff/website/editorial_workspace/address_card", record: record %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Resource details",
+        heading_id: "editor-step-heading-1",
+        icon: "folder" %>
+  <div class="staff-quote-side-panel__body">
+    <p class="staff-quote-versions__lede">Catalogue information only — file downloads are not enabled yet.</p>
+    <div class="mt-4 space-y-4">
+      <%= ant_field form, :title, label: "Resource title", required: true, context: :portal, html_options: { data: { staff_editorial_wizard_target: "titleField", action: "input->staff-editorial-wizard#titleInput" } } %>
+      <%= ant_field form, :summary, type: :textarea, label: "Short description", required: true, context: :portal, html_options: { rows: 3 } %>
+      <%= ant_rich_text_field form, :body, label: "Full description" %>
+      <%= render "staff/website/editorial_workspace/address_card", record: record %>
+    </div>
   </div>
 </section>
 
-<section id="editor-step-panel-2" role="tabpanel" class="staff-editor-panel portal-card" data-step="2" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-2" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="2" data-staff-editorial-wizard-target="panel"
          aria-labelledby="editor-step-tab-2" <%= "hidden" unless editor_step == 2 %>>
-  <h2 id="editor-step-heading-2" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Publication settings</h2>
-  <div class="mt-4 space-y-4">
-    <%= ant_select form, :resource_category, choices: PublicResource::RESOURCE_CATEGORIES.map { |k, v| [v, k] }, label: "Resource type", context: :portal %>
-    <%= ant_field form, :related_content_label, label: "Related topic (optional)", context: :portal %>
-    <p class="rounded-lg border border-[#e3eaed] bg-[#f6fafb] px-4 py-3 text-sm text-[#5f7d8c]">Public file download will be available only after storage and release approval. There is no upload control in this release.</p>
-    <details class="staff-editor-page-settings">
-      <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Page settings</summary>
-      <div class="mt-4 space-y-4">
-        <div class="ant-field ant-field--portal">
-          <label class="ant-field__label" for="<%= form.object_name %>_seo_title">Preferred search title</label>
-          <%= text_field_tag "#{form.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{form.object_name}_seo_title" %>
+  <%= render "shared/ui/side_panel_head",
+        title: "Publication settings",
+        heading_id: "editor-step-heading-2",
+        icon: "clipboard" %>
+  <div class="staff-quote-side-panel__body">
+    <div class="space-y-4">
+      <%= ant_select form, :resource_category, choices: PublicResource::RESOURCE_CATEGORIES.map { |k, v| [v, k] }, label: "Resource type", context: :portal %>
+      <%= ant_field form, :related_content_label, label: "Related topic (optional)", context: :portal %>
+      <p class="staff-editor-address">Public file download will be available only after storage and release approval. There is no upload control in this release.</p>
+      <details class="staff-editor-page-settings staff-editor-page-settings--nested">
+        <summary class="staff-editor-page-settings__link">Page settings</summary>
+        <div class="mt-4 space-y-4">
+          <div class="ant-field ant-field--portal">
+            <label class="ant-field__label" for="<%= form.object_name %>_seo_title">Preferred search title</label>
+            <%= text_field_tag "#{form.object_name}[seo_title]", record.seo["title"], class: "ant-control w-full", id: "#{form.object_name}_seo_title" %>
+          </div>
+          <div class="ant-field ant-field--portal">
+            <label class="ant-field__label" for="<%= form.object_name %>_seo_description">Preferred search summary</label>
+            <%= text_area_tag "#{form.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{form.object_name}_seo_description" %>
+          </div>
         </div>
-        <div class="ant-field ant-field--portal">
-          <label class="ant-field__label" for="<%= form.object_name %>_seo_description">Preferred search summary</label>
-          <%= text_area_tag "#{form.object_name}[seo_description]", record.seo["description"], rows: 2, class: "ant-control w-full", id: "#{form.object_name}_seo_description" %>
-        </div>
-      </div>
-    </details>
+      </details>
+    </div>
   </div>
 </section>
 
-<section id="editor-step-panel-3" role="tabpanel" class="staff-editor-panel portal-card" data-step="3" data-staff-editorial-wizard-target="panel"
+<section id="editor-step-panel-3" role="tabpanel" class="staff-quote-side-panel staff-editor-panel" data-step="3" data-staff-editorial-wizard-target="panel"
          aria-labelledby="editor-step-tab-3" <%= "hidden" unless editor_step == 3 %>>
-  <h2 id="editor-step-heading-3" class="text-lg font-semibold text-[#102c43]" tabindex="-1">Review</h2>
-  <div class="mt-6 lg:hidden"><%= render "staff/website/editorial_workspace/previews/public_resource", record: record, config: editorial_workspace_config(record) %></div>
+  <%= render "shared/ui/side_panel_head",
+        title: "Review",
+        heading_id: "editor-step-heading-3",
+        icon: "check" %>
+  <div class="staff-quote-side-panel__body">
+    <div class="mt-0 lg:hidden"><%= render "staff/website/editorial_workspace/previews/public_resource", record: record, config: editorial_workspace_config(record), heading_id: "resource-draft-preview-mobile" %></div>
+  </div>
 </section>

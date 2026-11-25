@@ -6,40 +6,98 @@
       primary_action: policy(Quote).create? ? { label: "Create quotation", path: new_staff_quotation_path } : nil
     ) %>
 
-<section class="staff-website-hub mt-6">
-  <%= form_with url: staff_quotations_path, method: :get, class: "staff-filter-bar mb-4 flex flex-wrap gap-3 items-end", local: true do %>
-    <div class="flex-1 min-w-[12rem]">
+<section class="staff-quotations mt-6" aria-labelledby="quotations-list-heading">
+  <h2 id="quotations-list-heading" class="sr-only">Quotation list</h2>
+
+  <%= form_with url: staff_quotations_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+    <div class="ant-filter-toolbar__field ant-filter-toolbar__field--grow">
       <label class="ant-field__label" for="q">Search</label>
-      <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, client or title">
+      <input id="q" name="q" type="search" value="<%= @filters[:q] %>" class="ant-control w-full" placeholder="Reference, client or title">
     </div>
     <%= ant_select_tag "status",
                        [ [ "All statuses", "all" ] ] + Quote::STATUSES.map { |status| [ quote_status_label(status), status ] },
                        label: "Status", selected: params[:status].presence || "all",
-                       compact: true, wrapper_class: "w-full sm:w-52" %>
-    <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Apply</button>
+                       compact: true, wrapper_class: "ant-filter-toolbar__field" %>
+    <div class="ant-filter-toolbar__actions">
+      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+      <% if quotation_filters_active? %>
+        <%= link_to "Clear", staff_quotations_path, class: "ant-btn-outline ant-btn-outline--compact" %>
+      <% end %>
+    </div>
   <% end %>
 
-  <% if @quotes.any? %>
-    <div class="staff-content-list">
-      <% @quotes.each do |quote| %>
-        <%= ant_content_record(
-              title: quote.display_title,
-              description: quote.reference_number,
-              meta: "#{quote.client_label} · #{format_quote_money(quote.total_amount, quote.currency)}",
-              guidance: quote.next_action_label,
-              icon: "layers",
-              status_label: quote_status_label(quote.status),
-              status_badge_class: quote_status_badge_variant(quote.status),
-              primary_action: { label: "Open", path: edit_staff_quotation_path(quote) }
-            ) %>
-      <% end %>
+  <% if @pagination.records.any? %>
+    <div class="staff-enquiry-panel">
+      <div class="staff-enquiry-table-wrap">
+        <table class="staff-enquiry-table staff-quote-table">
+          <thead>
+            <tr>
+              <th scope="col">Quotation</th>
+              <th scope="col">Client</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">Next step</th>
+              <th scope="col"><span class="sr-only">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @pagination.records.each do |quote| %>
+              <tr class="staff-enquiry-row">
+                <td>
+                  <span class="staff-enquiry-row__ref"><%= quote.reference_number %></span>
+                  <span class="staff-enquiry-row__company"><%= quote.display_title %></span>
+                </td>
+                <td><%= quote.client_label %></td>
+                <td class="whitespace-nowrap"><%= format_quote_money(quote.total_amount, quote.currency) %></td>
+                <td class="staff-enquiry-row__status">
+                  <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
+                </td>
+                <td class="staff-enquiry-row__quote"><%= quote.next_action_label %></td>
+                <td class="staff-enquiry-row__action">
+                  <%= link_to edit_staff_quotation_path(quote), class: "staff-enquiry-row__open" do %>
+                    Open<span class="sr-only"> <%= quote.reference_number %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="staff-enquiry-cards" aria-label="Quotations">
+        <% @pagination.records.each do |quote| %>
+          <li class="staff-enquiry-card">
+            <div class="staff-enquiry-card__head">
+              <span class="staff-enquiry-row__ref"><%= quote.reference_number %></span>
+              <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
+            </div>
+            <p class="staff-enquiry-row__company"><%= quote.display_title %></p>
+            <p class="staff-enquiry-row__sub"><%= quote.client_label %> · <%= format_quote_money(quote.total_amount, quote.currency) %></p>
+            <p class="staff-enquiry-card__quote">
+              <span class="staff-enquiry-card__quote-label">Next step</span>
+              <span class="staff-enquiry-row__quote"><%= quote.next_action_label %></span>
+            </p>
+            <%= link_to edit_staff_quotation_path(quote), class: "staff-enquiry-card__open" do %>
+              Open<span class="sr-only"> <%= quote.reference_number %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="staff-enquiry-panel__footer">
+        <%= ant_pagination(@pagination, label: "quotations", path_for: ->(page) { quotation_index_path_with(page: page) }) %>
+      </div>
     </div>
   <% else %>
     <%= ant_empty_state(
           icon: :layers,
-          title: "No quotations yet",
-          description: "Create a draft quotation when you are ready to prepare a commercial offer.",
-          primary_action: policy(Quote).create? ? { label: "Create quotation", path: new_staff_quotation_path } : nil,
+          title: quotation_filters_active? ? "No quotations match these filters" : "No quotations yet",
+          description: quotation_filters_active? ? "Try a different search or clear the filters." : "Create a draft quotation when you are ready to prepare a commercial offer.",
+          primary_action: if quotation_filters_active?
+                            { label: "Clear filters", path: staff_quotations_path }
+                          elsif policy(Quote).create?
+                            { label: "Create quotation", path: new_staff_quotation_path }
+                          end,
           variant: :default,
           size: :spacious
         ) %>

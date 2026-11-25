@@ -1,13 +1,17 @@
 <% if record.persisted? %>
-  <div class="portal-card staff-editor-workflow">
-    <h2 class="text-base font-semibold text-[#102c43]">Publishing status</h2>
-    <p class="mt-2 text-sm text-[#5f7d8c]">
-      <span class="font-semibold text-[#173244]"><%= public_content_status_label(record.status) %></span>
-      — <%= public_content_list_guidance(record.status) %>
-    </p>
-    <div class="mt-4">
-      <%= render "staff/website/workflow_actions", record: record %>
+  <section class="staff-quote-side-panel staff-editor-workflow" aria-labelledby="editorial-publishing-heading">
+    <%= render "shared/ui/side_panel_head",
+          title: "Publishing status",
+          heading_id: "editorial-publishing-heading",
+          icon: "globe",
+          badge_label: public_content_status_label(record.status),
+          badge_class: public_content_status_badge_class(record.status) %>
+    <div class="staff-quote-side-panel__body">
+      <p class="staff-quote-versions__lede"><%= public_content_list_guidance(record.status) %></p>
+      <div class="mt-4">
+        <%= render "staff/website/workflow_actions", record: record %>
+      </div>
+      <p class="staff-quote-summary__hint mt-3">Saving a draft does not publish. Someone with publish permission approves and publishes when content is ready.</p>
     </div>
-    <p class="mt-3 text-xs text-[#5f7d8c]">Saving a draft does not publish. Someone with publish permission approves and publishes when content is ready.</p>
-  </div>
+  </section>
 <% end %>

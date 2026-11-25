@@ -2,12 +2,19 @@
 
 module Client
   class InvitationsController < BaseController
+    PER_PAGE = 6
+
     before_action :require_client_invitation_access!
 
     def index
       @organization = Current.membership.organization
       @policy = ::Invitations::Policy.new(inviter_membership: Current.membership)
-      @invitations = @policy.visible_invitation_scope.where(organization: @organization).order(created_at: :desc)
+      base = @policy.visible_invitation_scope.where(organization: @organization)
+      @filter = params[:show] == "all" ? "all" : "active"
+      @active_count = base.active.count
+      scoped = @filter == "active" ? base.active : base
+      @pagination = Pagination.new(scoped.order(created_at: :desc), page: params[:page], per_page: PER_PAGE)
+      @invitations = @pagination.records
       @allowed_roles = @policy.allowed_roles_for(organization: @organization)
     end
 

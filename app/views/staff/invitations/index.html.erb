@@ -2,53 +2,90 @@
 <% content_for :staff_page_title, "Invitations" %>
 <% content_for :staff_nav, "invitations" %>
 
-<div class="portal-shell__back mb-4">
+<div class="mb-4">
   <%= ant_back_link label: "Back to staff workspace", path: staff_root_path %>
 </div>
 
-<header class="portal-head">
-  <div>
-    <h1>Invitations</h1>
-    <p>Invite new people and review pending invitations for ANT Marine W.A.</p>
-  </div>
-  <div>
-    <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "portal-btn-secondary" %>
-  </div>
-</header>
+<%= ant_page_header(
+      title: "Invitations",
+      description: "Invite new people and review pending invitations for ANT Marine W.A.",
+      secondary_action: { label: "Invite a client contact", path: new_staff_client_invitation_path }
+    ) %>
 
-<div class="portal-split">
-  <section class="portal-card">
-    <h3>Recent invitations</h3>
-    <%= render "shared/invitations/list",
-          invitations: @invitations,
-          show_organization: false,
-          cancel_path: ->(invitation) { staff_invitation_path(invitation) },
-          resend_path: ->(invitation) { resend_staff_invitation_path(invitation) } %>
+<div class="portal-split staff-invitations">
+  <section class="staff-invite-panel staff-invite-panel--list" aria-labelledby="recent-invitations-heading">
+    <div class="staff-invite-panel__head">
+      <div class="staff-invite-panel__title">
+        <span class="staff-invite-panel__glyph" aria-hidden="true">
+          <%= render "shared/public/icon", name: "mail", size: 16 %>
+        </span>
+        <h2 id="recent-invitations-heading">Recent invitations</h2>
+      </div>
+      <%= ant_section_tabs(
+            aria_label: "Invitation filters",
+            tabs: [
+              { label: "Active (#{@active_count})", path: staff_invitations_path, active: @filter == "active" },
+              { label: "All", path: staff_invitations_path(show: "all"), active: @filter == "all" }
+            ]
+          ) %>
+    </div>
+    <div class="staff-invite-panel__body staff-invite-panel__body--list">
+      <% empty_title = @filter == "active" ? "No active invitations" : "No invitations yet" %>
+      <% empty_description = if @filter == "active"
+           "Pending invitations appear here. Choose All to see accepted, cancelled or expired ones."
+         else
+           "Use the form to invite the first person to this organisation."
+         end %>
+      <div class="staff-invite-panel__scroll">
+        <%= render "shared/invitations/list",
+              invitations: @invitations,
+              show_organization: false,
+              cancel_path: ->(invitation) { staff_invitation_path(invitation) },
+              resend_path: ->(invitation) { resend_staff_invitation_path(invitation) },
+              empty_title: empty_title,
+              empty_description: empty_description %>
+      </div>
+      <% if @pagination %>
+        <div class="staff-invite-panel__footer">
+          <%= ant_pagination(@pagination, label: "invitations",
+                             path_for: ->(page) { staff_invitations_path(show: (@filter if @filter == "all"), page: page) }) %>
+        </div>
+      <% end %>
+    </div>
   </section>
 
-  <section class="portal-card">
-    <h3>Invite someone</h3>
-    <%= form_with url: staff_invitations_path,
-          class: "mt-5",
-          data: {
-            controller: "form-submit",
-            action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
-            form_submit_loading_message_value: "Sending invitation..."
-          } do |form| %>
-      <%= ant_field form, :email,
-            type: :email,
-            label: "Email address",
-            context: :portal,
-            required: true,
-            autocomplete: "email",
-            placeholder: "name@company.com" %>
-      <%= ant_select form, :role_key,
-            choices: RoleLabels.options_for_roles(@allowed_roles),
-            label: "What can they do?",
-            context: :portal,
-            placeholder: "Choose access level" %>
-      <p class="portal-notice mb-5">An invited person should only see the work and projects they have permission to access.</p>
-      <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
-    <% end %>
+  <section class="staff-invite-panel" aria-labelledby="invite-someone-heading">
+    <div class="staff-invite-panel__head">
+      <div class="staff-invite-panel__title">
+        <span class="staff-invite-panel__glyph" aria-hidden="true">
+          <%= render "shared/public/icon", name: "users", size: 16 %>
+        </span>
+        <h2 id="invite-someone-heading">Invite someone</h2>
+      </div>
+    </div>
+    <div class="staff-invite-panel__body">
+      <%= form_with url: staff_invitations_path,
+            class: "staff-invite-form",
+            data: {
+              controller: "form-submit",
+              action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-error->form-submit#idle",
+              form_submit_loading_message_value: "Sending invitation..."
+            } do |form| %>
+        <%= ant_field form, :email,
+              type: :email,
+              label: "Email address",
+              context: :portal,
+              required: true,
+              autocomplete: "email",
+              placeholder: "name@company.com" %>
+        <%= ant_select form, :role_key,
+              choices: RoleLabels.options_for_roles(@allowed_roles),
+              label: "What can they do?",
+              context: :portal,
+              placeholder: "Choose access level" %>
+        <p class="staff-invite-form__notice">An invited person should only see the work and projects they have permission to access.</p>
+        <%= form.submit "Send invitation", class: "ant-btn-primary ant-btn-primary--compact", data: { form_submit_target: "submit" } %>
+      <% end %>
+    </div>
   </section>
 </div>

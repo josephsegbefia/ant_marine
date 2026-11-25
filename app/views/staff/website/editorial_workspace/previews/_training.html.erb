@@ -1,9 +1,15 @@
-<div class="staff-editor-preview" aria-live="polite">
-  <p class="staff-editor-preview__label">Draft preview</p>
-  <article class="staff-editor-preview__card">
-    <p class="public-eyebrow"><%= config[:eyebrow] %></p>
-    <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Course title</h2>
-    <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Short description</p>
-    <div class="public-rich-text mt-3 text-sm" data-staff-editorial-wizard-target="previewBody"></div>
-  </article>
-</div>
+<% preview_heading_id = local_assigns.fetch(:heading_id, "training-draft-preview-heading") %>
+<section class="staff-quote-side-panel staff-editor-preview" aria-live="polite" aria-labelledby="<%= preview_heading_id %>">
+  <%= render "shared/ui/side_panel_head",
+        title: "Draft preview",
+        heading_id: preview_heading_id,
+        icon: "compass" %>
+  <div class="staff-quote-side-panel__body">
+    <article class="staff-editor-preview__card">
+      <p class="public-eyebrow"><%= config[:eyebrow] %></p>
+      <h2 class="staff-editor-preview__title" data-staff-editorial-wizard-target="previewTitle">Course title</h2>
+      <p class="staff-editor-preview__summary" data-staff-editorial-wizard-target="previewSummary">Short description</p>
+      <div class="public-rich-text mt-3 text-sm" data-staff-editorial-wizard-target="previewBody"></div>
+    </article>
+  </div>
+</section>

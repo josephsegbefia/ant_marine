@@ -2,6 +2,8 @@
 
 module Staff
   class QuotationsController < BaseController
+    PER_PAGE = 25
+
     before_action :set_ant_marine_organization
     before_action :set_quote, except: %i[index new create]
     before_action :set_revision, only: %i[edit update pdf]
@@ -29,6 +31,12 @@ module Staff
       authorize Quote
       @quotes = scoped_quotes
       apply_filters!
+      @filters = {
+        q: params[:q].to_s.strip.presence,
+        status: (params[:status].presence unless params[:status].blank? || params[:status] == "all")
+      }
+      @pagination = Pagination.new(@quotes, page: params[:page], per_page: PER_PAGE)
+      @quotes = @pagination.records
     end
 
     def show

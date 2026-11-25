@@ -112,4 +112,16 @@ module StaffQuotationsHelper
   def quote_history_label(event_type)
     HISTORY_LABELS.fetch(event_type, "Updated")
   end
+
+  def quotation_index_path_with(overrides = {})
+    current = {
+      q: @filters&.dig(:q),
+      status: @filters&.dig(:status)
+    }
+    staff_quotations_path(current.merge(overrides).compact_blank)
+  end
+
+  def quotation_filters_active?(filters = @filters)
+    filters.to_h.values.any?(&:present?)
+  end
 end

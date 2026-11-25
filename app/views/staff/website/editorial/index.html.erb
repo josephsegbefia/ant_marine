@@ -9,6 +9,7 @@
               locals: {
                 section_title: @hub_section_title,
                 heading_id: "staff-website-#{editorial_record_class.model_name.plural}-list",
+                icon: (@hub_empty_icon.presence || "layers").to_s,
                 notice: @hub_section_notice
               } do %>
       <% @records.each do |record| %>
