@@ -133,6 +133,9 @@
       <aside class="staff-editor-layout__aside" aria-label="Quotation summary">
         <%= render "staff/quotations/summary", quote: saved_quote, revision: saved_revision, readiness: @readiness %>
         <div class="mt-4">
+          <%= render "staff/quotations/decisions", quote: saved_quote, responses: @quote_responses || [], terminal: @latest_terminal_response %>
+        </div>
+        <div class="mt-4">
           <%= render "staff/quotations/versions", quote: saved_quote %>
         </div>
       </aside>

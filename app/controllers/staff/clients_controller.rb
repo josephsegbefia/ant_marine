@@ -2,7 +2,7 @@
 
 module Staff
   class ClientsController < BaseController
-    before_action :set_client, only: %i[show edit update suspend_membership revoke_membership]
+    before_action :set_client, only: %i[show edit update suspend_membership revoke_membership create_contact archive_contact]
 
     def index
       authorize Organization, :index?
@@ -42,7 +42,9 @@ module Staff
     def show
       authorize @client
       @memberships = @client.memberships.includes(:user).order(Arel.sql("CASE status WHEN 'active' THEN 0 WHEN 'invited' THEN 1 WHEN 'suspended' THEN 2 ELSE 3 END"), :created_at)
+      @contacts = @client.client_contacts.active.order(:full_name)
       @invitations = @client.invitations.order(created_at: :desc).limit(20)
+      @decisions = QuoteResponse.where(client_organization_id: @client.id).includes(:quote, :quote_revision, :responded_by_user).recent_first.limit(20)
       @inquiries = ServiceInquiry.where(client_organization_id: @client.id).recent_first.limit(20)
       @quotes = Quote.where(client_organization_id: @client.id).recent_first.limit(20)
       @releases = QuotePortalRelease.where(client_organization_id: @client.id).includes(:quote, :quote_revision).order(released_at: :desc).limit(20)
@@ -111,10 +113,37 @@ module Staff
       redirect_to staff_client_path(@client, tab: "access"), alert: "You are not allowed to revoke this membership."
     end
 
+    def create_contact
+      authorize @client, :update?
+      Clients::ManageContact.create!(
+        actor_membership: Current.membership,
+        organization: @client,
+        attributes: contact_params
+      )
+      redirect_to staff_client_path(@client, tab: "access"), notice: "Business contact added."
+    rescue Clients::ManageContact::Denied
+      redirect_to staff_client_path(@client, tab: "access"), alert: "You are not allowed to manage contacts."
+    rescue Clients::ManageContact::Error => e
+      redirect_to staff_client_path(@client, tab: "access"), alert: e.message
+    end
+
+    def archive_contact
+      authorize @client, :update?
+      contact = @client.client_contacts.find(params.require(:contact_id))
+      Clients::ManageContact.archive!(actor_membership: Current.membership, contact: contact)
+      redirect_to staff_client_path(@client, tab: "access"), notice: "Contact archived."
+    rescue Clients::ManageContact::Denied
+      redirect_to staff_client_path(@client, tab: "access"), alert: "You are not allowed to manage contacts."
+    end
+
     private
 
       def set_client
         @client = policy_scope(Organization).find(params[:id])
+      end
+
+      def contact_params
+        params.require(:client_contact).permit(:full_name, :email, :phone, :job_title, :notes)
       end
 
       def client_params

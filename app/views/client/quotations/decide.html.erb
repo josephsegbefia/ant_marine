@@ -1,0 +1,65 @@
+<% content_for :title, "Confirm decision — #{@quote.reference_number}" %>
+<% content_for :client_page_title, "Confirm decision" %>
+<% content_for :client_nav, "quotations" %>
+
+<% heading = case @decision_type
+   when "accepted" then "Accept this quotation?"
+   when "declined" then "Decline this quotation?"
+   else "Request changes?"
+   end %>
+
+<div class="portal-shell__back mb-4">
+  <%= ant_back_link label: "Back to quotation", path: client_quotation_path(@release) %>
+</div>
+
+<div class="client-page-head">
+  <h1><%= heading %></h1>
+  <p><%= @quote.reference_number %> · Version <%= @revision.version_number %> · <%= client_money(@revision.total_cents, @revision.currency) %></p>
+</div>
+
+<div class="staff-quote-notice staff-quote-notice--warn mt-4" role="status">
+  <p class="font-semibold">Simulated test decision</p>
+  <p class="mt-1 text-sm">This action creates a test record only. It is not a binding commercial agreement and does not create a project.</p>
+</div>
+
+<section class="staff-quote-side-panel mt-6 max-w-2xl">
+  <%= render "shared/ui/side_panel_head", title: "Offer summary", heading_id: "decision-summary-heading", icon: "file" %>
+  <div class="staff-quote-side-panel__body">
+    <dl class="staff-quote-summary__list">
+      <div><dt>Organisation</dt><dd><%= Current.membership.organization.name %></dd></div>
+      <div><dt>Work</dt><dd><%= @revision.title.presence || "—" %></dd></div>
+      <div><dt>Total</dt><dd><%= client_money(@revision.total_cents, @revision.currency) %></dd></div>
+      <% if @revision.valid_until.present? %>
+        <div><dt>Valid until</dt><dd><%= l(@revision.valid_until, format: :long) %></dd></div>
+      <% end %>
+      <% if @revision.payment_terms.present? %>
+        <div><dt>Terms</dt><dd><%= @revision.payment_terms %></dd></div>
+      <% end %>
+    </dl>
+    <p class="mt-4"><%= link_to "Open exact PDF", pdf_client_quotation_path(@release), class: "staff-quote-link", target: "_blank", rel: "noopener" %></p>
+
+    <%= form_with url: decide_client_quotation_path(@release), method: :post, scope: :decision, local: true, class: "mt-6 space-y-4", data: { controller: "form-submit" } do |f| %>
+      <%= hidden_field_tag "decision[response]", @decision_type %>
+      <%= hidden_field_tag "decision[idempotency_key]", SecureRandom.uuid %>
+
+      <% if @decision_type.in?(%w[declined changes_requested]) %>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="decision_reason"><%= @decision_type == "declined" ? "Reason for declining" : "What should change?" %></label>
+          <textarea name="decision[reason]" id="decision_reason" class="ant-control w-full" rows="4" required maxlength="2000"><%= params.dig(:decision, :reason) %></textarea>
+        </div>
+      <% end %>
+
+      <label class="staff-enquiry-choice">
+        <input type="checkbox" name="decision[confirm]" value="1" required>
+        I confirm this simulated decision against version <%= @revision.version_number %> of <%= @quote.reference_number %>.
+      </label>
+
+      <div class="flex flex-wrap gap-3">
+        <button type="submit" class="ant-btn-primary ant-btn-primary--compact" data-form-submit-target="button">
+          <%= @decision_type == "accepted" ? "Confirm acceptance" : (@decision_type == "declined" ? "Confirm decline" : "Send change request") %>
+        </button>
+        <%= ant_back_link label: "Cancel", path: client_quotation_path(@release) %>
+      </div>
+    <% end %>
+  </div>
+</section>

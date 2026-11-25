@@ -14,7 +14,17 @@
 <% if @release.simulated? %>
   <div class="staff-quote-notice staff-quote-notice--warn mt-4" role="status">
     <p class="font-semibold">This is a simulated offer for portal testing.</p>
-    <p class="mt-1 text-sm">It is not a genuine commercial offer and cannot be accepted in this release.</p>
+    <p class="mt-1 text-sm">Any decision you record here is a test only. It is not a genuine commercial agreement and does not start a project.</p>
+  </div>
+<% end %>
+
+<% if @terminal %>
+  <div class="staff-quote-notice staff-quote-notice--good mt-4" role="status">
+    <p class="font-semibold"><%= @terminal.client_status_label %></p>
+    <p class="mt-1 text-sm">Recorded <%= l(@terminal.confirmed_at, format: :long) %> by <%= @terminal.responded_by_user.full_name.presence || @terminal.responded_by_user.email %>.</p>
+    <% if @terminal.accepted? %>
+      <p class="mt-2 text-sm">Quotation accepted. Project setup is the next step — that work belongs to a later release.</p>
+    <% end %>
   </div>
 <% end %>
 
@@ -82,11 +92,59 @@
 
   <aside class="space-y-4">
     <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Your decision", heading_id: "client-quote-decision-heading", icon: "check" %>
+      <div class="staff-quote-side-panel__body">
+        <% if @terminal %>
+          <p class="staff-quote-summary__next-value"><%= @terminal.client_status_label %></p>
+          <% if @terminal.reason.present? %>
+            <p class="staff-quote-summary__hint mt-2"><%= @terminal.reason %></p>
+          <% end %>
+        <% elsif @can_accept || @can_decline || @can_request_changes %>
+          <p class="staff-quote-versions__lede">Review the exact offer, then choose one action. Simulated decisions are tests only.</p>
+          <div class="mt-4 flex flex-col gap-2">
+            <% if @can_accept %>
+              <%= link_to "Accept quotation", decide_client_quotation_path(@release, type: "accepted"), class: "ant-btn-primary ant-btn-primary--compact" %>
+            <% end %>
+            <% if @can_request_changes %>
+              <%= link_to "Request changes", decide_client_quotation_path(@release, type: "changes_requested"), class: "ant-btn-outline ant-btn-outline--compact" %>
+            <% end %>
+            <% if @can_decline %>
+              <%= link_to "Decline quotation", decide_client_quotation_path(@release, type: "declined"), class: "ant-btn-outline ant-btn-outline--compact" %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="staff-quote-versions__lede">You can view this offer. An authorised representative of your organisation must record the commercial decision.</p>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel">
       <%= render "shared/ui/side_panel_head", title: "Download", heading_id: "client-quote-pdf-heading", icon: "download" %>
       <div class="staff-quote-side-panel__body">
-        <p class="staff-quote-versions__lede">Download the exact released version as a PDF. Accepting or declining is not available in this release.</p>
+        <p class="staff-quote-versions__lede">Download the exact released version as a PDF.</p>
         <%= link_to "Download PDF", pdf_client_quotation_path(@release), class: "ant-btn-primary ant-btn-primary--compact mt-4", target: "_blank", rel: "noopener" %>
       </div>
     </section>
+
+    <% if @responses.any? %>
+      <section class="staff-quote-side-panel">
+        <%= render "shared/ui/side_panel_head", title: "Decision history", heading_id: "client-quote-history-heading", icon: "clock" %>
+        <div class="staff-quote-side-panel__body">
+          <ul class="staff-quote-versions__list">
+            <% @responses.each do |response| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= response.client_status_label %></p>
+                </div>
+                <p class="staff-enquiry-row__sub"><%= l(response.confirmed_at, format: :short) %> · Version <%= response.quote_revision.version_number %></p>
+                <% if response.reason.present? %>
+                  <p class="staff-quote-summary__hint mt-1"><%= response.reason %></p>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      </section>
+    <% end %>
   </aside>
 </div>

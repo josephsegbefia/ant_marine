@@ -1,0 +1,42 @@
+<%# locals: quote, responses, terminal %>
+<section class="staff-quote-side-panel" aria-labelledby="quote-decisions-heading">
+  <%= render "shared/ui/side_panel_head", title: "Client decisions", heading_id: "quote-decisions-heading", icon: "check" %>
+  <div class="staff-quote-side-panel__body">
+    <% if terminal %>
+      <p class="staff-quote-summary__next-value"><%= terminal.client_status_label %></p>
+      <p class="staff-quote-summary__hint mt-1">
+        Version <%= terminal.quote_revision.version_number %> ·
+        <%= l(terminal.confirmed_at, format: :short) %> ·
+        <%= terminal.responded_by_user.full_name.presence || terminal.responded_by_user.email %>
+      </p>
+      <% if terminal.accepted? %>
+        <p class="staff-quote-summary__hint mt-2">Quotation accepted. Project setup is the next step (F4-05).</p>
+      <% end %>
+      <% if terminal.reason.present? %>
+        <p class="staff-quote-summary__hint mt-2"><%= terminal.reason %></p>
+      <% end %>
+    <% elsif responses.blank? %>
+      <p class="staff-quote-versions__lede">No client decision has been recorded for this quotation yet.</p>
+    <% end %>
+
+    <% if responses.any? %>
+      <ul class="staff-quote-versions__list mt-3">
+        <% responses.each do |response| %>
+          <li class="staff-quote-versions__item">
+            <div class="staff-quote-versions__head">
+              <p class="staff-enquiry-clarification__title"><%= response.client_status_label %></p>
+            </div>
+            <p class="staff-enquiry-row__sub">
+              v<%= response.quote_revision.version_number %> ·
+              <%= l(response.confirmed_at, format: :short) %>
+              <% if response.simulated? %> · simulated<% end %>
+            </p>
+            <% if response.reason.present? %>
+              <p class="staff-quote-summary__hint mt-1"><%= response.reason %></p>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</section>

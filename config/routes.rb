@@ -51,6 +51,8 @@ Rails.application.routes.draw do
       member do
         post :suspend_membership
         post :revoke_membership
+        post :create_contact
+        post :archive_contact
       end
       resources :portal_releases, only: %i[create], controller: "client_portal_releases"
     end
@@ -139,6 +141,8 @@ Rails.application.routes.draw do
     resources :quotations, only: %i[index show] do
       member do
         get :pdf
+        get :decide
+        post :decide, action: :create_decision
       end
     end
     resource :account, only: %i[show], controller: "accounts"

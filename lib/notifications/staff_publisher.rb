@@ -37,25 +37,69 @@ module Notifications
                             title: "The client’s answer for #{inquiry.reference_number} has been recorded")
     end
 
+    def quote_decision(quote:, response:, audit_event:)
+      kind = case response.response
+      when "accepted" then "quote_accepted"
+      when "declined" then "quote_declined"
+      when "changes_requested" then "quote_changes_requested"
+      else
+        return 0
+      end
+
+      label = response.simulated? ? "simulated test decision" : "decision"
+      title = case response.response
+      when "accepted"
+        "#{quote.reference_number} was accepted (#{label})"
+      when "declined"
+        "#{quote.reference_number} was declined (#{label})"
+      else
+        "Changes requested on #{quote.reference_number} (#{label})"
+      end
+
+      recipients = active_staff(quote.organization).select do |membership|
+        permissions = Authorization::EffectivePermissions.new(membership)
+        permissions.allowed?("quotes.view_all")
+      end
+      publish_subject(
+        recipients,
+        kind: kind,
+        organization: quote.organization,
+        subject: quote,
+        audit_event: audit_event,
+        title: title
+      )
+    end
+
     def active_staff(organization)
       Membership.active.where(organization: organization).joins(:user).where(users: { status: "active" })
                 .includes(:organization).select(&:staff_domain?)
     end
 
     def publish(recipients, kind:, inquiry:, audit_event:, title:)
+      publish_subject(
+        recipients,
+        kind: kind,
+        organization: inquiry.organization,
+        subject: inquiry,
+        audit_event: audit_event,
+        title: title
+      )
+    end
+
+    def publish_subject(recipients, kind:, organization:, subject:, audit_event:, title:)
       raise ArgumentError, "#{kind} is not an in-app event" unless Events.fetch(kind)[:channel] == "in_app"
 
       now = Time.current
       rows = recipients.uniq(&:id).filter_map do |membership|
-        next unless membership.status == "active" && membership.organization_id == inquiry.organization_id
+        next unless membership.status == "active" && membership.organization_id == organization.id
 
         {
-          organization_id: inquiry.organization_id,
+          organization_id: organization.id,
           recipient_membership_id: membership.id,
           audit_event_id: audit_event.id,
           kind: kind,
-          subject_type: "ServiceInquiry",
-          subject_id: inquiry.id,
+          subject_type: subject.class.name,
+          subject_id: subject.id,
           title: title.truncate(200),
           dedupe_key: "#{kind}:#{audit_event.id}",
           created_at: now

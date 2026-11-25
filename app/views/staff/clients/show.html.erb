@@ -17,6 +17,50 @@
 <% when "access" %>
   <div class="staff-editor-layout mt-6">
     <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Business contacts", heading_id: "client-contacts-heading", icon: "users" %>
+      <div class="staff-quote-side-panel__body">
+        <p class="staff-quote-versions__lede mb-4">Contacts are business people at this organisation. They do not receive portal access until invited.</p>
+        <% if @contacts.any? %>
+          <ul class="staff-quote-versions__list mb-4">
+            <% @contacts.each do |contact| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= contact.full_name %></p>
+                  <% if policy(@client).update? %>
+                    <%= button_to "Archive", archive_contact_staff_client_path(@client, contact_id: contact.id), method: :post, class: "ant-btn-outline ant-btn-outline--compact" %>
+                  <% end %>
+                </div>
+                <p class="staff-enquiry-row__sub"><%= [ contact.job_title, contact.email, contact.phone ].compact.join(" · ").presence || "No contact details" %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede mb-4">No business contacts yet.</p>
+        <% end %>
+        <% if policy(@client).update? %>
+          <%= form_with url: create_contact_staff_client_path(@client), scope: :client_contact, local: true, class: "space-y-3" do %>
+            <div class="ant-field ant-field--portal">
+              <label class="ant-field__label" for="client_contact_full_name">Name</label>
+              <input type="text" name="client_contact[full_name]" id="client_contact_full_name" class="ant-control w-full" required maxlength="120">
+            </div>
+            <div class="ant-field ant-field--portal">
+              <label class="ant-field__label" for="client_contact_email">Email</label>
+              <input type="email" name="client_contact[email]" id="client_contact_email" class="ant-control w-full">
+            </div>
+            <div class="ant-field ant-field--portal">
+              <label class="ant-field__label" for="client_contact_phone">Phone</label>
+              <input type="text" name="client_contact[phone]" id="client_contact_phone" class="ant-control w-full">
+            </div>
+            <div class="ant-field ant-field--portal">
+              <label class="ant-field__label" for="client_contact_job_title">Role / title</label>
+              <input type="text" name="client_contact[job_title]" id="client_contact_job_title" class="ant-control w-full">
+            </div>
+            <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Add contact</button>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+    <section class="staff-quote-side-panel">
       <%= render "shared/ui/side_panel_head", title: "Memberships", heading_id: "client-members-heading", icon: "users" %>
       <div class="staff-quote-side-panel__body">
         <% if @memberships.any? %>

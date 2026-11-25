@@ -182,6 +182,8 @@ module Staff
         @services = Quote.assignable_services(@organization).order(:title)
         @readiness = Commercial::QuoteReadiness.new(@saved_quote)
         @correction_request = @saved_quote.latest_correction_request if @saved_quote.status == "returned_for_correction"
+        @quote_responses = @saved_quote.quote_responses.includes(:quote_revision, :responded_by_user, :quote_portal_release).recent_first
+        @latest_terminal_response = @quote_responses.detect(&:terminal?)
       end
 
       def render_editor_with_errors

@@ -20,12 +20,14 @@ module Staff
       authorize notification
       notification.update!(read_at: Time.current) unless notification.read?
 
-      inquiry = notification.subject_record
-      if inquiry && ServiceInquiryPolicy.new(Current.membership, inquiry).show?
-        redirect_to staff_service_inquiry_path(inquiry), status: :see_other
+      subject = notification.subject_record
+      if subject.is_a?(ServiceInquiry) && ServiceInquiryPolicy.new(Current.membership, subject).show?
+        redirect_to staff_service_inquiry_path(subject), status: :see_other
+      elsif subject.is_a?(Quote) && QuotePolicy.new(Current.membership, subject).show?
+        redirect_to edit_staff_quotation_path(subject), status: :see_other
       else
         redirect_to staff_notifications_path, status: :see_other,
-                                              alert: "You no longer have access to that enquiry."
+                                              alert: "You no longer have access to that item."
       end
     end
 

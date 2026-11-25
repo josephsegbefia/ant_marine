@@ -13,7 +13,10 @@ module Notifications
       "new_enquiry" => { category: "enquiries", channel: "in_app" },
       "enquiry_assigned" => { category: "enquiries", channel: "in_app" },
       "enquiry_reassigned_away" => { category: "enquiries", channel: "in_app" },
-      "clarification_answered" => { category: "enquiries", channel: "in_app" }
+      "clarification_answered" => { category: "enquiries", channel: "in_app" },
+      "quote_accepted" => { category: "quotations", channel: "in_app" },
+      "quote_declined" => { category: "quotations", channel: "in_app" },
+      "quote_changes_requested" => { category: "quotations", channel: "in_app" }
     }.freeze
 
     def self.fetch(key)
