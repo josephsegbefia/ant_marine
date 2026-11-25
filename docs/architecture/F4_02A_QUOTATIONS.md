@@ -156,3 +156,4 @@ Browser (local dev, three temporary staff identities, later suspended with rotat
 ## F4-02B recommended
 
 - Public enquiry funnel (master F4-02), quote–inquiry linking, revision branching, issuance mailer, client portal C04.
+- **Delivered in F4-02B** (except client portal C04): see [`F4_02B_ENQUIRIES_ISSUANCE.md`](F4_02B_ENQUIRIES_ISSUANCE.md).

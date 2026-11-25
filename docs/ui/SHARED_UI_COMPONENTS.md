@@ -208,6 +208,20 @@ data: {
 - **Mobile drawer:** fixed panel `min(272px, 88vw)`, backdrop dismiss, `Escape` close, body scroll lock (`staff_shell_controller.js`).
 - **Profile footer:** pinned to sidebar bottom via flex column (`staff-app-side__inner` + `flex-1` nav scroll region); scrollable nav body on small drawers.
 
+## Public enquiry wizard (F4-02B)
+
+- **Markup:** `public/service_inquiries/new.html.erb` with `.public-enquiry` (card, `__stepper` / `__step` with `is-current` / `is-done`, service choice cards, error summary) and `_field.html.erb` for labelled inputs with hint, "Optional" tag and inline error.
+- **Behaviour:** Stimulus `enquiry-wizard` adds `is-enhanced` and shows one step at a time; `next` runs native required-field checks on the visible step and focuses the first invalid field; `reveal` (error summary links) opens the step containing a field. Without JavaScript the whole form shows as one page.
+- **Confirmation:** `.public-enquiry-received` — reference, service and time only; "What happens next" makes no response-time or booking promise.
+- **Nav state:** wizard pages set `content_for :public_nav, "enquiry"` so no header item is highlighted.
+
+## Staff enquiries and quotation versions (F4-02B)
+
+- **Enquiries:** list uses the staff list-hub cards; detail uses `.staff-enquiry-facts` (label/value grid) and `.staff-enquiry-description` (escaped plain text, paragraphs preserved).
+- **Versions panel:** `.staff-quote-versions` in the quotation editor — one row per version with status badge, who/when and reason; current row marked; each opens the read-only version page.
+- **Delivery status:** `QuoteDelivery#status_label` / `#badge_variant` (`ant-badge--blue|teal|good|warn|muted`); `quote_delivery_summary` helper for the editor summary.
+- **Issuance screen:** existing `ant-card` / `ant-btn-*`; test-mode notice always visible; confirmation checkboxes before Prepare.
+
 ## Limitations (continued)
 
 - Client portal does not yet use the full staff sidebar pattern.
