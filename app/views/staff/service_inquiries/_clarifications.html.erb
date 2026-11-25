@@ -85,8 +85,9 @@
                       <label class="staff-enquiry-choice"><input type="radio" name="source" value="<%= value %>" required> <%= label %></label>
                     <% end %>
                   </fieldset>
-                  <label class="ant-field__label mt-3" for="received_on_<%= clarification.id %>">Date received</label>
-                  <input type="date" name="received_on" id="received_on_<%= clarification.id %>" value="<%= Date.current.iso8601 %>" max="<%= Date.current.iso8601 %>" class="ant-control w-full">
+                  <%= ant_date_field "received_on", id: "received_on_#{clarification.id}", label: "Date received",
+                                     value: Date.current, max: Date.current, compact: true, wrapper_class: "mt-3",
+                                     hint: "Leave empty to use today." %>
                   <div class="ant-dialog__actions">
                     <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
                     <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Record answer</button>

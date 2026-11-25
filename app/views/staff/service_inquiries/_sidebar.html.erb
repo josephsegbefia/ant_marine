@@ -48,13 +48,10 @@
     <% if @inquiry_policy.assign? && @inquiry.open? %>
       <%= form_with url: assign_staff_service_inquiry_path(@inquiry), method: :post, local: true, class: "staff-enquiry-form" do %>
         <input type="hidden" name="expected_lock_version" value="<%= @inquiry.lock_version %>">
-        <label class="ant-field__label" for="assignee_id">Change responsible person</label>
-        <select name="assignee_id" id="assignee_id" class="ant-control w-full">
-          <option value="">Nobody (unassigned)</option>
-          <% @assignees.each do |member| %>
-            <option value="<%= member.id %>" <%= "selected" if member.id == @inquiry.assigned_membership_id %>><%= Intake::InquiryAssignment.display_name(member) %></option>
-          <% end %>
-        </select>
+        <%= ant_select_tag "assignee_id",
+                           @assignees.map { |member| [ Intake::InquiryAssignment.display_name(member), member.id ] },
+                           label: "Change responsible person", selected: @inquiry.assigned_membership_id,
+                           include_blank: "Nobody (unassigned)", searchable: @assignees.size > 7, compact: true %>
         <label class="ant-field__label mt-3" for="assign_reason">Reason<% if @inquiry.assigned_membership %> (required when changing)<% else %> (optional)<% end %></label>
         <textarea name="reason" id="assign_reason" rows="2" maxlength="500" class="ant-control w-full"></textarea>
         <button type="submit" class="ant-btn-outline ant-btn-outline--compact mt-3 w-full justify-center">Save responsible person</button>

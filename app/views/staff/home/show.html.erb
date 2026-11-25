@@ -2,32 +2,121 @@
 <% content_for :staff_page_title, "Overview" %>
 <% content_for :staff_nav, "overview" %>
 
-<div class="staff-overview-head">
-  <h1>Hello, <%= @greeting_name %></h1>
-  <p>This is your team workspace for ANT Marine W.A. Use the navigation to manage access and invitations.</p>
-</div>
+<%= ant_page_header(
+      title: @greeting,
+      description: "Here is what needs attention today.",
+      primary_action: (@summary.enquiries? ? { label: "View enquiries", path: staff_service_inquiries_path } : nil),
+      secondary_action: (@summary.quotations? ? { label: "Quotations", path: staff_quotations_path } : nil)
+    ) %>
 
-<% if @can_invite %>
-  <section class="portal-card mt-6 max-w-2xl">
-    <h2 class="text-base font-extrabold text-[#173244]">Team access</h2>
-    <p class="mt-2 text-sm text-[#5f7d8c]">
-      <% if @pending_count.positive? %>
-        You have <%= pluralize(@pending_count, "pending invitation") %> awaiting a response.
-      <% else %>
-        No pending invitations right now.
+<% if @summary.stats.any? %>
+  <section class="staff-overview-stats" aria-label="Summary">
+    <% @summary.stats.each do |stat| %>
+      <% path = case stat.key
+                when :new_enquiries then staff_service_inquiries_path(status: "submitted")
+                when :assigned then staff_service_inquiries_path(view: "mine")
+                when :approvals then staff_quotations_path(status: "pending_review")
+                when :unread then staff_notifications_path(show: "unread")
+                end %>
+      <%= link_to path, class: "staff-enquiry-stat",
+                  aria: { label: "#{stat.label}: #{stat.value}. #{stat.caption}" } do %>
+        <span class="staff-enquiry-stat__label"><%= stat.label %></span>
+        <span class="staff-enquiry-stat__value"><%= stat.value %></span>
+        <span class="staff-enquiry-stat__caption"><%= stat.caption %></span>
       <% end %>
-    </p>
-    <div class="mt-4 flex flex-wrap gap-3">
-      <%= link_to "View invitations", staff_invitations_path, class: "portal-btn-secondary" %>
-      <% if @can_invite_clients %>
-        <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "portal-btn-secondary" %>
-      <% end %>
-    </div>
+    <% end %>
   </section>
 <% end %>
 
-<section class="portal-card mt-4 max-w-2xl">
-  <p class="text-sm text-[#5f7d8c]">
-    Project and request tools will appear here as they are added to the platform.
-  </p>
-</section>
+<div class="staff-overview-grid">
+  <section class="portal-card staff-overview-panel" aria-labelledby="overview-work-heading">
+    <div class="staff-overview-panel__head">
+      <h2 id="overview-work-heading">Work waiting for you</h2>
+      <% if @summary.enquiries? %>
+        <%= link_to "All enquiries", staff_service_inquiries_path, class: "staff-overview-panel__link" %>
+      <% end %>
+    </div>
+
+    <% items = @summary.work_items %>
+    <% if items.any? %>
+      <ul class="staff-overview-list">
+        <% items.each do |item| %>
+          <% path = item.kind == :enquiry ? staff_service_inquiry_path(item.record) : edit_staff_quotation_path(item.record) %>
+          <li>
+            <%= link_to path, class: "staff-overview-row" do %>
+              <span class="staff-overview-row__text">
+                <span class="staff-overview-row__title"><%= item.title %></span>
+                <span class="staff-overview-row__detail"><%= item.detail %></span>
+              </span>
+              <%= ant_status_badge label: item.badge, badge_class: item.badge_variant %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+      <% if @summary.more_work_count.positive? %>
+        <p class="staff-overview-more">
+          And <%= pluralize(@summary.more_work_count, "more item") %> waiting —
+          <%= safe_join([
+                (@summary.enquiries? ? link_to("see enquiries", staff_service_inquiries_path, class: "staff-quote-link") : nil),
+                (@summary.quotations? ? link_to("see quotations", staff_quotations_path, class: "staff-quote-link") : nil)
+              ].compact, " or ") %>.
+        </p>
+      <% end %>
+    <% else %>
+      <p class="staff-overview-empty">Nothing is waiting for you.</p>
+    <% end %>
+  </section>
+
+  <section class="portal-card staff-overview-panel" aria-labelledby="overview-updates-heading">
+    <div class="staff-overview-panel__head">
+      <h2 id="overview-updates-heading">Recent updates</h2>
+      <%= link_to "All notifications", staff_notifications_path, class: "staff-overview-panel__link" %>
+    </div>
+
+    <% updates = @summary.recent_updates %>
+    <% if updates.any? %>
+      <ul class="staff-overview-list">
+        <% updates.each do |notification| %>
+          <li>
+            <%= button_to open_staff_notification_path(notification), method: :post, class: "staff-overview-row staff-overview-row--button" do %>
+              <span class="staff-overview-row__text">
+                <span class="staff-overview-row__title"><%= notification.title %></span>
+                <span class="staff-overview-row__detail">
+                  <%= notification.kind_label %> · <%= time_ago_in_words(notification.created_at) %> ago
+                  <% unless notification.read? %><span class="sr-only"> (unread)</span><% end %>
+                </span>
+              </span>
+              <% unless notification.read? %>
+                <span class="staff-overview-row__dot" aria-hidden="true"></span>
+              <% end %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="staff-overview-empty">No updates yet.</p>
+    <% end %>
+  </section>
+
+  <% if @can_invite %>
+    <section class="portal-card staff-overview-panel" aria-labelledby="overview-access-heading">
+      <div class="staff-overview-panel__head">
+        <h2 id="overview-access-heading">Team access</h2>
+        <%= link_to "View invitations", staff_invitations_path, class: "staff-overview-panel__link" %>
+      </div>
+      <p class="staff-overview-empty">
+        <% if @pending_count.positive? %>
+          You have <%= pluralize(@pending_count, "pending invitation") %> awaiting a response.
+        <% else %>
+          No pending invitations right now.
+        <% end %>
+      </p>
+      <div class="staff-overview-panel__actions">
+        <%= link_to "View invitations", staff_invitations_path, class: "ant-btn-outline ant-btn-outline--compact" %>
+        <% if @can_invite_clients %>
+          <%= link_to "Invite a client contact", new_staff_client_invitation_path, class: "ant-btn-outline ant-btn-outline--compact" %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

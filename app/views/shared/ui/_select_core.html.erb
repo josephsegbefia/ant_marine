@@ -1,0 +1,49 @@
+<%# locals: field_id, label_html, native_html, wrapper_class, placeholder, searchable, hint, error, current_label, current_empty %>
+<% listbox_id = "#{field_id}_listbox" %>
+<% current_empty = local_assigns.fetch(:current_empty, current_label.blank?) %>
+
+<div class="<%= wrapper_class %>"
+     data-controller="custom-select"
+     data-custom-select-searchable-value="<%= searchable %>"
+     data-custom-select-placeholder-value="<%= placeholder %>"
+     data-custom-select-fallback-value="false">
+  <%= label_html %>
+
+  <div class="ant-select" data-custom-select-target="wrapper">
+    <%= native_html %>
+
+    <button type="button"
+            class="ant-select__trigger"
+            data-custom-select-target="trigger"
+            data-action="click->custom-select#toggle"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="<%= listbox_id %>"
+            aria-labelledby="<%= field_id %>_label <%= field_id %>_trigger"
+            id="<%= field_id %>_trigger">
+      <span class="ant-select__value<%= " ant-select__value--placeholder" if current_empty %>" data-custom-select-target="value"><%= current_label.presence || placeholder %></span>
+      <svg class="ant-select__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <div class="ant-select__panel hidden" data-custom-select-target="panel" role="presentation">
+      <% if searchable %>
+        <input type="search"
+               class="ant-select__search"
+               placeholder="Search..."
+               data-custom-select-target="search"
+               aria-label="Filter options"
+               autocomplete="off">
+      <% end %>
+      <ul class="ant-select__list" id="<%= listbox_id %>" role="listbox" data-custom-select-target="listbox" aria-labelledby="<%= field_id %>_label"></ul>
+    </div>
+  </div>
+
+  <% if hint.present? %>
+    <p class="ant-field__hint" id="<%= field_id %>-hint"><%= hint %></p>
+  <% end %>
+  <% if error.present? %>
+    <p class="ant-field__error" id="<%= field_id %>-error" role="alert"><%= error %></p>
+  <% end %>
+</div>

@@ -3,10 +3,9 @@
   <legend class="sr-only">Validity and terms</legend>
   <p class="text-sm text-[#5f7d8c]">Enter only terms that have been agreed for this quotation. Taxes, deposits and standard legal terms are not added automatically.</p>
 
-  <div class="ant-field ant-field--portal">
-    <label class="ant-field__label" for="quote_revision_valid_until">Valid until</label>
-    <input type="date" class="ant-control" id="quote_revision_valid_until" name="quote_revision[valid_until]" value="<%= revision.valid_until %>">
-  </div>
+  <%= ant_date_field "quote_revision[valid_until]", id: "quote_revision_valid_until", label: "Valid until",
+                     value: revision.valid_until, placeholder: "Choose the last day the offer stands",
+                     wrapper_class: "max-w-sm", error: revision.errors[:valid_until].to_sentence.presence %>
 
   <% {
        payment_terms: [ "Payment terms", "For example when invoices are due. Required before review." ],

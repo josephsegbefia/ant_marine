@@ -41,35 +41,23 @@
       <label class="ant-field__label" for="q">Search</label>
       <input id="q" name="q" type="search" value="<%= @filters[:q] %>" class="ant-control w-full" placeholder="Reference, company, contact or email">
     </div>
-    <div class="ant-filter-toolbar__field">
-      <label class="ant-field__label" for="status">Status</label>
-      <select name="status" id="status" class="ant-control w-full">
-        <option value="">All statuses</option>
-        <% ServiceInquiry::STATUSES.each do |status| %>
-          <option value="<%= status %>" <%= "selected" if @filters[:status] == status %>><%= ServiceInquiry.status_label(status) %></option>
-        <% end %>
-      </select>
-    </div>
+    <%= ant_select_tag "status",
+                       ServiceInquiry::STATUSES.map { |status| [ ServiceInquiry.status_label(status), status ] },
+                       label: "Status", selected: @filters[:status], include_blank: "All statuses",
+                       compact: true, wrapper_class: "ant-filter-toolbar__field" %>
     <% if @team_view %>
-      <div class="ant-filter-toolbar__field">
-        <label class="ant-field__label" for="assignee">Responsible</label>
-        <select name="assignee" id="assignee" class="ant-control w-full">
-          <option value="">Anyone</option>
-          <option value="unassigned" <%= "selected" if @filters[:assignee] == "unassigned" %>>Unassigned</option>
-          <% @assignees.each do |member| %>
-            <option value="<%= member.id %>" <%= "selected" if @filters[:assignee] == member.id.to_s %>><%= Intake::InquiryAssignment.display_name(member) %></option>
-          <% end %>
-        </select>
-      </div>
+      <%= ant_select_tag "assignee",
+                         [ [ "Unassigned", "unassigned" ] ] +
+                           @assignees.map { |member| [ Intake::InquiryAssignment.display_name(member), member.id ] },
+                         label: "Responsible", selected: @filters[:assignee], include_blank: "Anyone",
+                         searchable: @assignees.size > 7, compact: true, wrapper_class: "ant-filter-toolbar__field" %>
     <% end %>
-    <div class="ant-filter-toolbar__field">
-      <label class="ant-field__label" for="from">Received from</label>
-      <input id="from" name="from" type="date" value="<%= @filters[:from]&.iso8601 %>" class="ant-control w-full">
-    </div>
-    <div class="ant-filter-toolbar__field">
-      <label class="ant-field__label" for="to">Received to</label>
-      <input id="to" name="to" type="date" value="<%= @filters[:to]&.iso8601 %>" class="ant-control w-full">
-    </div>
+    <%= ant_date_field "from", label: "Received from", value: @filters[:from], max: Date.current,
+                       placeholder: "Any date", range_start_for: "to",
+                       compact: true, wrapper_class: "ant-filter-toolbar__field" %>
+    <%= ant_date_field "to", label: "Received to", value: @filters[:to], max: Date.current,
+                       placeholder: "Any date", range_end_for: "from",
+                       compact: true, wrapper_class: "ant-filter-toolbar__field" %>
     <div class="ant-filter-toolbar__actions">
       <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
       <% if enquiry_filters_active?(@filters) %>

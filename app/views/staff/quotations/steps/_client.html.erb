@@ -3,18 +3,10 @@
   <legend class="sr-only">Client information</legend>
   <p class="text-sm text-[#5f7d8c]">Choose an existing client, or enter the details of a prospective client. A contact name and email are needed before review.</p>
 
-  <div class="ant-field ant-field--portal">
-    <label class="ant-field__label" for="quote_client_organization_id">Existing client organisation</label>
-    <select name="quote[client_organization_id]" id="quote_client_organization_id" class="ant-control w-full">
-      <option value="">Not an existing client</option>
-      <% client_organizations.each do |org| %>
-        <option value="<%= org.id %>" <%= "selected" if quote.client_organization_id == org.id %>><%= org.name %></option>
-      <% end %>
-    </select>
-    <% quote.errors[:client_organization_id].each do |message| %>
-      <p class="ant-field__error"><%= message %></p>
-    <% end %>
-  </div>
+  <%= ant_select_tag "quote[client_organization_id]", client_organizations.map { |org| [ org.name, org.id ] },
+                     id: "quote_client_organization_id", label: "Existing client organisation",
+                     selected: quote.client_organization_id, include_blank: "Not an existing client",
+                     searchable: true, error: quote.errors[:client_organization_id].to_sentence.presence %>
 
   <div class="ant-field ant-field--portal">
     <label class="ant-field__label" for="quote_prospective_client_company_name">Company name (if not an existing client)</label>

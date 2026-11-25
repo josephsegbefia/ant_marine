@@ -12,15 +12,10 @@
       <label class="ant-field__label" for="q">Search</label>
       <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, client or title">
     </div>
-    <div>
-      <label class="ant-field__label" for="status">Status</label>
-      <select name="status" id="status" class="ant-control">
-        <option value="all" <%= "selected" if params[:status].blank? || params[:status] == "all" %>>All statuses</option>
-        <% Quote::STATUSES.each do |status| %>
-          <option value="<%= status %>" <%= "selected" if params[:status] == status %>><%= quote_status_label(status) %></option>
-        <% end %>
-      </select>
-    </div>
+    <%= ant_select_tag "status",
+                       [ [ "All statuses", "all" ] ] + Quote::STATUSES.map { |status| [ quote_status_label(status), status ] },
+                       label: "Status", selected: params[:status].presence || "all",
+                       compact: true, wrapper_class: "w-full sm:w-52" %>
     <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Apply</button>
   <% end %>
 

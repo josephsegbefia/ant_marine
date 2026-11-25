@@ -65,4 +65,30 @@ class EnquiryTriageTest < ApplicationSystemTestCase
     assert_no_selector "#dialog-close[open]"
     assert_equal "Close enquiry", page.evaluate_script("document.activeElement.textContent").strip
   end
+
+  test "staff can filter with the shared dropdown and date picker" do
+    older = submit_enquiry!(company_name: "Older Co", contact_email: "older@example.com")
+    older.update_columns(submitted_at: 5.days.ago)
+    sign_in_through_form(@coordinator.user)
+    visit staff_service_inquiries_path
+
+    within('[data-controller="custom-select"]', match: :first) do
+      find(".ant-select__trigger").click
+      find('[role="option"]', text: "New").click
+    end
+    assert_equal "submitted", find("#status", visible: :all).value
+
+    within('[data-controller="ant-date-picker"]', match: :first) do
+      find(".ant-date__trigger").click
+    end
+    assert_selector ".ant-date__dialog[open]"
+    within(".ant-date__dialog[open]") do
+      click_on "Today"
+    end
+    assert_equal Date.current.iso8601, find("#from", visible: :all).value
+
+    click_on "Apply"
+    assert_selector ".staff-enquiry-row__company", text: "Harbour Logistics Ltd"
+    assert_no_selector ".staff-enquiry-row__company", text: "Older Co"
+  end
 end

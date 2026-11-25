@@ -13,12 +13,15 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
     assert_select ".staff-app-main", count: 1
     assert_select ".staff-org-card", count: 0
     assert_select ".ant-brand__title", text: /ANT Marine W\.A\./
-    assert_match(/Hello, Super/, response.body)
+    assert_match(/Good (morning|afternoon|evening), Super\./, response.body)
     assert_select ".staff-bottom-user", text: /Super Admin/
     assert_select ".staff-bottom-user", text: /Super Administrator/
     assert_match(/1 pending invitation/, response.body)
+    assert_select "#overview-access-heading", text: "Team access"
+    assert_select "#overview-work-heading", text: "Work waiting for you"
     assert_no_match(/Jobs in progress/, response.body)
-    assert_no_match(/New requests/, response.body)
+    assert_no_match(/Reports to review/, response.body)
+    assert_no_match(/Today’s schedule/, response.body)
     assert_select "a.staff-nav-button--active[href=?]", staff_root_path, text: /Overview/
     assert_select "a.staff-nav-button--active[href=?]", staff_root_path do
       assert_select "svg.staff-nav-icon", count: 1

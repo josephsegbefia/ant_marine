@@ -157,9 +157,15 @@ Markup uses `role="status"`, a single `h2` title, and responsive action stacking
 ## Custom dropdown
 
 - Native `<select class="ant-select__native">` remains the submitted value.
-- Stimulus [`custom-select`](../../app/javascript/controllers/custom_select_controller.js) enhances UI; on `disconnect` or `data-custom-select-fallback-value="true"`, native control is shown.
-- **`searchable: true`** — client organisation picker only (`/staff/client_invitations/new`).
-- Keyboard: Enter/Space, arrows, Home/End, Escape, Tab exit (no focus trap).
+- Stimulus [`custom-select`](../../app/javascript/controllers/custom_select_controller.js) enhances UI; without JavaScript the native control is shown (`.is-enhanced` is added on connect).
+- **Helpers:**
+  - `ant_select(form, method, choices:)` / `ant_collection_select` for form builders.
+  - `ant_select_tag(name, choices, label:, selected:, include_blank:, searchable:, compact:, data:, …)` for fields outside a form builder (filters, quotation steps). `data:` and `aria:` go on the native select so Stimulus targets and actions keep working.
+- Shared markup: [`shared/ui/_select_core`](../../app/views/shared/ui/_select_core.html.erb).
+- **`searchable: true`** for longer lists (client invitations, enquiry assignee when many, qualify organisation, quotation client).
+- Inside a `<dialog>`, the options panel is fixed to the viewport so it is not clipped.
+- Disabled when the native select matches `:disabled` (including a disabled parent fieldset).
+- Keyboard: Enter/Space, arrows, Home/End, Escape (does not close a surrounding dialog), Tab exits.
 
 ## Toasts and flash
 
@@ -221,6 +227,21 @@ data: {
 - **Versions panel:** `.staff-quote-versions` in the quotation editor — one row per version with status badge, who/when and reason; current row marked; each opens the read-only version page.
 - **Delivery status:** `QuoteDelivery#status_label` / `#badge_variant` (`ant-badge--blue|teal|good|warn|muted`); `quote_delivery_summary` helper for the editor summary.
 - **Issuance screen:** existing `ant-card` / `ant-btn-*`; test-mode notice always visible; confirmation checkboxes before Prepare.
+
+## Date picker
+
+- **Helper:** `ant_date_field(name, label:, value:, min:, max:, placeholder:, range_start_for:, range_end_for:, …)` → [`shared/ui/_date_picker`](../../app/views/shared/ui/_date_picker.html.erb).
+- Without JavaScript: a real `<input type="date">` with the same `name`, `min` and `max` (ISO dates).
+- With JavaScript: Stimulus `ant-date-picker` hides the native input, shows a trigger (calendar icon, formatted date or placeholder, clear button) and opens a centred native `<dialog>` calendar (year and month arrows, Monday-first grid, Today / Cancel, blurred navy backdrop).
+- Keyboard: arrow keys, Home/End, PageUp/PageDown (Shift for year), Enter/Space to select; Escape closes without closing a surrounding dialog.
+- Linked ranges: `range_start_for` / `range_end_for` take the paired field id so "from" cannot pass "to".
+- Used on: enquiry received from/to, clarification answer date, quotation valid-until. The public quote form still uses a native date field.
+
+## Staff overview (S01)
+
+- [`Staff::OverviewSummary`](../../app/models/staff/overview_summary.rb) gathers permission-aware stats, work waiting and recent notifications through the same policy scopes as the full pages.
+- View: [`staff/home/show`](../../app/views/staff/home/show.html.erb) — greeting by time of day, summary cards, work list, recent updates, team access. No jobs, reports or schedule cards until those domains exist.
+- Styles: `.staff-overview-stats`, `.staff-overview-grid`, `.staff-overview-row`.
 
 ## Enquiry triage workspace (F4-03)
 

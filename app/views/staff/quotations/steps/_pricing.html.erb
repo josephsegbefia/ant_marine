@@ -8,18 +8,10 @@
   <fieldset class="space-y-4" <%= "disabled" unless editable %>>
     <legend class="sr-only">Pricing</legend>
 
-    <div class="ant-field ant-field--portal max-w-xs">
-      <label class="ant-field__label" for="quote_revision_currency">Currency</label>
-      <select name="quote_revision[currency]" id="quote_revision_currency" class="ant-control w-full"
-              data-quote-pricing-target="currency" data-action="change->quote-pricing#recalculate">
-        <% Quote::SUPPORTED_CURRENCIES.each do |code| %>
-          <option value="<%= code %>" <%= "selected" if revision.currency == code %>><%= code %></option>
-        <% end %>
-      </select>
-      <% revision.errors[:currency].each do |message| %>
-        <p class="ant-field__error"><%= message %></p>
-      <% end %>
-    </div>
+    <%= ant_select_tag "quote_revision[currency]", Quote::SUPPORTED_CURRENCIES.map { |code| [ code, code ] },
+                       id: "quote_revision_currency", label: "Currency", selected: revision.currency,
+                       wrapper_class: "max-w-xs", error: revision.errors[:currency].to_sentence.presence,
+                       data: { quote_pricing_target: "currency", action: "change->quote-pricing#recalculate" } %>
 
     <p class="text-sm text-[#5f7d8c]">
       Enter ordinary amounts, for example <strong>1,250.00</strong>. Line totals are quantity × unit price.

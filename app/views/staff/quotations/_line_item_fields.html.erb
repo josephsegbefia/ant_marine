@@ -37,15 +37,11 @@
              inputmode="decimal" autocomplete="off" data-quote-pricing-target="quantity" data-action="input->quote-pricing#recalculate">
     </div>
     <div class="staff-quote-line__unit">
-      <label class="ant-field__label" for="<%= dom %>_unit_choice">Unit</label>
-      <select class="ant-control w-full" id="<%= dom %>_unit_choice" name="<%= prefix %>[unit_choice]"
-              data-quote-pricing-target="unitChoice" data-action="change->quote-pricing#unitChanged"
-              <% if item.errors[:unit].any? %>aria-invalid="true"<% end %>>
-        <% QuoteLineItem::COMMON_UNITS.each do |value, label| %>
-          <option value="<%= value %>" <%= "selected" if item.unit_choice == value %>><%= label %></option>
-        <% end %>
-        <option value="<%= QuoteLineItem::OTHER_UNIT %>" <%= "selected" if item.unit_choice == QuoteLineItem::OTHER_UNIT %>>Other…</option>
-      </select>
+      <%= ant_select_tag "#{prefix}[unit_choice]",
+                         QuoteLineItem::COMMON_UNITS.map { |value, label| [ label, value ] } + [ [ "Other…", QuoteLineItem::OTHER_UNIT ] ],
+                         id: "#{dom}_unit_choice", label: "Unit", selected: item.unit_choice, compact: true,
+                         aria: (item.errors[:unit].any? ? { invalid: true } : {}),
+                         data: { quote_pricing_target: "unitChoice", action: "change->quote-pricing#unitChanged" } %>
       <div class="staff-quote-line__unit-other" data-quote-pricing-target="unitOtherField"
            <%= "hidden" unless item.unit_choice == QuoteLineItem::OTHER_UNIT %>>
         <label class="ant-field__label" for="<%= dom %>_unit_other">Your unit</label>

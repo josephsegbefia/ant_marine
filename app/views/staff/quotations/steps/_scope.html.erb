@@ -2,18 +2,10 @@
 <fieldset class="mt-4 space-y-4" <%= "disabled" unless editable %>>
   <legend class="sr-only">Scope of work</legend>
 
-  <div class="ant-field ant-field--portal">
-    <label class="ant-field__label" for="quote_service_id">Related service (optional)</label>
-    <select name="quote[service_id]" id="quote_service_id" class="ant-control w-full">
-      <option value="">None selected</option>
-      <% services.each do |service| %>
-        <option value="<%= service.id %>" <%= "selected" if quote.service_id == service.id %>><%= service.title %></option>
-      <% end %>
-    </select>
-    <% quote.errors[:service_id].each do |message| %>
-      <p class="ant-field__error"><%= message %></p>
-    <% end %>
-  </div>
+  <%= ant_select_tag "quote[service_id]", services.map { |service| [ service.title, service.id ] },
+                     id: "quote_service_id", label: "Related service (optional)", selected: quote.service_id,
+                     include_blank: "None selected", searchable: services.size > 7,
+                     error: quote.errors[:service_id].to_sentence.presence %>
 
   <div class="ant-field ant-field--portal">
     <label class="ant-field__label" for="quote_revision_title">Quotation title</label>

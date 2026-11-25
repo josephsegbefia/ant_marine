@@ -24,14 +24,11 @@
         <input type="hidden" name="expected_lock_version" value="<%= version %>">
         <label class="ant-field__label" for="qualify_note">Scope note (optional)</label>
         <textarea name="note" id="qualify_note" rows="3" maxlength="2000" class="ant-control w-full"></textarea>
-        <label class="ant-field__label mt-3" for="qualify_client">Existing client organisation (optional)</label>
-        <select name="client_organization_id" id="qualify_client" class="ant-control w-full">
-          <option value="">Not linked</option>
-          <% @client_organizations.each do |org| %>
-            <option value="<%= org.id %>" <%= "selected" if org.id == @inquiry.client_organization_id %>><%= org.name %></option>
-          <% end %>
-        </select>
-        <p class="ant-field__hint">Link only if you have confirmed this person represents that organisation. No client account is created.</p>
+        <%= ant_select_tag "client_organization_id", @client_organizations.map { |org| [ org.name, org.id ] },
+                           id: "qualify_client", label: "Existing client organisation (optional)",
+                           selected: @inquiry.client_organization_id, include_blank: "Not linked",
+                           searchable: @client_organizations.size > 7, compact: true, wrapper_class: "mt-3",
+                           hint: "Link only if you have confirmed this person represents that organisation. No client account is created." %>
         <div class="ant-dialog__actions">
           <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
           <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Mark ready to quote</button>

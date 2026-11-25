@@ -1,0 +1,79 @@
+<%# locals: name, field_id, iso_value, display_value, label, min, max, placeholder, hint, error, wrapper_class, range_start_for, range_end_for, required %>
+<% describedby = [ hint.present? ? "#{field_id}-hint" : nil, error.present? ? "#{field_id}-error" : nil ].compact.join(" ").presence %>
+<% chevron = ->(d) { %(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="#{d}" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe } %>
+
+<div class="<%= wrapper_class %>"
+     data-controller="ant-date-picker"
+     data-ant-date-picker-min-value="<%= min %>"
+     data-ant-date-picker-max-value="<%= max %>"
+     data-ant-date-picker-placeholder-value="<%= placeholder %>"
+     data-ant-date-picker-range-start-for-value="<%= range_start_for %>"
+     data-ant-date-picker-range-end-for-value="<%= range_end_for %>">
+  <label class="ant-field__label" for="<%= field_id %>" id="<%= field_id %>_label" data-ant-date-picker-target="label"><%= label %></label>
+
+  <div class="ant-date">
+    <input type="date" name="<%= name %>" id="<%= field_id %>" value="<%= iso_value %>"
+           <% if min.present? %>min="<%= min %>"<% end %> <% if max.present? %>max="<%= max %>"<% end %>
+           <% if required %>required<% end %>
+           <% if error.present? %>aria-invalid="true"<% end %>
+           <% if describedby %>aria-describedby="<%= describedby %>"<% end %>
+           class="ant-control ant-date__native" data-ant-date-picker-target="input">
+
+    <div class="ant-date__control">
+      <button type="button" class="ant-date__trigger<%= " is-invalid" if error.present? %>" id="<%= field_id %>_trigger"
+              data-ant-date-picker-target="trigger" data-action="ant-date-picker#open"
+              aria-haspopup="dialog" aria-labelledby="<%= field_id %>_label <%= field_id %>_trigger"
+              <% if describedby %>aria-describedby="<%= describedby %>"<% end %>>
+        <svg class="ant-date__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4" stroke-linecap="round" />
+        </svg>
+        <span class="ant-date__value<%= " is-empty" if iso_value.blank? %>" data-ant-date-picker-target="display"><%= display_value.presence || placeholder %></span>
+      </button>
+      <button type="button" class="ant-date__clear" data-ant-date-picker-target="clear" data-action="ant-date-picker#clear"
+              aria-label="Clear <%= label.to_s.downcase %>" <%= "hidden" if iso_value.blank? %>>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" stroke-linecap="round" /></svg>
+      </button>
+    </div>
+
+    <dialog class="ant-date__dialog" aria-labelledby="<%= field_id %>_month" data-ant-date-picker-target="dialog"
+            data-action="click->ant-date-picker#backdrop close->ant-date-picker#closed keydown->ant-date-picker#dialogKeydown">
+      <div class="ant-date__panel">
+        <p class="sr-only"><%= label %></p>
+        <div class="ant-date__head">
+          <div class="ant-date__nav">
+            <button type="button" class="ant-date__nav-btn" data-action="ant-date-picker#previousYear" aria-label="Previous year"><%= chevron.call("m11 17-5-5 5-5M18 17l-5-5 5-5") %></button>
+            <button type="button" class="ant-date__nav-btn" data-action="ant-date-picker#previousMonth" aria-label="Previous month"><%= chevron.call("m15 18-6-6 6-6") %></button>
+          </div>
+          <h2 class="ant-date__month" id="<%= field_id %>_month" aria-live="polite" data-ant-date-picker-target="month"></h2>
+          <div class="ant-date__nav">
+            <button type="button" class="ant-date__nav-btn" data-action="ant-date-picker#nextMonth" aria-label="Next month"><%= chevron.call("m9 18 6-6-6-6") %></button>
+            <button type="button" class="ant-date__nav-btn" data-action="ant-date-picker#nextYear" aria-label="Next year"><%= chevron.call("m6 17 5-5-5-5M13 17l5-5-5-5") %></button>
+          </div>
+        </div>
+
+        <table class="ant-date__grid" role="grid" aria-labelledby="<%= field_id %>_month">
+          <thead>
+            <tr>
+              <% [ %w[Mo Monday], %w[Tu Tuesday], %w[We Wednesday], %w[Th Thursday], %w[Fr Friday], %w[Sa Saturday], %w[Su Sunday] ].each do |short, full| %>
+                <th scope="col" abbr="<%= full %>"><%= short %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody data-ant-date-picker-target="days" data-action="keydown->ant-date-picker#gridKeydown"></tbody>
+        </table>
+
+        <div class="ant-date__foot">
+          <button type="button" class="ant-date__today" data-ant-date-picker-target="today" data-action="ant-date-picker#selectToday">Today</button>
+          <button type="button" class="ant-date__cancel" data-action="ant-date-picker#cancel">Cancel</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <% if hint.present? %>
+    <p class="ant-field__hint" id="<%= field_id %>-hint"><%= hint %></p>
+  <% end %>
+  <% if error.present? %>
+    <p class="ant-field__error" id="<%= field_id %>-error" role="alert"><%= error %></p>
+  <% end %>
+</div>

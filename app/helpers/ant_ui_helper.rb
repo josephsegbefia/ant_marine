@@ -77,6 +77,71 @@ module AntUiHelper
            }
   end
 
+  # The ANT dropdown for fields outside a form builder. choices: [[label, value], ...].
+  # include_blank: text for an empty first option (for example "All statuses").
+  # data/aria go on the underlying <select>, so existing Stimulus targets and actions keep working.
+  def ant_select_tag(name, choices, label:, selected: nil, id: nil, include_blank: nil, placeholder: "Choose one",
+                     hint: nil, error: nil, searchable: false, compact: false, wrapper_class: nil,
+                     required: false, disabled: false, data: {}, aria: {})
+    field_id = id || sanitize_to_id(name)
+    choices = choices.map { |choice| Array(choice).then { |pair| pair.size == 1 ? [ pair[0], pair[0] ] : pair } }
+    choices = [ [ include_blank, "" ] ] + choices if include_blank
+    selected_value = selected.to_s
+    current = choices.find { |(_text, value)| value.to_s == selected_value }
+    describedby = [ hint.present? ? "#{field_id}-hint" : nil, error.present? ? "#{field_id}-error" : nil ].compact.join(" ").presence
+
+    native = select_tag(
+      name,
+      options_for_select(choices, selected_value),
+      id: field_id,
+      class: "ant-select__native",
+      required: required,
+      disabled: disabled,
+      data: { custom_select_target: "native" }.merge(data),
+      aria: { invalid: (true if error.present?), describedby: describedby }.compact.merge(aria)
+    )
+
+    render partial: "shared/ui/select_core",
+           locals: {
+             field_id: field_id,
+             label_html: label_tag(field_id, label, class: "ant-field__label", id: "#{field_id}_label"),
+             native_html: native,
+             wrapper_class: [ "ant-field", compact ? "ant-field--compact" : "ant-field--portal", wrapper_class ].compact.join(" "),
+             placeholder: placeholder,
+             searchable: searchable,
+             hint: hint,
+             error: error,
+             current_label: current&.first,
+             current_empty: current.nil? || current[1].to_s.empty?
+           }
+  end
+
+  # The ANT date picker. Submits an ISO date (YYYY-MM-DD) under `name`; without JavaScript it is
+  # an ordinary date input. range_start_for/range_end_for take the id of the paired field, so
+  # a start date can never be after the end date and the reverse.
+  def ant_date_field(name, label:, value: nil, id: nil, min: nil, max: nil, placeholder: "Select date",
+                     hint: nil, error: nil, compact: false, wrapper_class: nil, required: false,
+                     range_start_for: nil, range_end_for: nil)
+    date = ant_date_value(value)
+    render partial: "shared/ui/date_picker",
+           locals: {
+             name: name,
+             field_id: id || sanitize_to_id(name),
+             iso_value: date&.iso8601,
+             display_value: (date && date.strftime("%a %-d %b %Y")),
+             label: label,
+             min: ant_date_value(min)&.iso8601,
+             max: ant_date_value(max)&.iso8601,
+             placeholder: placeholder,
+             hint: hint,
+             error: error,
+             required: required,
+             wrapper_class: [ "ant-field", compact ? "ant-field--compact" : "ant-field--portal", wrapper_class ].compact.join(" "),
+             range_start_for: range_start_for,
+             range_end_for: range_end_for
+           }
+  end
+
   def ant_back_link(label:, path:, disabled: false, **html_options)
     validated_path = validate_back_path!(path)
 
@@ -176,6 +241,15 @@ module AntUiHelper
   end
 
   private
+
+    def ant_date_value(value)
+      return value.to_date if value.respond_to?(:to_date) && !value.is_a?(String)
+      return nil if value.blank?
+
+      Date.iso8601(value.to_s)
+    rescue Date::Error
+      nil
+    end
 
     def extract_html_options(options)
       nested = options.delete(:html_options) || {}

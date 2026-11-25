@@ -9,7 +9,9 @@ export default class extends Controller {
     event?.preventDefault()
     this.opener = event?.currentTarget
     this.dialogTarget.showModal()
-    const field = this.dialogTarget.querySelector("textarea, input:not([type=hidden]), select")
+    const field = this.dialogTarget.querySelector(
+      "textarea, input:not([type=hidden]):not([tabindex='-1']), select:not([tabindex='-1']), .ant-select__trigger, .ant-date__trigger"
+    )
     if (field) field.focus()
   }
 
