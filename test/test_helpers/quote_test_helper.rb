@@ -85,6 +85,17 @@ module QuoteTestHelper
       reason: "Test restriction"
     )
   end
+
+  # Test/DBA-only: transaction-local GUC bypass. Application code must never call this.
+  # Prefer set_config(..., is_local => true) over DISABLE TRIGGER — DDL would commit and leak rows.
+  # Wrap in an explicit transaction so LOCAL lasts for the whole yield (needed when
+  # use_transactional_tests is false; LOCAL is discarded immediately outside a transaction).
+  def with_history_protection_disabled
+    ActiveRecord::Base.transaction(requires_new: true) do
+      ActiveRecord::Base.connection.execute("SELECT set_config('ant_marine.history_bypass', 'on', true)")
+      yield
+    end
+  end
 end
 
 ActiveSupport::TestCase.include(QuoteTestHelper)

@@ -22,6 +22,9 @@ module AntMarine
     # Mail and invitation delivery share one queue. Other jobs may use default.
     config.action_mailer.deliver_later_queue_name = "mail"
 
+    # PostgreSQL triggers and functions for commercial history protection (F4-04B).
+    config.active_record.schema_format = :sql
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

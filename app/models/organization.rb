@@ -18,6 +18,9 @@ class Organization < ApplicationRecord
                                       inverse_of: :client_organization, dependent: :nullify
   has_many :quote_portal_releases, foreign_key: :client_organization_id, inverse_of: :client_organization,
                                    dependent: :restrict_with_exception
+  has_many :client_contacts, dependent: :destroy
+  has_many :quote_responses, foreign_key: :client_organization_id, inverse_of: :client_organization,
+                             dependent: :restrict_with_exception
 
   validates :kind, inclusion: { in: KINDS }
   validates :status, inclusion: { in: STATUSES }
