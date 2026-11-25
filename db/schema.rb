@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -612,6 +612,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_220000) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "staff_notifications", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "recipient_membership_id", null: false
+    t.bigint "audit_event_id", null: false
+    t.string "kind", null: false
+    t.string "subject_type", null: false
+    t.bigint "subject_id", null: false
+    t.string "title", null: false
+    t.string "dedupe_key", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.index ["audit_event_id"], name: "index_staff_notifications_on_audit_event_id"
+    t.index ["organization_id"], name: "index_staff_notifications_on_organization_id"
+    t.index ["recipient_membership_id", "dedupe_key"], name: "index_staff_notifications_on_recipient_and_dedupe_key", unique: true
+    t.index ["recipient_membership_id", "read_at", "created_at"], name: "index_staff_notifications_on_recipient_unread"
+    t.check_constraint "char_length(title::text) <= 200", name: "staff_notifications_title_length"
+    t.check_constraint "kind::text = ANY (ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying]::text[])", name: "staff_notifications_kind_check"
+  end
+
   create_table "storage_assets", force: :cascade do |t|
     t.bigint "organization_id", null: false
     t.bigint "uploaded_by_membership_id", null: false
@@ -763,6 +782,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_220000) do
   add_foreign_key "services", "organizations"
   add_foreign_key "sessions", "memberships"
   add_foreign_key "sessions", "users"
+  add_foreign_key "staff_notifications", "audit_events"
+  add_foreign_key "staff_notifications", "memberships", column: "recipient_membership_id"
+  add_foreign_key "staff_notifications", "organizations"
   add_foreign_key "storage_assets", "active_storage_blobs"
   add_foreign_key "storage_assets", "memberships", column: "uploaded_by_membership_id"
   add_foreign_key "storage_assets", "organizations"

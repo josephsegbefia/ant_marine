@@ -39,7 +39,7 @@ module Intake
           raise ActiveRecord::Rollback unless inquiry.save
 
           saved = true
-          AuditEvent.record!(
+          event = AuditEvent.record!(
             event_type: "service_inquiry.submitted",
             organization: inquiry.organization,
             subject: inquiry,
@@ -49,6 +49,7 @@ module Intake
               service_id: inquiry.service_id
             }.compact
           )
+          Notifications::StaffPublisher.new_enquiry(inquiry: inquiry, audit_event: event)
         end
         unless saved
           existing = existing_inquiry

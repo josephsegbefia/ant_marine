@@ -52,6 +52,14 @@ Rails.application.routes.draw do
         post :prepare_quotation
       end
     end
+    resources :notifications, only: :index do
+      member do
+        post :open
+      end
+      collection do
+        post :mark_all_read
+      end
+    end
     resources :quotations, except: :destroy do
       member do
         post :submit_for_review

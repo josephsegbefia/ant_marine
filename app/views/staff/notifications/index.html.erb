@@ -1,0 +1,52 @@
+<% content_for :staff_nav, :notifications %>
+
+<%= ant_page_header(
+      title: "Notifications",
+      description: "Updates about enquiries you look after. These appear here only — no emails are sent."
+    ) %>
+
+<section class="staff-notifications mt-6" aria-labelledby="notifications-list-heading">
+  <div class="staff-notifications__toolbar">
+    <%= ant_section_tabs(
+          aria_label: "Notification filters",
+          tabs: [
+            { label: "All", path: staff_notifications_path, active: @filter == "all" },
+            { label: "Unread (#{@unread_count})", path: staff_notifications_path(show: "unread"), active: @filter == "unread" }
+          ]
+        ) %>
+    <% if @unread_count.positive? %>
+      <%= button_to "Mark all as read", mark_all_read_staff_notifications_path, method: :post,
+                    class: "ant-btn-outline ant-btn-outline--compact" %>
+    <% end %>
+  </div>
+  <h2 id="notifications-list-heading" class="sr-only">Notification list</h2>
+
+  <% if @notifications.any? %>
+    <ul class="staff-notification-list">
+      <% @notifications.each do |notification| %>
+        <li class="staff-notification<%= " staff-notification--unread" unless notification.read? %>">
+          <span class="staff-notification__dot" aria-hidden="true"></span>
+          <div class="staff-notification__body">
+            <p class="staff-notification__kind">
+              <%= notification.kind_label %><% unless notification.read? %><span class="sr-only"> (unread)</span><% end %>
+            </p>
+            <p class="staff-notification__title"><%= notification.title %></p>
+            <p class="staff-notification__time"><%= time_ago_in_words(notification.created_at) %> ago · <%= l(notification.created_at, format: :short) %></p>
+          </div>
+          <%= button_to "Open", open_staff_notification_path(notification), method: :post,
+                        class: "ant-btn-outline ant-btn-outline--compact staff-notification__open",
+                        aria: { label: "Open: #{notification.title}" } %>
+        </li>
+      <% end %>
+    </ul>
+    <%= ant_pagination(@pagination, label: "notifications",
+                       path_for: ->(page) { staff_notifications_path(show: (@filter if @filter == "unread"), page: page) }) %>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :mail,
+          title: @filter == "unread" ? "You are all caught up" : "No notifications yet",
+          description: "You will be told here about new enquiries, enquiries assigned to you and answers recorded from clients.",
+          size: :spacious
+        ) %>
+  <% end %>
+</section>

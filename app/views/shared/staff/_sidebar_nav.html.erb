@@ -5,6 +5,17 @@
     <span>Overview</span>
   <% end %>
 
+  <% unread = staff_unread_notification_count %>
+  <%= link_to staff_notifications_path,
+        class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:notifications)}",
+        aria: { label: unread.positive? ? "Notifications, #{unread} unread" : "Notifications" } do %>
+    <%= render "shared/staff/nav_icon", name: "bell" %>
+    <span>Notifications</span>
+    <% if unread.positive? %>
+      <span class="staff-nav-count" aria-hidden="true"><%= unread > 99 ? "99+" : unread %></span>
+    <% end %>
+  <% end %>
+
   <% if staff_can_invite? %>
     <%= link_to staff_invitations_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:invitations)}" do %>

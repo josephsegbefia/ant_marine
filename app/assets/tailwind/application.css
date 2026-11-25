@@ -3180,4 +3180,86 @@
   .public-rich-text pre {
     @apply my-4 overflow-x-auto rounded-lg border border-[#e2eaed] bg-[#f6fafb] p-4 text-sm;
   }
+
+  /* Shared pagination (F4-03) */
+  .ant-pagination {
+    @apply mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .ant-pagination__summary {
+    @apply text-xs text-[#5f7d8c];
+  }
+
+  .ant-pagination__controls {
+    @apply flex items-center gap-2;
+  }
+
+  .ant-pagination__page {
+    @apply px-2 text-xs font-semibold whitespace-nowrap text-[#173244];
+  }
+
+  .ant-btn-outline.is-disabled {
+    @apply cursor-not-allowed opacity-45 hover:bg-white;
+  }
+
+  /* Staff notifications (F4-03) */
+  .staff-nav-count {
+    @apply ml-auto inline-flex min-w-[1.35rem] items-center justify-center rounded-full bg-[#8fd4cc] px-1.5 py-0.5 text-[10px] font-extrabold text-[#102c43];
+  }
+
+  .staff-notifications__toolbar {
+    @apply flex flex-wrap items-end justify-between gap-3 border-b border-[#e2eaeb];
+  }
+
+  .staff-notifications__toolbar .ant-section-tabs {
+    @apply mt-0 border-b-0;
+  }
+
+  .staff-notifications__toolbar form {
+    @apply mb-2;
+  }
+
+  .staff-notification-list {
+    @apply mt-4 divide-y divide-[#e2eaeb] overflow-hidden rounded-2xl border border-[#e2eaeb] bg-white;
+  }
+
+  .staff-notification {
+    @apply flex items-start gap-3 px-4 py-4 sm:px-5;
+  }
+
+  .staff-notification--unread {
+    @apply bg-[#f2faf9];
+  }
+
+  .staff-notification__dot {
+    @apply mt-1.5 size-2 shrink-0 rounded-full bg-transparent;
+  }
+
+  .staff-notification--unread .staff-notification__dot {
+    @apply bg-[#25877f];
+  }
+
+  .staff-notification__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .staff-notification__kind {
+    @apply text-[10px] font-extrabold tracking-wide text-[#5f7d8c] uppercase;
+  }
+
+  .staff-notification__title {
+    @apply mt-1 text-sm font-semibold break-words text-[#173244];
+  }
+
+  .staff-notification--unread .staff-notification__title {
+    @apply font-bold;
+  }
+
+  .staff-notification__time {
+    @apply mt-1 text-xs text-[#8799a3];
+  }
+
+  .staff-notification__open {
+    @apply shrink-0;
+  }
 }

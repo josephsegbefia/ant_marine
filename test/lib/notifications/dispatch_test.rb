@@ -4,8 +4,12 @@ require "test_helper"
 
 class NotificationsDispatchTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
-  test "catalogue only includes the access emails that exist today" do
-    assert_equal %w[invitation.issued password.reset_requested], Notifications::Events::CATALOGUE.keys.sort
+  test "catalogue only includes the access emails that exist today; enquiry notices are in-app only" do
+    email_events = Notifications::Events::CATALOGUE.select { |_, event| event[:channel] == "email" }.keys.sort
+    assert_equal %w[invitation.issued password.reset_requested], email_events
+    in_app = Notifications::Events::CATALOGUE.reject { |key, _| email_events.include?(key) }
+    assert_equal StaffNotification::KINDS.sort, in_app.keys.sort
+    assert(in_app.values.all? { |event| event[:channel] == "in_app" })
   end
 
   test "test environment does not use a live queue or smtp" do

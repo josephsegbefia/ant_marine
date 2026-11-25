@@ -37,10 +37,13 @@ module StaffShellHelper
   def staff_can_view_enquiries?
     return false unless Current.membership&.staff_domain?
 
-    Authorization::EffectivePermissions.allowed?(
-      membership: Current.membership,
-      permission_key: "inquiries.view_all"
-    )
+    ServiceInquiryPolicy.new(Current.membership, ServiceInquiry).index?
+  end
+
+  def staff_unread_notification_count
+    return 0 unless Current.membership&.staff_domain?
+
+    @staff_unread_notification_count ||= StaffNotificationPolicy::Scope.new(Current.membership, StaffNotification).resolve.unread.count
   end
 
   def staff_can_manage_website?

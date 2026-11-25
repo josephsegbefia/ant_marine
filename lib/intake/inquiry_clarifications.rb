@@ -72,8 +72,9 @@ module Intake
         clarification.update!(status: "answered", response_text: response_text, response_source: source.to_s,
                               response_received_at: received_at(received_on),
                               response_recorded_by_membership: @membership)
-        audit!("service_inquiry.clarification_answered", clarification, response_source: source.to_s)
+        event = audit!("service_inquiry.clarification_answered", clarification, response_source: source.to_s)
         return_to_review_if_nothing_waiting!
+        Notifications::StaffPublisher.clarification_answered(inquiry: @inquiry, actor: @membership, audit_event: event)
         clarification
       end
     end

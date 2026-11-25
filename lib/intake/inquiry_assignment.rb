@@ -44,7 +44,7 @@ module Intake
       elsif previous_id.nil? then "service_inquiry.assigned"
       else "service_inquiry.reassigned"
       end
-      AuditEvent.record!(
+      event = AuditEvent.record!(
         event_type: event_type,
         organization: inquiry.organization,
         actor_membership: actor,
@@ -57,6 +57,9 @@ module Intake
           reason: reason
         }.compact
       )
+      previous = previous_id && Membership.find_by(id: previous_id)
+      Notifications::StaffPublisher.assignment_changed(inquiry: inquiry, assignee: assignee, previous: previous,
+                                                       actor: actor, audit_event: event)
       entry
     end
 

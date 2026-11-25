@@ -16,6 +16,7 @@ class Intake::ConcurrencyTest < ActiveSupport::TestCase
     Quote.where(id: quote_ids).update_all(current_revision_id: nil)
     QuoteRevision.where(quote_id: quote_ids).delete_all
     Quote.where(id: quote_ids).delete_all
+    StaffNotification.where(subject_type: "ServiceInquiry", subject_id: @inquiry_ids).delete_all
     AuditEvent.where(subject_type: "ServiceInquiry", subject_id: @inquiry_ids).delete_all
     ServiceInquiryAssignment.where(service_inquiry_id: @inquiry_ids).delete_all
     ServiceInquiry.where(id: @inquiry_ids).delete_all

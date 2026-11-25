@@ -110,6 +110,11 @@ module AntUiHelper
     render partial: "shared/ui/section_tabs", locals: { tabs: tabs, aria_label: aria_label }
   end
 
+  # pagination: a Pagination; path_for: lambda(page) returning the URL for that page.
+  def ant_pagination(pagination, label: "items", path_for:)
+    render partial: "shared/ui/pagination", locals: { pagination: pagination, label: label, path_for: path_for }
+  end
+
   def ant_status_badge(label:, badge_class: "ant-badge--muted")
     render partial: "shared/ui/status_badge", locals: { label: label, badge_class: badge_class }
   end
