@@ -3304,7 +3304,7 @@
   }
 
   .staff-enquiry-table-wrap {
-    @apply hidden overflow-x-auto rounded-[14px] border border-[#e2eaeb] bg-white md:block;
+    @apply hidden overflow-x-auto rounded-[14px] border border-[#e2eaeb] bg-white lg:block;
   }
 
   .staff-enquiry-table {
@@ -3344,7 +3344,7 @@
   }
 
   .staff-enquiry-cards {
-    @apply grid gap-3 md:hidden;
+    @apply grid gap-3 sm:grid-cols-2 lg:hidden;
   }
 
   .staff-enquiry-card {
@@ -3405,6 +3405,10 @@
 
   .staff-enquiry-form .ant-field__label {
     @apply mb-1;
+  }
+
+  .staff-enquiry-form > button {
+    @apply justify-self-start;
   }
 
   .staff-enquiry-choice {

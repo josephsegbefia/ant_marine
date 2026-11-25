@@ -222,6 +222,17 @@ data: {
 - **Delivery status:** `QuoteDelivery#status_label` / `#badge_variant` (`ant-badge--blue|teal|good|warn|muted`); `quote_delivery_summary` helper for the editor summary.
 - **Issuance screen:** existing `ant-card` / `ant-btn-*`; test-mode notice always visible; confirmation checkboxes before Prepare.
 
+## Enquiry triage workspace (F4-03)
+
+- **Pagination:** `Pagination.new(scope, page:, per_page: 25)` (offset; malformed or out-of-range pages clamp to a valid page) + `ant_pagination(pagination, label:, path_for: ->(page) { ... })` → `shared/ui/_pagination.html.erb` ("Showing 1–25 of N", Previous/Next, `aria-label="Pages"`). Used by enquiries and notifications.
+- **Dialog:** `ant_dialog(id:, title:, trigger_label:, trigger_class:, description:) { form }` → `shared/ui/_dialog.html.erb`; native `<dialog>` opened with `showModal` by Stimulus `ant-dialog` (focus first field, backdrop click and close button dismiss, Escape native, focus returns to the opener). Use for any action that needs a reason or extra input; put warnings inside the dialog body.
+- **Filter toolbar:** `.ant-filter-toolbar` grid of labelled fields + `.ant-filter-toolbar__actions` (Apply `ant-btn-primary--compact`, Clear link only when filters are active). Buttons keep their natural width at every size. `.ant-btn-outline--compact` must come after `.ant-btn-outline` in the stylesheet (this was the cause of the full-width mobile Apply button).
+- **Stat cards:** `.staff-enquiry-stat` links with `aria-label="Label: N. caption"`.
+- **List:** `.staff-enquiry-table` from `lg` (1024px); `.staff-enquiry-cards` below (two columns from `sm`).
+- **Workspace:** `.staff-enquiry-workspace` with `__aside` first in source (status first on phones, sticky right column on desktop) and `__main`; `.staff-enquiry-facts` label/value grid; `.staff-enquiry-actions` stacked full-width buttons.
+- **Timeline:** `ol.ant-timeline` > `li.ant-timeline__item--{kind}` with `__title`, `__detail`, `__meta` ("Name · 25 Nov 19:32"; "Website" for public submissions). Fed by `Intake::InquiryTimeline` entries only — never raw audit data.
+- **Notification list:** `/staff/notifications`, unread items emphasised, "Mark all as read", opening an item marks it read; sidebar item shows the unread count in its accessible name ("Notifications, 1 unread").
+
 ## Limitations (continued)
 
 - Client portal does not yet use the full staff sidebar pattern.
