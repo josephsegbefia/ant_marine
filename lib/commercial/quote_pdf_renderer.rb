@@ -32,11 +32,10 @@ module Commercial
     def status_line
       case
       when @quote.status == "withdrawn" then "WITHDRAWN — THIS QUOTATION IS NO LONGER VALID"
-      when @revision.revision_status == "superseded" || @quote.current_revision_id != @revision.id
-        "SUPERSEDED — REPLACED BY A NEWER VERSION"
-      when @quote.status == "issued" then "FINAL VERSION — MARKED ISSUED"
+      when @revision.revision_status == "superseded" then "SUPERSEDED — REPLACED BY A NEWER VERSION"
+      when @revision.revision_status == "issued" then "ISSUED VERSION"
       when @revision.version_frozen? then "APPROVED VERSION — NOT YET SENT TO THE CLIENT"
-      when @quote.status == "pending_review" then "DRAFT — AWAITING INTERNAL REVIEW — NOT A FINAL OFFER"
+      when @revision.revision_status == "pending_review" then "DRAFT — AWAITING INTERNAL REVIEW — NOT A FINAL OFFER"
       else "DRAFT — NOT A FINAL OFFER"
       end
     end

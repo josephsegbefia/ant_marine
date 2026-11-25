@@ -1,0 +1,45 @@
+<%# locals: quote %>
+<% revisions = quote.quote_revisions.includes(prepared_by_membership: :user, approved_by_membership: :user, issued_by_membership: :user).order(version_number: :desc) %>
+
+<section class="portal-card staff-quote-versions" aria-labelledby="quote-versions-heading" id="quote-versions">
+  <h2 id="quote-versions-heading" class="text-base font-extrabold text-[#173244]">Versions</h2>
+  <p class="mt-1 text-xs text-[#5f7d8c]">Every approved version is kept exactly as it was approved.</p>
+  <ol class="staff-quote-versions__list">
+    <% revisions.each do |revision| %>
+      <li class="staff-quote-versions__item<%= " is-current" if revision.id == quote.current_revision_id %>">
+        <div class="staff-quote-versions__head">
+          <span class="staff-quote-versions__title">Version <%= revision.version_number %></span>
+          <%= ant_status_badge(label: quote_revision_status_label(revision, quote), badge_class: quote_revision_badge_variant(revision)) %>
+        </div>
+        <dl class="staff-quote-versions__meta">
+          <div><dt>Created</dt><dd><%= l(revision.created_at, format: :short) %></dd></div>
+          <div><dt>Prepared by</dt><dd><%= quote_member_name(revision.prepared_by_membership) %></dd></div>
+          <% if revision.approved_at %>
+            <div><dt>Approved by</dt><dd><%= quote_member_name(revision.approved_by_membership) %> · <%= l(revision.approved_at, format: :short) %></dd></div>
+          <% end %>
+          <% if revision.issued_at %>
+            <div><dt>Issued</dt><dd><%= l(revision.issued_at, format: :short) %></dd></div>
+          <% elsif revision.version_frozen? && revision.revision_status != "superseded" %>
+            <div><dt>Sent</dt><dd>Not sent to the client</dd></div>
+          <% end %>
+          <% if revision.superseded_at %>
+            <div><dt>Replaced</dt><dd><%= l(revision.superseded_at, format: :short) %></dd></div>
+          <% end %>
+          <% if revision.revision_reason.present? %>
+            <div><dt>Reason</dt><dd><%= revision.revision_reason %></dd></div>
+          <% end %>
+        </dl>
+        <div class="staff-quote-versions__actions">
+          <%= link_to "View", version_staff_quotation_path(quote, version_number: revision.version_number), class: "staff-quote-link" %>
+          <%= link_to "PDF", pdf_staff_quotation_path(quote, version: revision.version_number), class: "staff-quote-link", target: "_blank", rel: "noopener" %>
+        </div>
+      </li>
+    <% end %>
+  </ol>
+  <% outstanding = revisions.find { |r| r.revision_status == "issued" && r.id != quote.current_revision_id } %>
+  <% if outstanding %>
+    <p class="staff-quote-notice staff-quote-notice--warn mt-3" role="status">
+      Version <%= outstanding.version_number %> is still the client’s outstanding offer. It is replaced only when a newer version is sent, or if the quotation is withdrawn.
+    </p>
+  <% end %>
+</section>

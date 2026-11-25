@@ -59,7 +59,9 @@ Rails.application.routes.draw do
         post :approve
         post :issue
         post :withdraw
+        post :create_revision
         get :pdf
+        get "versions/:version_number", action: :version, as: :version, constraints: { version_number: /\d+/ }
       end
     end
     namespace :website do

@@ -59,6 +59,16 @@ class QuotePolicy < ApplicationPolicy
     view?
   end
 
+  def version?
+    view?
+  end
+
+  def create_revision?
+    allowed?("quotes.create") && view? &&
+      record.status.in?(Commercial::QuoteRevisionCreator::SOURCE_STATUSES) &&
+      record.current_revision&.version_frozen? == true
+  end
+
   class Scope < Scope
     def resolve
       return scope.none unless membership&.staff_domain?

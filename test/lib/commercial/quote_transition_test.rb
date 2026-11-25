@@ -121,7 +121,8 @@ class Commercial::QuoteTransitionTest < ActiveSupport::TestCase
       version_number: 2, title: first.title, scope_description: first.scope_description,
       deliverables: first.deliverables, exclusions: first.exclusions, currency: "GHS",
       valid_until: first.valid_until, payment_terms: first.payment_terms,
-      prepared_by_membership: @ops, contributor_membership_ids: [ @ops.id ]
+      prepared_by_membership: @ops, contributor_membership_ids: [ @ops.id ],
+      predecessor_revision: first, revision_reason: "Client asked for a revised scope."
     )
     second.line_items.create!(description: "Inspection", quantity: 1, unit: "each", unit_price: "100.00")
     second.save!

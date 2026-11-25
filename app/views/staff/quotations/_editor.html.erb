@@ -37,6 +37,15 @@
     </p>
   <% end %>
 
+  <% if revision.predecessor_revision && !revision.version_frozen? %>
+    <p class="staff-enquiry-context mt-4" id="quote-revision-context">
+      Version <%= revision.version_number %> revises
+      <%= link_to "version #{revision.predecessor_revision.version_number}", version_staff_quotation_path(quote, version_number: revision.predecessor_revision.version_number), class: "staff-quote-link" %>.
+      Reason: <%= revision.revision_reason %>
+      It needs a fresh review and approval by someone who did not prepare it.
+    </p>
+  <% end %>
+
   <% if @correction_request %>
     <div class="portal-card staff-quote-notice staff-quote-notice--warn mt-4" role="status">
       <p class="font-semibold text-[#102c43]">Corrections requested</p>
@@ -123,6 +132,9 @@
 
       <aside class="staff-editor-layout__aside" aria-label="Quotation summary">
         <%= render "staff/quotations/summary", quote: saved_quote, revision: saved_revision, readiness: @readiness %>
+        <div class="mt-4">
+          <%= render "staff/quotations/versions", quote: saved_quote %>
+        </div>
       </aside>
     </div>
   <% end %>

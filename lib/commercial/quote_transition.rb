@@ -83,6 +83,7 @@ module Commercial
 
         @quote.update!(status: rule[:to], updated_by_membership: @membership)
         revision.update!(revision_attributes(rule, revision)) if revision && rule[:revision]
+        superseded = @action == "approve" ? QuoteSupersession.after_approval!(quote: @quote, revision: revision) : []
 
         AuditEvent.record!(
           event_type: "quote.#{@action}",
@@ -99,7 +100,8 @@ module Commercial
             submitted_by_membership_id: revision&.submitted_by_membership_id,
             total_cents: revision&.total_cents,
             currency: revision&.currency,
-            reason: @reason
+            reason: @reason,
+            superseded_version_numbers: superseded.map(&:version_number).presence
           }.compact
         )
       end

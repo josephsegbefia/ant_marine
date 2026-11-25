@@ -2814,6 +2814,46 @@
     @apply mt-2 space-y-2 text-sm;
   }
 
+  .staff-quote-versions__list {
+    @apply mt-3 space-y-3;
+  }
+
+  .staff-quote-versions__item {
+    @apply rounded-xl border border-[#e3eaed] bg-white px-3.5 py-3;
+  }
+
+  .staff-quote-versions__item.is-current {
+    @apply border-[#9fd3cc] bg-[#f6fbfb];
+  }
+
+  .staff-quote-versions__head {
+    @apply flex flex-wrap items-center justify-between gap-2;
+  }
+
+  .staff-quote-versions__title {
+    @apply text-sm font-bold text-[#102c43];
+  }
+
+  .staff-quote-versions__meta {
+    @apply mt-2 grid gap-1 text-xs;
+  }
+
+  .staff-quote-versions__meta > div {
+    @apply grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2;
+  }
+
+  .staff-quote-versions__meta dt {
+    @apply text-[#5f7d8c];
+  }
+
+  .staff-quote-versions__meta dd {
+    @apply break-words text-[#28485a];
+  }
+
+  .staff-quote-versions__actions {
+    @apply mt-2 flex gap-4;
+  }
+
   .staff-enquiry-facts > div {
     @apply sm:grid-cols-[9rem_minmax(0,1fr)];
   }

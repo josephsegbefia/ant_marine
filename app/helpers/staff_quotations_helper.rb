@@ -67,8 +67,37 @@ module StaffQuotationsHelper
     "quote.approve" => "Approved",
     "quote.approval_refused" => "Approval refused — another reviewer needed",
     "quote.issue" => "Marked issued",
-    "quote.withdraw" => "Withdrawn"
+    "quote.withdraw" => "Withdrawn",
+    "quote.revision_created" => "New version started",
+    "quote.created_from_inquiry" => "Started from an enquiry"
   }.freeze
+
+  def quote_revision_status_label(revision, quote)
+    case revision.revision_status
+    when "draft" then revision.id == quote.current_revision_id ? "Current working draft" : "Draft"
+    when "pending_review" then "Awaiting review"
+    when "approved" then "Approved — not sent"
+    when "issued" then "Issued — outstanding offer"
+    when "superseded" then "Superseded"
+    else revision.revision_status.humanize
+    end
+  end
+
+  def quote_revision_badge_variant(revision)
+    case revision.revision_status
+    when "draft" then "ant-badge--warn"
+    when "pending_review" then "ant-badge--blue"
+    when "approved" then "ant-badge--teal"
+    when "issued" then "ant-badge--good"
+    else "ant-badge--muted"
+    end
+  end
+
+  def quote_member_name(membership)
+    return "Not recorded" if membership.nil?
+
+    membership.user&.full_name.presence || membership.user&.email.to_s.split("@").first.to_s.titleize.presence || "Staff member"
+  end
 
   def quote_history_label(event_type)
     HISTORY_LABELS.fetch(event_type, "Updated")

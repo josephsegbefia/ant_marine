@@ -105,6 +105,32 @@ module Staff
       run_transition(:withdraw)
     end
 
+    def create_revision
+      authorize @quote, :show?
+      revision = Commercial::QuoteRevisionCreator.create!(
+        quote: @quote,
+        membership: Current.membership,
+        reason: params[:revision_reason],
+        expected_version: { revision_id: params[:expected_revision_id], lock_version: params[:expected_lock_version] }
+      )
+      redirect_to edit_staff_quotation_path(@quote, editor_step: 2),
+                  notice: "Version #{revision.version_number} started as a draft. " \
+                          "Version #{revision.predecessor_revision.version_number} is unchanged and kept in the history."
+    rescue Commercial::QuoteTransition::InvalidTransition => e
+      redirect_to edit_staff_quotation_path(@quote, editor_step: review_step), alert: e.message
+    end
+
+    def version
+      authorize @quote, :version?
+      @version = @quote.quote_revisions.includes(:line_items, :prepared_by_membership, :approved_by_membership)
+                       .find_by!(version_number: params[:version_number].to_i)
+      assign_staff_breadcrumb(
+        crumbs: [ { label: "Quotations", path: staff_quotations_path },
+                  { label: @quote.reference_number, path: edit_staff_quotation_path(@quote) } ],
+        current: "Version #{@version.version_number}"
+      )
+    end
+
     def pdf
       authorize @quote, :pdf?
       revision = params[:version].present? ? @quote.quote_revisions.find_by!(version_number: params[:version].to_i) : @revision

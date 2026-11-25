@@ -62,6 +62,20 @@
       <%= button_to "Issue to client", issue_staff_quotation_path(quote), method: :post, class: "ant-btn-outline ant-btn-outline--compact" %>
     <% end %>
 
+    <% if quote_policy.create_revision? %>
+      <%= form_with url: create_revision_staff_quotation_path(quote), method: :post, class: "space-y-2 border-t border-[#e2eaed] pt-4", id: "quote-create-revision" do %>
+        <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
+        <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
+        <p class="text-sm font-semibold text-[#102c43]">Need to change this quotation?</p>
+        <p class="text-xs text-[#5f7d8c]">
+          Start version <%= quote.quote_revisions.maximum(:version_number).to_i + 1 %> as a draft. Version <%= revision.version_number %> stays exactly as approved<%= " and remains the client’s offer until the new version is sent" if revision.revision_status == "issued" %>.
+        </p>
+        <label class="ant-field__label" for="quote_revision_reason">Why is a new version needed?</label>
+        <textarea class="ant-control w-full" rows="2" id="quote_revision_reason" name="revision_reason" maxlength="<%= QuoteRevision::REVISION_REASON_LIMIT %>" required></textarea>
+        <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Create new version</button>
+      <% end %>
+    <% end %>
+
     <% if quote_policy.withdraw? %>
       <%= button_to "Withdraw quotation", withdraw_staff_quotation_path(quote),
             method: :post,

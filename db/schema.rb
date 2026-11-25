@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -343,15 +343,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_180000) do
     t.bigint "prepared_by_membership_id"
     t.bigint "submitted_by_membership_id"
     t.bigint "contributor_membership_ids", default: [], null: false, array: true
+    t.bigint "predecessor_revision_id"
+    t.bigint "superseded_by_revision_id"
+    t.text "revision_reason"
+    t.datetime "superseded_at"
+    t.index ["predecessor_revision_id"], name: "index_quote_revisions_on_predecessor_revision_id"
     t.index ["prepared_by_membership_id"], name: "index_quote_revisions_on_prepared_by_membership_id"
     t.index ["quote_id", "version_number"], name: "index_quote_revisions_on_quote_id_and_version_number", unique: true
     t.index ["quote_id"], name: "index_quote_revisions_on_quote_id"
     t.index ["submitted_by_membership_id"], name: "index_quote_revisions_on_submitted_by_membership_id"
+    t.index ["superseded_by_revision_id"], name: "index_quote_revisions_on_superseded_by_revision_id"
     t.check_constraint "(revision_status::text <> ALL (ARRAY['approved'::character varying, 'issued'::character varying]::text[])) OR frozen_at IS NOT NULL", name: "quote_revisions_approved_are_frozen"
     t.check_constraint "approved_by_membership_id IS NULL OR approved_by_membership_id IS DISTINCT FROM prepared_by_membership_id AND approved_by_membership_id IS DISTINCT FROM submitted_by_membership_id AND NOT (approved_by_membership_id = ANY (contributor_membership_ids))", name: "quote_revisions_approver_is_independent"
     t.check_constraint "currency::text = ANY (ARRAY['GHS'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying]::text[])", name: "quote_revisions_currency_check"
+    t.check_constraint "revision_reason IS NULL OR char_length(revision_reason) <= 500", name: "quote_revisions_reason_length"
+    t.check_constraint "revision_status::text <> 'superseded'::text OR superseded_at IS NOT NULL", name: "quote_revisions_superseded_have_timestamp"
     t.check_constraint "revision_status::text = ANY (ARRAY['draft'::character varying, 'pending_review'::character varying, 'approved'::character varying, 'issued'::character varying, 'superseded'::character varying]::text[])", name: "quote_revisions_status_check"
     t.check_constraint "subtotal_cents >= 0 AND total_cents >= 0", name: "quote_revisions_totals_non_negative"
+    t.check_constraint "version_number = 1 OR predecessor_revision_id IS NOT NULL AND revision_reason IS NOT NULL", name: "quote_revisions_later_versions_have_lineage"
   end
 
   create_table "quotes", force: :cascade do |t|
@@ -597,6 +606,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_180000) do
   add_foreign_key "quote_line_items", "quote_revisions"
   add_foreign_key "quote_revisions", "memberships", column: "prepared_by_membership_id"
   add_foreign_key "quote_revisions", "memberships", column: "submitted_by_membership_id"
+  add_foreign_key "quote_revisions", "quote_revisions", column: "predecessor_revision_id"
+  add_foreign_key "quote_revisions", "quote_revisions", column: "superseded_by_revision_id"
   add_foreign_key "quote_revisions", "quotes"
   add_foreign_key "quotes", "organizations"
   add_foreign_key "quotes", "organizations", column: "client_organization_id"

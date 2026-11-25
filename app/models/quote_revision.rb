@@ -2,7 +2,9 @@
 
 class QuoteRevision < ApplicationRecord
   REVISION_STATUSES = %w[draft pending_review approved issued superseded].freeze
-  FROZEN_MUTABLE_ATTRIBUTES = %w[revision_status issued_by_membership_id issued_at updated_at].freeze
+  FROZEN_MUTABLE_ATTRIBUTES = %w[revision_status issued_by_membership_id issued_at superseded_at
+                                 superseded_by_revision_id updated_at].freeze
+  REVISION_REASON_LIMIT = 500
   FROZEN_STATUS_CHANGES = [ %w[approved issued], %w[approved superseded], %w[issued superseded] ].freeze
   FROZEN_MESSAGE = "This quotation version is approved and can no longer be changed."
   MAX_LINE_ITEMS = 100
@@ -12,6 +14,8 @@ class QuoteRevision < ApplicationRecord
   belongs_to :issued_by_membership, class_name: "Membership", optional: true
   belongs_to :prepared_by_membership, class_name: "Membership", optional: true
   belongs_to :submitted_by_membership, class_name: "Membership", optional: true
+  belongs_to :predecessor_revision, class_name: "QuoteRevision", optional: true
+  belongs_to :superseded_by_revision, class_name: "QuoteRevision", optional: true
 
   has_many :line_items, -> { order(:position, :id) },
            class_name: "QuoteLineItem", dependent: :restrict_with_exception, inverse_of: :quote_revision
@@ -22,6 +26,8 @@ class QuoteRevision < ApplicationRecord
   validates :revision_status, inclusion: { in: REVISION_STATUSES }
   validates :currency, inclusion: { in: Quote::SUPPORTED_CURRENCIES, message: "Choose a supported currency." }
   validates :title, length: { maximum: 200 }
+  validates :revision_reason, length: { maximum: REVISION_REASON_LIMIT }
+  validates :revision_reason, presence: { message: "Explain why a new version is needed." }, if: -> { version_number.to_i > 1 }
   validate :line_item_limit
   validate :prevent_mutation_when_frozen, on: :update
   validate :approver_is_independent, if: :approved_by_membership_id_changed?
@@ -36,6 +42,10 @@ class QuoteRevision < ApplicationRecord
 
   def version_frozen?
     !mutable?
+  end
+
+  def outstanding_offer?
+    revision_status == "issued"
   end
 
   def recipient_lines

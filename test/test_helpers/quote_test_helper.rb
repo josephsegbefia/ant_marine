@@ -57,6 +57,25 @@ module QuoteTestHelper
     { expected_revision_id: version[:revision_id], expected_lock_version: version[:lock_version] }
   end
 
+  def create_revision!(quote, membership: memberships(:dual_staff), reason: "Client asked for a revised scope.")
+    Commercial::QuoteRevisionCreator.create!(quote: quote, membership: membership, reason: reason,
+                                             expected_version: expected_version_for(quote))
+  end
+
+  # Simulates a version the mail provider accepted; real issuance runs through QuoteDispatcher.
+  def mark_issued!(quote)
+    quote.reload.current_revision.update!(revision_status: "issued", issued_at: Time.current)
+    quote.update_columns(status: "issued")
+    quote.reload
+  end
+
+  def extract_pdf_text(data)
+    data.b.scan(/\[(.*?)\]\s*TJ|<([0-9a-fA-F]+)>\s*Tj/m).map do |array, single|
+      chunks = array ? array.scan(/<([0-9a-fA-F]+)>/).flatten : [ single ]
+      chunks.map { |hex| [ hex ].pack("H*").force_encoding("Windows-1252").encode("UTF-8") }.join
+    end.join("\n")
+  end
+
   def deny_permission!(membership, key, granted_by: memberships(:super_admin_membership))
     PermissionOverride.create!(
       membership: membership,

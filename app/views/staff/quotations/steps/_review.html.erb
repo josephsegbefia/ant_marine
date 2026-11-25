@@ -1,14 +1,17 @@
-<%# locals: quote, revision, readiness %>
+<%# locals: quote, revision, readiness, show_readiness (optional) %>
+<% show_readiness = local_assigns.fetch(:show_readiness, true) %>
 <% recipient_frozen = revision.version_frozen? && revision.recipient_lines.present? %>
 <% recipient = recipient_frozen ? revision.recipient_lines.to_h.stringify_keys : { "company_name" => quote.client_label, "contact_name" => quote.prospective_value("contact_name"), "email" => quote.prospective_value("email"), "phone" => quote.prospective_value("phone"), "address" => quote.prospective_value("address") } %>
 <% items = revision.line_items.reject(&:new_record?) %>
 
 <div class="mt-4 space-y-6">
-  <p class="text-sm text-[#5f7d8c]" data-quote-editor-target="reviewNote">
-    <%= quote.editable? ? "This shows the last saved details. Save your changes to see them here." : "This is the version on record." %>
-  </p>
+  <% if show_readiness %>
+    <p class="text-sm text-[#5f7d8c]" data-quote-editor-target="reviewNote">
+      <%= quote.editable? ? "This shows the last saved details. Save your changes to see them here." : "This is the version on record." %>
+    </p>
+  <% end %>
 
-  <% if quote.editable? || quote.status == "pending_review" %>
+  <% if show_readiness && (quote.editable? || quote.status == "pending_review") %>
     <% if readiness.ready? %>
       <div class="staff-quote-notice staff-quote-notice--good" role="status">
         <p class="font-semibold">Everything needed for review is in place.</p>
