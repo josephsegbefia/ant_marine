@@ -1,0 +1,12 @@
+<%# locals: steps: %>
+<ol class="public-steps">
+  <% steps.each_with_index do |step, index| %>
+    <% title = step[:title] || step["title"] %>
+    <% description = step[:description] || step["description"] %>
+    <li class="public-steps__item">
+      <span class="public-steps__num" aria-hidden="true"><%= format("%02d", index + 1) %></span>
+      <h3 class="public-steps__title"><%= title %></h3>
+      <p class="public-steps__text"><%= description %></p>
+    </li>
+  <% end %>
+</ol>

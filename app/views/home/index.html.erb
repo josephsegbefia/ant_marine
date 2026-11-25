@@ -1,39 +1,42 @@
 <% content_for :public_nav, "home" %>
 <% h = @homepage.data %>
 
-<section class="public-hero public-hero--home">
+<section class="public-hero public-hero--home" aria-labelledby="home-hero-heading">
   <div class="public-hero__copy">
     <p class="public-eyebrow"><%= h[:eyebrow] %></p>
-    <h1><%= h[:title] %></h1>
+    <h1 id="home-hero-heading"><%= h[:title] %></h1>
     <p class="public-hero__lede"><%= h[:lede] %></p>
     <div class="public-hero__actions">
       <%= link_to h[:primary_cta_label], h[:primary_cta_path], class: "ant-btn-primary ant-btn-primary--compact public-hero__btn" %>
       <%= link_to h[:secondary_cta_label], h[:secondary_cta_path], class: "ant-btn-outline ant-btn-primary--compact public-hero__btn" %>
     </div>
   </div>
-  <div class="public-hero__art public-hero-art" aria-hidden="true">
-    <%= render "shared/public/hero_image" %>
+  <div class="public-hero__art public-hero-art">
+    <%= render "shared/public/hero_art" %>
   </div>
 </section>
 
-<div class="public-trust-bar" role="list" aria-label="What we stand for">
-  <span role="listitem"><%= render "shared/public/icon", name: "shield", size: 18 %> Thoughtful, careful work</span>
-  <span role="listitem"><%= render "shared/public/icon", name: "ship", size: 18 %> Marine industry focus</span>
-  <span role="listitem"><%= render "shared/public/icon", name: "globe", size: 18 %> West African reach</span>
-  <span role="listitem"><%= render "shared/public/icon", name: "file", size: 18 %> Clear, useful reports</span>
+<div class="public-trust-bar">
+  <ul class="public-trust-bar__list" aria-label="What we stand for">
+    <li><%= render "shared/public/icon", name: "shield", size: 18 %> Thoughtful, careful work</li>
+    <li><%= render "shared/public/icon", name: "ship", size: 18 %> Marine industry focus</li>
+    <li><%= render "shared/public/icon", name: "globe", size: 18 %> West African reach</li>
+    <li><%= render "shared/public/icon", name: "file", size: 18 %> Clear, useful reports</li>
+  </ul>
 </div>
 
-<section class="public-section" id="services">
+<section class="public-section public-section--sky" id="services" aria-labelledby="home-services-heading">
   <%= render "shared/public/section_head",
+        id: "home-services-heading",
+        eyebrow: "Services",
         title: "How we can help",
+        subtitle: "Practical marine support, from the first inspection to the final report.",
         link_label: "See all services",
         link_path: public_services_path %>
   <% if @featured_services.any? %>
-    <div class="public-service-grid">
-      <% @featured_services.each do |service| %>
-        <%= render "shared/public/service_card", service: service %>
-      <% end %>
-    </div>
+    <%= render "shared/public/card_carousel",
+          items: @featured_services, label: "Our services", noun: "service",
+          card: "shared/public/service_card_featured" %>
   <% else %>
     <%= render "shared/public/empty_state",
           icon: "layers",
@@ -44,15 +47,87 @@
   <% end %>
 </section>
 
-<section class="public-section public-section--muted" id="contact">
+<section class="public-section public-section--sand" aria-labelledby="home-process-heading">
   <%= render "shared/public/section_head",
-        title: "Get in touch",
-        subtitle: "Tell us about your project. Existing clients can use the secure portal for ongoing work." %>
-  <div class="public-notice">
-    <p>
-      Online quote and booking forms are not available yet.
-      <%= link_to "Contact ANT Marine", contact_path %> through verified channels,
-      or <%= link_to "sign in", new_session_path %> if you already have a workspace invitation.
-    </p>
-  </div>
+        id: "home-process-heading",
+        eyebrow: "How we work",
+        title: "One clear journey, start to finish.",
+        subtitle: "You always know where things stand and what happens next.",
+        link_label: "How we work",
+        link_path: how_we_work_path %>
+  <%= render "shared/public/process_steps", steps: @homepage.process_steps %>
 </section>
+
+<% if @featured_case_studies.any? %>
+  <section class="public-section" aria-labelledby="home-work-heading">
+    <%= render "shared/public/section_head",
+          id: "home-work-heading",
+          eyebrow: "Our work",
+          title: "Explore our work",
+          subtitle: "Project stories shared with our clients' permission.",
+          link_label: "See project stories",
+          link_path: public_projects_path %>
+    <div class="public-service-grid">
+      <% @featured_case_studies.each do |case_study| %>
+        <%= render "shared/public/project_card", case_study: case_study %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<% if @industry_cards.any? %>
+  <section class="public-section public-section--sky" aria-labelledby="home-industries-heading">
+    <div class="public-industries">
+      <div class="public-industries__intro">
+        <%= render "shared/public/section_head",
+              id: "home-industries-heading",
+              eyebrow: "Who we work with",
+              title: "Industries we serve",
+              subtitle: "Support shaped around complex marine environments, operations and projects." %>
+        <%= link_to "Industries we serve", industries_path, class: "public-text-link public-text-link--arrow" %>
+      </div>
+      <ul class="public-industries__list">
+        <% @industry_cards.each do |card| %>
+          <li class="public-industries__item">
+            <span class="public-industries__icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 16 %></span>
+            <span>
+              <strong><%= card["title"] %></strong>
+              <% if card["description"].present? %>
+                <small><%= card["description"] %></small>
+              <% end %>
+            </span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </section>
+<% end %>
+
+<% if @latest_articles.any? %>
+  <section class="public-section" aria-labelledby="home-insights-heading">
+    <%= render "shared/public/section_head",
+          id: "home-insights-heading",
+          eyebrow: "Insights",
+          title: "Latest insights",
+          subtitle: "Practical maritime guidance and company updates.",
+          link_label: "Read all insights",
+          link_path: public_insights_path %>
+    <div class="public-service-grid">
+      <% @latest_articles.each do |article| %>
+        <%= render "shared/public/content_card",
+              title: article.public_title,
+              summary: article.public_summary,
+              url: public_insight_path(article.slug),
+              icon: "book",
+              eyebrow: article.public_category,
+              link_label: "Read article" %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<%= render "shared/public/cta_band",
+      title: "Tell us what you need.",
+      description: "Share a few details about your vessel, facility or project and our team will be in touch.",
+      action_label: "Get in touch",
+      action_path: contact_path %>

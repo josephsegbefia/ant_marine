@@ -2,26 +2,30 @@
 
 <%= render "shared/public/page_banner",
       eyebrow: "Training",
-      title: "Training and workshops.",
-      lede: "Explore what ANT Marine can offer. Registration and scheduling are arranged separately." %>
+      title: "Build confidence through practical learning.",
+      lede: "Explore what ANT Marine can offer, or ask us to arrange a programme for your team. Dates and registration are confirmed with our team." %>
 
-<section class="public-section public-section--tight-top">
+<section class="public-section public-section--sky public-section--tight-top" aria-labelledby="training-catalogue-heading">
+  <h2 id="training-catalogue-heading" class="sr-only">Training courses</h2>
   <% if @training_offerings.any? %>
-    <div class="public-service-grid">
-      <% @training_offerings.each do |training| %>
-        <%= render "shared/public/content_card",
-              title: training.public_title,
-              summary: training.public_summary,
-              url: public_training_offering_path(training.slug),
-              icon: "book",
-              link_label: "View details" %>
-      <% end %>
-    </div>
+    <%= render "shared/public/card_carousel",
+          items: @training_offerings, label: "Training courses", noun: "course",
+          card: "shared/public/training_card_featured" %>
   <% else %>
-    <%= render "shared/public/empty_state",
+    <%= render "shared/public/featured_empty",
           icon: "book",
+          eyebrow: "Training",
           title: "No published training offerings yet",
-          description: "Course descriptions appear here after editorial review. Dates and registration are confirmed with the ANT Marine team.",
-          primary_action: { label: "Ask about training", path: contact_path } %>
+          summary: "Course descriptions appear here after editorial review. Each course page will explain:",
+          highlights: ["What you will learn", "Who the training is for", "How sessions are delivered", "How to ask about dates"],
+          highlights_label: "What each course page covers",
+          primary: { label: "Ask about training", path: contact_path },
+          secondary: { label: "Explore our services", path: public_services_path } %>
   <% end %>
 </section>
+
+<%= render "shared/public/cta_band",
+      title: "Training for your whole team?",
+      description: "Tell us about your team and what you would like to cover. We will suggest a format and confirm the details with you.",
+      action_label: "Ask about training",
+      action_path: contact_path %>

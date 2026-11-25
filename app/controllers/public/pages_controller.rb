@@ -17,7 +17,15 @@ module Public
       end
       @seo_title = @page.public_seo_title
       @seo_description = @page.public_seo_description
+      @how_we_work = PublicContent::HowWeWorkPresenter.new(@page) if page_key == "how_we_work"
+      @about_services = about_services if page_key == "about"
       render page_key
     end
+
+    private
+
+      def about_services
+        Service.published_catalogue.for_ant_marine.order(:published_display_order, :display_order, :title)
+      end
   end
 end

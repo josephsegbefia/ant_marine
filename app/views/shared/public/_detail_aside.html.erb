@@ -1,0 +1,38 @@
+<%# locals: icon:, title:, heading_id:, primary:, facts: [], text: nil, links: [], links_label: "Related", secondary: nil %>
+<aside class="public-detail__aside" aria-labelledby="<%= heading_id %>">
+  <div class="public-detail-aside public-pattern-surface public-pattern-surface--card">
+    <span class="public-service-card__pattern public-detail-aside__pattern" aria-hidden="true"></span>
+    <span class="public-service-card__icon public-detail-aside__icon" aria-hidden="true">
+      <%= render "shared/public/icon", name: icon, size: 24 %>
+    </span>
+    <h2 id="<%= heading_id %>" class="public-detail-aside__title"><%= title %></h2>
+    <% if local_assigns[:text].present? %>
+      <p class="public-detail-aside__text"><%= text %></p>
+    <% end %>
+    <% facts = Array(local_assigns[:facts]).select { |(_label, value)| value.present? } %>
+    <% if facts.any? %>
+      <dl class="public-detail-facts">
+        <% facts.each do |(label, value)| %>
+          <div class="public-detail-facts__row">
+            <dt><%= label %></dt>
+            <dd><%= value %></dd>
+          </div>
+        <% end %>
+      </dl>
+    <% end %>
+    <% links = Array(local_assigns[:links]) %>
+    <% if links.any? %>
+      <ul class="public-detail-links" aria-label="<%= local_assigns.fetch(:links_label, "Related") %>">
+        <% links.each do |link| %>
+          <li><%= link_to link[:label], link[:path] %></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <div class="public-detail-aside__actions">
+      <%= link_to primary[:label], primary[:path], class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+      <% if local_assigns[:secondary] %>
+        <%= link_to secondary[:label], secondary[:path], class: "public-detail-aside__secondary" %>
+      <% end %>
+    </div>
+  </div>
+</aside>

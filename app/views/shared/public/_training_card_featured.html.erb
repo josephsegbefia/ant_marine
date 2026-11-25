@@ -1,0 +1,11 @@
+<%# locals: item %>
+<%= render "shared/public/featured_card",
+      icon: "book",
+      eyebrow: item.public_delivery_format.presence&.upcase_first || "Training",
+      title: item.public_title,
+      url: public_training_offering_path(item.slug),
+      summary: item.public_summary,
+      highlights: item.public_learning_objectives.first(4),
+      highlights_label: "What you will learn",
+      primary: { label: "View training", path: public_training_offering_path(item.slug) },
+      secondary: { label: "Ask about training", path: contact_path } %>

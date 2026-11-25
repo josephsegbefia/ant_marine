@@ -12,6 +12,17 @@ module PublicContent
       secondary_cta_path: "/services"
     }.freeze
 
+    PROCESS_STEPS = [
+      { title: "Tell us what you need",
+        description: "Share a few details about your vessel, facility or project." },
+      { title: "Agree the scope",
+        description: "We confirm what is needed and prepare a clear quotation where appropriate." },
+      { title: "Work goes ahead",
+        description: "Dates are confirmed once we have agreed the terms with you in writing." },
+      { title: "Receive a reviewed report",
+        description: "Every report is checked and approved before it is shared with you." }
+    ].freeze
+
     def initialize(page)
       @page = page
     end
@@ -19,6 +30,10 @@ module PublicContent
     def data
       published = @page&.publicly_visible? ? @page.public_page_data : {}
       DEFAULTS.merge(published.symbolize_keys)
+    end
+
+    def process_steps
+      PROCESS_STEPS
     end
 
     def seo_title

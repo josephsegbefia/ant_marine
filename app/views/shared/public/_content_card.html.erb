@@ -1,5 +1,6 @@
-<%# locals: title:, summary:, url:, icon:, eyebrow: nil, link_label: "Learn more" %>
-<article class="public-service-card public-service-card--premium public-pattern-surface public-pattern-surface--card">
+<%# locals: title:, summary:, url:, icon:, eyebrow: nil, link_label: "Learn more", highlights: [] %>
+<% highlight_list = Array(local_assigns[:highlights]).compact %>
+<article class="public-service-card public-service-card--premium public-pattern-surface public-pattern-surface--card<%= " public-service-card--rich" if highlight_list.any? %>">
   <span class="public-service-card__pattern" aria-hidden="true"></span>
   <span class="public-service-card__icon" aria-hidden="true">
     <%= render "shared/public/icon", name: icon, size: 24 %>
@@ -11,6 +12,16 @@
     <%= link_to title, url, class: "public-service-card__title-link" %>
   </h3>
   <p class="public-service-card__summary"><%= summary %></p>
+  <% if highlight_list.any? %>
+    <ul class="public-service-card__highlights public-service-card__highlights--compact" aria-label="Highlights">
+      <% highlight_list.each do |item| %>
+        <li>
+          <span class="public-service-card__highlights-icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 12 %></span>
+          <span><%= item %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
   <footer class="public-service-card__footer">
     <%= link_to link_label, url, class: "public-text-link public-text-link--card" %>
   </footer>

@@ -2,27 +2,51 @@
 
 <%= render "shared/public/page_banner",
       eyebrow: "Resources",
-      title: "Guides and publications.",
-      lede: "Approved resources will appear here. Public file downloads require a separate release step." %>
+      title: "Useful information, ready when you need it.",
+      lede: "Approved guides, publications and reference material from ANT Marine. Files are shared only after they are approved for public release." %>
 
-<section class="public-section public-section--tight-top">
+<section class="public-section public-section--tight-top" aria-labelledby="resources-library-heading">
   <% if @resources.any? %>
-    <div class="public-service-grid">
-      <% @resources.each do |resource| %>
-        <%= render "shared/public/content_card",
-              title: resource.public_title,
-              summary: resource.public_summary,
-              url: public_resource_path(resource.slug),
-              icon: "file",
-              eyebrow: resource.public_resource_category,
-              link_label: "View details" %>
-      <% end %>
+    <div class="public-library">
+      <div class="public-library__head">
+        <h2 id="resources-library-heading" class="public-library__title">Resource library</h2>
+        <p class="public-library__count"><%= pluralize(@resources.size, "resource") %></p>
+      </div>
+      <ul class="public-library__list">
+        <% @resources.each do |resource| %>
+          <li class="public-library__item">
+            <span class="public-library__icon" aria-hidden="true"><%= render "shared/public/icon", name: "file", size: 22 %></span>
+            <div class="public-library__body">
+              <p class="public-eyebrow"><%= resource.public_resource_category %></p>
+              <h3 class="public-library__name"><%= link_to resource.public_title, public_resource_path(resource.slug) %></h3>
+              <p class="public-library__summary"><%= resource.public_summary %></p>
+            </div>
+            <div class="public-library__meta">
+              <span class="public-library__badge<%= " public-library__badge--ready" if resource.downloadable? %>">
+                <%= resource.downloadable? ? "Download coming soon" : "Information only" %>
+              </span>
+              <%= link_to "View resource", public_resource_path(resource.slug), class: "public-text-link public-text-link--arrow", "aria-label": "View resource: #{resource.public_title}" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
     </div>
   <% else %>
-    <%= render "shared/public/empty_state",
+    <h2 id="resources-library-heading" class="sr-only">Resource library</h2>
+    <%= render "shared/public/featured_empty",
           icon: "file",
+          eyebrow: "Resources",
           title: "No public resources available yet",
-          description: "Catalogue entries and downloads are published only after storage and release approval.",
-          primary_action: { label: "Contact the team", path: contact_path } %>
+          summary: "Resources are listed here once they are reviewed and approved for public release. The library will include:",
+          highlights: PublicResource::RESOURCE_CATEGORIES.values,
+          highlights_label: "Types of resource",
+          primary: { label: "Contact the team", path: contact_path },
+          secondary: { label: "Read our insights", path: public_insights_path } %>
   <% end %>
+
+  <aside class="public-notice public-notice--spaced public-notice--help" role="note">
+    <strong class="public-notice__title">Looking for a specific document?</strong>
+    <p>Some guides and reports are shared directly with clients. Tell us what you need and we will point you in the right direction.</p>
+    <%= link_to "Contact the team", contact_path, class: "ant-btn-outline ant-btn-primary--compact public-notice__action" %>
+  </aside>
 </section>

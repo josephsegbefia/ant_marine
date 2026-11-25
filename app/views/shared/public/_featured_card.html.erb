@@ -1,0 +1,39 @@
+<%# locals: icon:, eyebrow:, title:, summary:, url: nil, meta: nil, highlights: [], highlights_label: "Highlights", primary: nil, secondary: nil %>
+<% highlights = Array(local_assigns[:highlights]).compact_blank %>
+<% url = local_assigns[:url] %>
+<article class="public-service-card public-service-card--premium public-service-card--featured public-pattern-surface public-pattern-surface--card">
+  <span class="public-service-card__pattern" aria-hidden="true"></span>
+  <div class="public-service-card__featured-media">
+    <span class="public-service-card__icon public-service-card__icon--featured" aria-hidden="true">
+      <%= render "shared/public/icon", name: icon, size: 28 %>
+    </span>
+    <p class="public-eyebrow public-service-card__eyebrow"><%= eyebrow %></p>
+    <% if local_assigns[:meta].present? %>
+      <p class="public-featured-meta"><%= meta %></p>
+    <% end %>
+  </div>
+  <div class="public-service-card__featured-body">
+    <h3 class="public-service-card__title public-service-card__title--featured">
+      <%= url ? link_to(title, url, class: "public-service-card__title-link") : title %>
+    </h3>
+    <p class="public-service-card__summary"><%= summary %></p>
+    <% if highlights.any? %>
+      <ul class="public-service-card__highlights" aria-label="<%= local_assigns.fetch(:highlights_label, "Highlights") %>">
+        <% highlights.each do |item| %>
+          <li>
+            <span class="public-service-card__highlights-icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 14 %></span>
+            <%= item %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    <% primary = local_assigns[:primary] %>
+    <% secondary = local_assigns[:secondary] %>
+    <% if primary || secondary %>
+      <footer class="public-service-card__footer public-service-card__footer--featured">
+        <%= link_to primary[:label], primary[:path], class: "ant-btn-primary ant-btn-primary--compact" if primary %>
+        <%= link_to secondary[:label], secondary[:path], class: "public-text-link" if secondary %>
+      </footer>
+    <% end %>
+  </div>
+</article>

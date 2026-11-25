@@ -1,28 +1,84 @@
 <% content_for :public_nav, "contact" %>
+<% data = @page.public_page_data %>
+<% email = data["email"].presence %>
+<% phone = data["phone"].presence %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Contact us</p>
-  <h1><%= @page.public_title %></h1>
-  <p class="public-hero__lede"><%= @page.public_summary.presence || "A conversation is a good place to start." %></p>
-</section>
+<%= render "shared/public/page_banner",
+      eyebrow: "Contact us",
+      title: @page.public_title,
+      lede: @page.public_summary.presence || "A conversation is a good place to start. Have a question or a project in mind? We will point you in the right direction." %>
 
-<section class="public-section">
-  <div class="grid gap-6 lg:grid-cols-2">
-    <article class="portal-card">
-      <h2>How to reach us</h2>
-      <%= public_render_rich_text(@page.public_body) if @page.public_body.present? %>
-      <% data = @page.public_page_data %>
-      <dl class="mt-4 space-y-3 text-sm text-[#466270]">
-        <div><dt class="font-semibold text-[#102c43]">Email</dt><dd><%= data["email"].presence || "To be confirmed" %></dd></div>
-        <div><dt class="font-semibold text-[#102c43]">Phone</dt><dd><%= data["phone"].presence || "To be confirmed" %></dd></div>
-        <div><dt class="font-semibold text-[#102c43]">Office</dt><dd><%= data["address"].presence || "Accra, Ghana — verified address pending" %></dd></div>
-        <div><dt class="font-semibold text-[#102c43]">Hours</dt><dd><%= data["hours"].presence || "To be confirmed" %></dd></div>
-      </dl>
-      <p class="text-sm text-[#5f7d8c] mt-6">Online quote requests are not available yet. F4-02 will add a secure enquiry form.</p>
+<section class="public-detail" aria-label="Ways to reach ANT Marine">
+  <div class="public-contact">
+    <article class="public-contact__channels public-pattern-surface public-pattern-surface--card" aria-labelledby="contact-reach-heading">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-contact__inner">
+        <h2 id="contact-reach-heading" class="public-detail__heading">How to reach us</h2>
+        <% if @page.public_body.present? %>
+          <div class="public-detail__prose"><%= public_render_rich_text(@page.public_body) %></div>
+        <% end %>
+        <ul class="public-contact__list">
+          <li class="public-contact__item">
+            <span class="public-contact__icon" aria-hidden="true"><%= render "shared/public/icon", name: "pin", size: 20 %></span>
+            <div>
+              <p class="public-contact__label">Office</p>
+              <p class="public-contact__value"><%= data["address"].presence || "Accra, Ghana — full address to be confirmed" %></p>
+            </div>
+          </li>
+          <li class="public-contact__item">
+            <span class="public-contact__icon" aria-hidden="true"><%= render "shared/public/icon", name: "mail", size: 20 %></span>
+            <div>
+              <p class="public-contact__label">Email</p>
+              <p class="public-contact__value"><%= email ? mail_to(email) : "To be confirmed" %></p>
+            </div>
+          </li>
+          <li class="public-contact__item">
+            <span class="public-contact__icon" aria-hidden="true"><%= render "shared/public/icon", name: "phone", size: 20 %></span>
+            <div>
+              <p class="public-contact__label">Phone</p>
+              <p class="public-contact__value"><%= phone ? link_to(phone, "tel:#{phone.gsub(/[^\d+]/, '')}") : "To be confirmed" %></p>
+            </div>
+          </li>
+          <li class="public-contact__item">
+            <span class="public-contact__icon" aria-hidden="true"><%= render "shared/public/icon", name: "clock", size: 20 %></span>
+            <div>
+              <p class="public-contact__label">Hours</p>
+              <p class="public-contact__value"><%= data["hours"].presence || "To be confirmed" %></p>
+            </div>
+          </li>
+        </ul>
+        <p class="public-notice public-notice--spaced">
+          <% if email || phone %>
+            An online enquiry form is coming soon. Until then, please use the details above.
+          <% else %>
+            Our contact details are being confirmed and an online enquiry form is coming soon. Existing clients can reach the team through their workspace.
+          <% end %>
+        </p>
+      </div>
     </article>
-    <article class="portal-card">
-      <h2>Existing clients</h2>
-      <p class="text-sm text-[#5f7d8c]">If you already have a workspace invitation, <%= link_to "sign in", new_session_path %> for ongoing projects, files and reports.</p>
-    </article>
+
+    <div class="public-contact__side">
+      <section class="public-detail-aside" aria-labelledby="contact-clients-heading">
+        <span class="public-service-card__icon public-detail-aside__icon" aria-hidden="true"><%= render "shared/public/icon", name: "users", size: 22 %></span>
+        <h2 id="contact-clients-heading" class="public-detail-aside__title">Already working with us?</h2>
+        <p class="public-detail-aside__text">Sign in to your workspace to follow ongoing projects, share files and read your reports.</p>
+        <div class="public-detail-aside__actions">
+          <%= link_to "Sign in", new_session_path, class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+        </div>
+      </section>
+
+      <section class="public-detail-aside" aria-labelledby="contact-prepare-heading">
+        <h2 id="contact-prepare-heading" class="public-detail-aside__title">Helpful details to include</h2>
+        <ul class="public-check-list public-check-list--single">
+          <% ["Your vessel, facility or project", "Where and when the work is needed", "Any reports or drawings you already have"].each do |tip| %>
+            <li>
+              <span class="public-check-list__icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 16 %></span>
+              <span><%= tip %></span>
+            </li>
+          <% end %>
+        </ul>
+        <%= link_to "Explore our services", public_services_path, class: "public-detail-aside__secondary mt-5 block" %>
+      </section>
+    </div>
   </div>
 </section>

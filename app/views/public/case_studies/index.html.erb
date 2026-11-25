@@ -5,24 +5,21 @@
       title: "Projects and experience.",
       lede: "Examples are published only with appropriate client permission." %>
 
-<section class="public-section public-section--tight-top">
+<section class="public-section public-section--sky public-section--tight-top" aria-labelledby="projects-catalogue-heading">
+  <h2 id="projects-catalogue-heading" class="sr-only">Project stories</h2>
   <% if @case_studies.any? %>
-    <div class="public-service-grid">
-      <% @case_studies.each do |study| %>
-        <%= render "shared/public/content_card",
-              title: study.public_title,
-              summary: study.public_summary,
-              url: public_project_path(study.slug),
-              icon: "brief",
-              link_label: "View story" %>
-      <% end %>
-    </div>
+    <%= render "shared/public/card_carousel",
+          items: @case_studies, label: "Project stories", noun: "project story",
+          card: "shared/public/project_card_featured" %>
   <% else %>
-    <%= render "shared/public/empty_state",
+    <%= render "shared/public/featured_empty",
           icon: "brief",
+          eyebrow: "Project stories",
           title: "Approved project stories are not available yet",
-          description: "We share case studies only when clients have given permission and content has passed editorial review.",
-          guidance: "You can still discuss a similar project with our team.",
-          primary_action: { label: "Contact the team", path: contact_path } %>
+          summary: "We share case studies only when clients have given permission and the content has passed editorial review. Each story will explain:",
+          highlights: ["The client's challenge", "How we approached it", "The work we carried out", "The outcome for the client"],
+          highlights_label: "What each project story covers",
+          primary: { label: "Discuss a similar project", path: contact_path },
+          secondary: { label: "Explore our services", path: public_services_path } %>
   <% end %>
 </section>

@@ -11,7 +11,7 @@ class PublicLayoutTest < ActionDispatch::IntegrationTest
     assert_no_match(/Oceanic Shipping/, response.body)
     assert_no_match(/GH₵/, response.body)
     assert_match(/Thoughtful, careful work/, response.body)
-    assert_includes response.body, "hero-maritime"
+    assert_select ".public-hero-art__svg"
   end
 
   test "authenticated user visiting root is redirected to workspace" do

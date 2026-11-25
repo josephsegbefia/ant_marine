@@ -31,6 +31,13 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 
 | ADR-F4-02A-001 | Phase 4 sequencing | Staff quotation management ships in **F4-02A** per PO roadmap; master spec **F4-02** anonymous intake and **F4-03** full commercial client workflow remain scheduled—not deleted from spec | **APPROVED** 2026-11-24 | PO F4-02A authorisation; documented in `docs/architecture/F4_02A_QUOTATIONS.md` |
 
+**F4-01 homepage overhaul (2026-11-25, product owner):**
+
+- Homepage follows **P01** (hero, trust strip, services, our work, closing call to action, footer) **plus** short teasers from approved screens: **G03** "How we work" steps, **P09** industries, **P13** latest insights.
+- Hero uses the prototype's **illustrated sea-and-vessel artwork** (P01/R01) instead of the AI photograph; `hero-maritime.jpg` stays in assets, unused.
+- Header, footer and heading typography changes apply to **all public pages**; page bodies unchanged.
+- Project and insight sections render **published records only** and are hidden when none exist; no sample project claims. Closing call to action links to Contact until the P19 quote form exists. No unconfirmed office location in the footer.
+
 **F4-01A public content (2026-11-23):**
 
 - **`services.status` workflow** extended to `draft`, `in_review`, `approved`, `published`, `archived` with `published_*` snapshot columns for live site reads (supersedes P2.3 catalogue three-value enum for marketing services in this app).

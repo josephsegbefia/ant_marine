@@ -2,27 +2,24 @@
 
 <%= render "shared/public/page_banner",
       eyebrow: "Insights",
-      title: "Useful maritime guidance and updates.",
-      lede: "Articles are published only after editorial review." %>
+      title: "Ideas, updates and knowledge worth sharing.",
+      lede: "Plain-English perspectives on the marine industry, projects and safety. Every article is reviewed before it is published." %>
 
-<section class="public-section public-section--tight-top">
+<section class="public-section public-section--sky public-section--tight-top" aria-labelledby="insights-catalogue-heading">
+  <h2 id="insights-catalogue-heading" class="sr-only">Articles</h2>
   <% if @articles.any? %>
-    <div class="public-service-grid">
-      <% @articles.each do |article| %>
-        <%= render "shared/public/content_card",
-              title: article.public_title,
-              summary: article.public_summary,
-              url: public_insight_path(article.slug),
-              icon: "file",
-              eyebrow: article.public_category,
-              link_label: "Read article" %>
-      <% end %>
-    </div>
+    <%= render "shared/public/card_carousel",
+          items: @articles, label: "Articles", noun: "article",
+          card: "shared/public/article_card_featured" %>
   <% else %>
-    <%= render "shared/public/empty_state",
+    <%= render "shared/public/featured_empty",
           icon: "file",
+          eyebrow: "Insights",
           title: "No published articles yet",
-          description: "Insights and guidance will appear here when editorial content is approved for the public site.",
-          primary_action: { label: "Explore services", path: public_services_path } %>
+          summary: "Insights and guidance will appear here once they are approved for the public site. You can expect:",
+          highlights: Article::CATEGORIES.values,
+          highlights_label: "Types of article",
+          primary: { label: "Explore services", path: public_services_path },
+          secondary: { label: "Contact the team", path: contact_path } %>
   <% end %>
 </section>

@@ -1,12 +1,49 @@
 <% content_for :public_nav, "how_we_work" %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Working with ANT Marine</p>
-  <h1><%= @page.public_title %></h1>
+<%= render "shared/public/page_banner",
+      eyebrow: "Working with ANT Marine",
+      title: @page.public_title,
+      lede: @how_we_work.lede,
+      primary_action: { label: "Get in touch", path: contact_path } %>
+
+<section class="public-section public-section--sand" aria-labelledby="how-process-heading">
+  <%= render "shared/public/section_head",
+        id: "how-process-heading",
+        eyebrow: "The journey",
+        title: "Four straightforward steps",
+        subtitle: "The same path we describe on our homepage — here in full." %>
+  <%= render "shared/public/process_steps", steps: @how_we_work.process_steps %>
 </section>
 
-<section class="public-section">
-  <article class="portal-card">
-    <%= public_render_rich_text(@page.public_body) %>
-  </article>
+<section class="public-section" aria-labelledby="how-assurance-heading">
+  <%= render "shared/public/section_head",
+        id: "how-assurance-heading",
+        eyebrow: "Before we begin",
+        title: "Honest expectations",
+        subtitle: "Scope, dates and reports are agreed with you up front." %>
+  <div class="public-service-grid">
+    <% @how_we_work.assurance_cards.each do |card| %>
+      <article class="portal-card public-service-card">
+        <h3 class="public-steps__title"><%= card["title"] %></h3>
+        <p class="public-steps__text"><%= card["description"] %></p>
+      </article>
+    <% end %>
+  </div>
 </section>
+
+<% if @page.public_body.present? %>
+  <section class="public-section public-section--muted public-section--tight-top">
+    <article class="portal-card">
+      <h2 class="public-detail__heading">More about how we work</h2>
+      <div class="public-detail__prose">
+        <%= public_render_rich_text(@page.public_body) %>
+      </div>
+    </article>
+  </section>
+<% end %>
+
+<%= render "shared/public/cta_band",
+      title: "Ready to start the conversation?",
+      description: "Share a few details about your vessel, facility or project and our team will follow up.",
+      action_label: "Contact the team",
+      action_path: contact_path %>

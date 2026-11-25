@@ -7,12 +7,12 @@ export default class extends Controller {
   }
 
   connect() {
-    this.busy = false
+    this.isBusy = false
   }
 
   busy(event) {
-    if (this.busy) return
-    this.busy = true
+    if (this.isBusy) return
+    this.isBusy = true
 
     const submitters = this.submitTargets.length > 0
       ? this.submitTargets
@@ -31,7 +31,7 @@ export default class extends Controller {
   }
 
   idle() {
-    this.busy = false
+    this.isBusy = false
     const submitters = this.submitTargets.length > 0
       ? this.submitTargets
       : Array.from(this.element.querySelectorAll("[type='submit'], button[data-disable-with]"))

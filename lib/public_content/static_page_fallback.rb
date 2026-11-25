@@ -23,19 +23,24 @@ module PublicContent
     end
 
     def public_summary
-      ""
+      case page_key
+      when "how_we_work"
+        PublicContent::HowWeWorkPresenter::DEFAULT_LEDE
+      else
+        ""
+      end
     end
 
     def public_body
       case page_key
       when "about"
-        "ANT Marine W.A. provides marine consulting, surveys, technical support and training. Leadership details and credentials will be added when formally approved."
+        "ANT Marine W.A. provides marine consulting, surveys, technical support and training for organisations working on and around the water."
       when "industries"
-        "We work with marine operators, terminals, contractors and public agencies. Industry-specific copy is managed through the staff website tools."
+        "We work with marine operators, terminals, contractors and public agencies."
       when "how_we_work"
-        "We start with a conversation about your needs, confirm scope, and provide a quotation where appropriate. A preferred date is not a confirmed booking until ANT Marine agrees terms in writing."
+        ""
       when "contact"
-        "Contact channels will appear here once verified. If you already work with ANT Marine, sign in to your workspace for ongoing projects."
+        "Tell us what you need and we will point you in the right direction."
       else
         ""
       end
@@ -45,6 +50,11 @@ module PublicContent
       case page_key
       when "contact"
         { "email" => nil, "phone" => nil, "address" => nil, "hours" => nil }
+      when "how_we_work"
+        {
+          "process_steps" => PublicContent::HomepagePresenter::PROCESS_STEPS.map(&:stringify_keys),
+          "assurance_cards" => PublicContent::HowWeWorkPresenter::DEFAULT_ASSURANCE_CARDS.map(&:stringify_keys)
+        }
       when "industries"
         {
           "industry_cards" => [
@@ -66,7 +76,7 @@ module PublicContent
     end
 
     def public_seo_description
-      public_body.truncate(155)
+      (public_summary.presence || public_body).truncate(155)
     end
   end
 end

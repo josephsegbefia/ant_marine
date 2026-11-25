@@ -1,19 +1,36 @@
 <% content_for :public_nav, "industries" %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">Who we work with</p>
-  <h1><%= @page.public_title %></h1>
-  <p class="public-hero__lede"><%= @page.public_summary.presence || "Support tailored to complex marine environments and projects." %></p>
+<%= render "shared/public/page_banner",
+      eyebrow: "Who we work with",
+      title: @page.public_title,
+      lede: @page.public_summary.presence || "Support tailored to complex marine environments, operations and projects.",
+      primary_action: { label: "Talk to our team", path: contact_path } %>
+
+<section class="public-section public-section--sky public-section--tight-top" aria-labelledby="industries-list-heading">
+  <% if @page.public_body.present? %>
+    <div class="public-industries-intro">
+      <%= public_render_rich_text(@page.public_body) %>
+    </div>
+  <% end %>
+  <h2 id="industries-list-heading" class="sr-only">Industries</h2>
+  <% cards = Array(@page.public_page_data["industry_cards"]).select { |card| card["title"].present? } %>
+  <ul class="public-industry-grid">
+    <% cards.each_with_index do |card, index| %>
+      <li class="public-industry-card">
+        <span class="public-service-card__icon" aria-hidden="true">
+          <%= render "shared/public/icon", name: public_industry_icon(index), size: 24 %>
+        </span>
+        <h3 class="public-industry-card__title"><%= card["title"] %></h3>
+        <% if card["description"].present? %>
+          <p class="public-industry-card__text"><%= card["description"] %></p>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
 </section>
 
-<section class="public-section">
-  <%= public_render_rich_text(@page.public_body) if @page.public_body.present? %>
-  <div class="public-service-grid mt-6">
-    <% (@page.public_page_data["industry_cards"] || []).each do |card| %>
-      <article class="portal-card public-service-card">
-        <h2><%= card["title"] %></h2>
-        <p><%= card["description"] %></p>
-      </article>
-    <% end %>
-  </div>
-</section>
+<%= render "shared/public/cta_band",
+      title: "Don't see your industry?",
+      description: "Our team supports a wide range of marine work. Tell us about your vessel, facility or project and we will let you know how we can help.",
+      action_label: "Get in touch",
+      action_path: contact_path %>

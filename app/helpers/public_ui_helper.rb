@@ -37,4 +37,33 @@ module PublicUiHelper
   def public_service_icon_key(service)
     PublicContent::IconCatalog.resolve(service.published_icon_key.presence || service.icon_key)
   end
+
+  INDUSTRY_ICONS = %w[ship brief layers wrench shield leaf anchor globe].freeze
+
+  def public_industry_icon(index)
+    INDUSTRY_ICONS[index % INDUSTRY_ICONS.size]
+  end
+
+  def public_case_study_service_area(case_study)
+    StaffWebsiteHelper::SERVICE_CATEGORY_OPTIONS[case_study.published_service_category.to_s]
+  end
+
+  def public_case_study_outcome_excerpt(case_study)
+    text = strip_tags(case_study.published_outcome.to_s).squish
+    truncate(text, length: 200, separator: " ") if text.present?
+  end
+
+  def public_service_card_summary(service)
+    summary = service.public_summary.to_s.strip
+    return summary if summary.length >= 48
+
+    items = service.public_scope_items
+    if items.size >= 2
+      "#{items.first} and #{items.second}."
+    elsif items.size == 1
+      "#{summary.presence || 'Practical support'} — #{items.first}."
+    else
+      summary.presence || "Independent marine support for vessels, facilities and technical projects."
+    end
+  end
 end

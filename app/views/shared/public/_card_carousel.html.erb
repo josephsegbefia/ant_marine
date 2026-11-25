@@ -1,0 +1,67 @@
+<%# locals: items, label, noun, card, card_locals: {} %>
+<% items = items.to_a %>
+<% render_card = ->(item) { render(card, **local_assigns.fetch(:card_locals, {}), item: item) } %>
+<% if items.size == 1 %>
+  <div class="public-service-showcase public-service-showcase--solo">
+    <%= render_card.call(items.first) %>
+  </div>
+<% else %>
+  <div class="public-card-carousel"
+       role="region"
+       aria-roledescription="carousel"
+       aria-label="<%= label %>"
+       data-controller="card-carousel"
+       data-card-carousel-noun-value="<%= noun.capitalize %>"
+       data-action="mouseenter->card-carousel#hold mouseleave->card-carousel#release focusin->card-carousel#hold focusout->card-carousel#release">
+    <div class="public-card-carousel__viewport">
+      <button type="button" class="public-card-carousel__arrow public-card-carousel__arrow--prev"
+              aria-label="Previous <%= noun %>"
+              data-action="card-carousel#previous">
+        <%= render "shared/public/icon", name: "chevron-left", size: 20 %>
+      </button>
+
+      <div class="public-card-carousel__track"
+           data-card-carousel-target="track"
+           data-action="scroll->card-carousel#sync">
+        <% items.each_with_index do |item, index| %>
+          <div class="public-card-carousel__slide"
+               role="group"
+               aria-roledescription="slide"
+               aria-label="<%= index + 1 %> of <%= items.size %>: <%= item.public_title %>"
+               data-card-carousel-target="slide">
+            <%= render_card.call(item) %>
+          </div>
+        <% end %>
+      </div>
+
+      <button type="button" class="public-card-carousel__arrow public-card-carousel__arrow--next"
+              aria-label="Next <%= noun %>"
+              data-action="card-carousel#next">
+        <%= render "shared/public/icon", name: "chevron-right", size: 20 %>
+      </button>
+    </div>
+
+    <div class="public-card-carousel__controls">
+      <div class="public-card-carousel__dots">
+        <% items.each_with_index do |item, index| %>
+          <button type="button" class="public-card-carousel__dot"
+                  aria-label="Show <%= item.public_title %>"
+                  aria-current="<%= index.zero? ? "true" : "false" %>"
+                  data-card-carousel-target="dot"
+                  data-action="card-carousel#show"
+                  data-card-carousel-index-param="<%= index %>"></button>
+        <% end %>
+      </div>
+      <p class="public-card-carousel__status" aria-live="polite" data-card-carousel-target="status">
+        <%= noun.capitalize %> 1 of <%= items.size %>
+      </p>
+      <button type="button" class="public-card-carousel__toggle"
+              aria-label="Pause automatic scrolling"
+              data-card-carousel-target="toggle"
+              data-action="card-carousel#toggle">
+        <span class="public-card-carousel__toggle-icon public-card-carousel__toggle-icon--pause"><%= render "shared/public/icon", name: "pause", size: 16 %></span>
+        <span class="public-card-carousel__toggle-icon public-card-carousel__toggle-icon--play"><%= render "shared/public/icon", name: "play", size: 16 %></span>
+      </button>
+    </div>
+  </div>
+<% end %>

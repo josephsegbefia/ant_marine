@@ -1,13 +1,41 @@
 <% content_for :public_nav, "resources" %>
-<section class="public-section public-page-banner">
-  <h1><%= @resource.public_title %></h1>
-  <p class="public-hero__lede"><%= @resource.public_summary %></p>
-</section>
-<section class="public-section portal-card article">
-  <%= public_render_rich_text(@resource.public_body) %>
-  <% if @resource.downloadable? %>
-    <p class="mt-4 text-sm text-[#5f7d8c]">Download will be enabled when file release is approved.</p>
-  <% else %>
-    <p class="mt-4 text-sm text-[#5f7d8c]">This listing is informational. File download is not available yet.</p>
-  <% end %>
+
+<%= render "shared/public/page_banner",
+      eyebrow: @resource.public_resource_category,
+      title: @resource.public_title,
+      lede: @resource.public_summary %>
+
+<section class="public-detail">
+  <nav class="public-breadcrumb" aria-label="Breadcrumb">
+    <%= link_to "Resources", public_resources_path %>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page"><%= @resource.public_title %></span>
+  </nav>
+
+  <div class="public-detail__layout">
+    <article class="public-detail__article public-pattern-surface public-pattern-surface--card">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-detail__article-inner">
+        <% if @resource.public_body.present? %>
+          <div class="public-detail__prose public-detail__prose--reading">
+            <%= public_render_rich_text(@resource.public_body) %>
+          </div>
+        <% else %>
+          <p class="public-detail__lede"><%= @resource.public_summary %></p>
+        <% end %>
+      </div>
+    </article>
+
+    <%= render "shared/public/detail_aside",
+          heading_id: "resource-info-heading",
+          icon: @resource.downloadable? ? "download" : "file",
+          title: "Resource details",
+          facts: [
+            ["Type", @resource.public_resource_category],
+            ["Related to", @resource.published_related_content_label.presence],
+            ["Availability", @resource.downloadable? ? "Download coming soon" : "Information only — no file to download"]
+          ],
+          primary: { label: "Ask about this resource", path: contact_path },
+          secondary: { label: "All resources", path: public_resources_path } %>
+  </div>
 </section>

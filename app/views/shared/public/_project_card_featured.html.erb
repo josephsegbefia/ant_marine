@@ -1,0 +1,40 @@
+<%# locals: item %>
+<% case_study = item %>
+<% industry = case_study.published_industry.presence %>
+<% service_area = public_case_study_service_area(case_study) %>
+<% outcome = public_case_study_outcome_excerpt(case_study) %>
+<article class="public-service-card public-service-card--premium public-service-card--featured public-pattern-surface public-pattern-surface--card">
+  <span class="public-service-card__pattern" aria-hidden="true"></span>
+  <div class="public-service-card__featured-media">
+    <span class="public-service-card__icon public-service-card__icon--featured" aria-hidden="true">
+      <%= render "shared/public/icon", name: "brief", size: 28 %>
+    </span>
+    <p class="public-eyebrow public-service-card__eyebrow"><%= industry || "Project story" %></p>
+  </div>
+  <div class="public-service-card__featured-body">
+    <h3 class="public-service-card__title public-service-card__title--featured">
+      <%= link_to case_study.public_title, public_project_path(case_study.slug), class: "public-service-card__title-link" %>
+    </h3>
+    <p class="public-service-card__summary"><%= case_study.public_summary %></p>
+    <% if service_area || outcome %>
+      <dl class="public-project-facts">
+        <% if service_area %>
+          <div class="public-project-facts__item">
+            <dt>Service area</dt>
+            <dd><%= service_area %></dd>
+          </div>
+        <% end %>
+        <% if outcome %>
+          <div class="public-project-facts__item public-project-facts__item--wide">
+            <dt>Outcome</dt>
+            <dd><%= outcome %></dd>
+          </div>
+        <% end %>
+      </dl>
+    <% end %>
+    <footer class="public-service-card__footer public-service-card__footer--featured">
+      <%= link_to "Read the story", public_project_path(case_study.slug), class: "ant-btn-primary ant-btn-primary--compact" %>
+      <%= link_to "Discuss a similar project", contact_path, class: "public-text-link" %>
+    </footer>
+  </div>
+</article>

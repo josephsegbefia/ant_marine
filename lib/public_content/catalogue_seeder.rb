@@ -174,7 +174,9 @@ module PublicContent
       when "how_we_work"
         {
           title: "How we work",
-          body: PublicContent::StaticPageFallback.new("how_we_work").public_body
+          summary: PublicContent::HowWeWorkPresenter::DEFAULT_LEDE,
+          body: PublicContent::StaticPageFallback.new("how_we_work").public_body,
+          page_data: PublicContent::StaticPageFallback.new("how_we_work").public_page_data
         }
       when "contact"
         {

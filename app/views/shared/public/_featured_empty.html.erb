@@ -1,0 +1,4 @@
+<%# locals: same as shared/public/featured_card, without url %>
+<div class="public-service-showcase public-service-showcase--solo" role="status">
+  <%= render "shared/public/featured_card", **local_assigns.except(:url) %>
+</div>

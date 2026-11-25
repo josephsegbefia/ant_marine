@@ -63,6 +63,7 @@
 | F4-01 final visual / editorial acceptance | — | **Open** | PO browser and content richness checks; not marked complete in F4-02A |
 | F4-02A Quotation management foundation | 2026-11-24 | **Code complete — PO acceptance** | Staff dashboard, 5-step editor, transitions, PDF (Prawn), `quotes.approve`; delivery gated; **not pushed** |
 | F4-02A Quotation editor policy fix | 2026-11-24 | **Code complete — PO retest** | `edit?` policy; POST-only draft creation; regression tests; browser **unverified**; **not pushed** |
+| F4-01 Homepage overhaul (P01 + G03/P09/P13 teasers) | 2026-11-25 | **Code complete — PO visual review** | Illustrated hero, aligned shared gutter, serif section headings, process steps, industries, published-only projects/insights, navy closing call to action, 4-column footer, skip link; `verify_foundation.sh` PASS (**329 tests**); homepage browser check @1440/390; other public pages render 200 but visual pass **unverified**; **not committed** |
 | F4-01A Service editor UX | 2026-11-23 | **Delivered — PO visual sign-off pending** | Guided four-step editor + list builders + staff draft preview; Pundit fix `32503c1`; automated suite green; **not pushed** |
 | P3 browser acceptance (PO) | 2026-11-23 | **Accepted — PO manual** | All six checks: staff sign-in + **S01**, **M08**, responsive staff nav, dev client invite, **C01**, staff/client separation; authority: Product Owner |
 | Phase 3 local engineering | 2026-11-23 | **ACCEPTED** | Ready for controlled `origin/main` publication; **Phase 1 formal sign-off still open** |

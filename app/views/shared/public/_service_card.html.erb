@@ -1,8 +1,0 @@
-<%# locals: service %>
-<%= render "shared/public/content_card",
-      title: service.public_title,
-      summary: service.public_summary,
-      url: public_service_path(service.slug),
-      icon: public_service_icon_key(service),
-      eyebrow: public_service_category_label(service),
-      link_label: "Learn more" %>

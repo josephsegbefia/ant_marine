@@ -1,13 +1,68 @@
 <% content_for :public_nav, "about" %>
 
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow">About us</p>
-  <h1><%= @page.public_title %></h1>
-  <p class="public-hero__lede"><%= @page.public_summary.presence || "Focused marine expertise. Practical advice." %></p>
+<%= render "shared/public/page_banner",
+      eyebrow: "About us",
+      title: @page.public_title,
+      lede: @page.public_summary.presence || "Focused marine expertise. Practical advice.",
+      primary_action: { label: "Get in touch", path: contact_path } %>
+
+<section class="public-section public-section--tight-top" aria-labelledby="about-overview-heading">
+  <div class="public-about">
+    <article class="public-about__story public-pattern-surface public-pattern-surface--card">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-about__story-inner">
+        <p class="public-eyebrow">Who we are</p>
+        <h2 id="about-overview-heading" class="public-about__heading">Marine expertise, based in Ghana.</h2>
+        <% if @page.public_body.present? %>
+          <div class="public-detail__prose public-about__prose">
+            <%= public_render_rich_text(@page.public_body) %>
+          </div>
+        <% end %>
+        <ul class="public-about__pillars" aria-label="What we stand for">
+          <% [["globe", "Ghana-based, West African focus"], ["wrench", "Technical expertise"], ["shield", "Thoughtful, careful work"], ["file", "Clear, useful reports"]].each do |(icon, label)| %>
+            <li>
+              <span class="public-about__pillar-icon" aria-hidden="true"><%= render "shared/public/icon", name: icon, size: 18 %></span>
+              <%= label %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </article>
+
+    <aside class="public-about__services" aria-labelledby="about-services-heading">
+      <h2 id="about-services-heading" class="public-detail-aside__title">What we do</h2>
+      <% if @about_services.any? %>
+        <ul class="public-about__service-list">
+          <% @about_services.each do |service| %>
+            <li>
+              <%= link_to public_service_path(service.slug) do %>
+                <span class="public-about__service-icon" aria-hidden="true"><%= render "shared/public/icon", name: public_service_icon_key(service), size: 18 %></span>
+                <span><%= service.public_title %></span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="public-detail-aside__text">Marine consulting, surveys, technical support and training. Service pages will appear here once they are published.</p>
+      <% end %>
+      <%= link_to "See all services", public_services_path, class: "ant-btn-outline ant-btn-primary--compact w-full justify-center" %>
+    </aside>
+  </div>
 </section>
 
-<section class="public-section">
-  <article class="portal-card">
-    <%= public_render_rich_text(@page.public_body) %>
-  </article>
+<section class="public-section public-section--sand" aria-labelledby="about-process-heading">
+  <%= render "shared/public/section_head",
+        id: "about-process-heading",
+        eyebrow: "Working with us",
+        title: "One clear journey, start to finish.",
+        subtitle: "You always know where things stand and what happens next.",
+        link_label: "How we work",
+        link_path: how_we_work_path %>
+  <%= render "shared/public/process_steps", steps: PublicContent::HomepagePresenter::PROCESS_STEPS %>
 </section>
+
+<%= render "shared/public/cta_band",
+      title: "Let's talk about your project.",
+      description: "Share a few details about your vessel, facility or project and our team will be in touch.",
+      action_label: "Get in touch",
+      action_path: contact_path %>

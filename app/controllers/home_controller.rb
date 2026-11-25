@@ -11,11 +11,20 @@ class HomeController < ApplicationController
     @featured_services = Service.published_catalogue.for_ant_marine
       .order(:published_display_order, :display_order, :title)
       .limit(3)
+    @featured_case_studies = CaseStudy.published_catalogue.for_ant_marine.ordered.limit(3)
+    @latest_articles = Article.published_catalogue.for_ant_marine.ordered.limit(3)
+    @industry_cards = homepage_industry_cards
     @seo_title = @homepage.seo_title
     @seo_description = @homepage.seo_description
   end
 
   private
+
+    def homepage_industry_cards
+      page = PublicSitePage.find_published_by_key("industries") ||
+        PublicContent::StaticPageFallback.new("industries")
+      Array(page.public_page_data["industry_cards"]).select { |card| card["title"].present? }.first(6)
+    end
 
     def redirect_signed_in_portal_users
       return unless authenticated? && Current.membership&.portal_access?

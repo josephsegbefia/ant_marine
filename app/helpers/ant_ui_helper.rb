@@ -45,7 +45,7 @@ module AntUiHelper
              error: options.delete(:error),
              required: options.delete(:required),
              context: options.delete(:context) || :access,
-             html_options: options
+             html_options: extract_html_options(options)
            }
   end
 
@@ -73,7 +73,7 @@ module AntUiHelper
              placeholder: options.delete(:placeholder) || "Choose one",
              context: options.delete(:context) || :access,
              select_options: options.delete(:select_options) || {},
-             html_options: options
+             html_options: extract_html_options(options)
            }
   end
 
@@ -165,6 +165,11 @@ module AntUiHelper
   end
 
   private
+
+    def extract_html_options(options)
+      nested = options.delete(:html_options) || {}
+      options.merge(nested) { |_key, outer, inner| outer.is_a?(Hash) && inner.is_a?(Hash) ? outer.merge(inner) : inner }
+    end
 
     def normalize_empty_state_action(action)
       return nil if action.blank?

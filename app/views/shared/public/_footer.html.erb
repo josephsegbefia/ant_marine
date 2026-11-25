@@ -1,24 +1,36 @@
 <footer class="public-footer">
   <div class="public-footer__grid">
-    <div>
+    <div class="public-footer__brand">
       <strong>ANT Marine W.A.</strong>
       <p>Marine consulting, surveys, technical support and training for Ghana and West Africa.</p>
     </div>
-    <div>
+    <nav aria-label="Explore">
       <b>Explore</b>
-      <p class="public-footer__links">
-        <%= link_to "Services", public_services_path %>
-        · <%= link_to "Our work", public_projects_path %>
-        · <%= link_to "Insights", public_insights_path %>
-        · <%= link_to "Training", public_training_path %>
-        · <%= link_to "Resources", public_resources_path %>
-      </p>
-    </div>
+      <ul class="public-footer__links">
+        <li><%= link_to "Services", public_services_path %></li>
+        <li><%= link_to "Our work", public_projects_path %></li>
+        <li><%= link_to "Training", public_training_path %></li>
+        <li><%= link_to "Insights", public_insights_path %></li>
+        <li><%= link_to "Resources", public_resources_path %></li>
+      </ul>
+    </nav>
+    <nav aria-label="Company">
+      <b>Company</b>
+      <ul class="public-footer__links">
+        <li><%= link_to "About ANT Marine", about_path %></li>
+        <li><%= link_to "Industries we serve", industries_path %></li>
+        <li><%= link_to "How we work", how_we_work_path %></li>
+      </ul>
+    </nav>
     <div>
       <b>Get in touch</b>
-      <p><%= link_to "Contact ANT Marine", contact_path %> or sign in if you already work with us.</p>
-      <p class="mt-2"><%= link_to "Sign in to your workspace", new_session_path %></p>
+      <ul class="public-footer__links">
+        <li><%= link_to "Contact ANT Marine", contact_path %></li>
+        <li><%= link_to "Sign in to your workspace", new_session_path %></li>
+      </ul>
     </div>
   </div>
-  <p class="public-footer__meta">ANT Marine W.A. · Ghana &amp; West Africa</p>
+  <div class="public-footer__meta">
+    <p>&copy; <%= Date.current.year %> ANT Marine W.A. · Ghana &amp; West Africa</p>
+  </div>
 </footer>

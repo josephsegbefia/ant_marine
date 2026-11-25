@@ -12,6 +12,7 @@ module Public
       @article = Article.published_catalogue.for_ant_marine.find_by(slug: params[:slug])
       raise ActionController::RoutingError, "Not Found" unless @article
 
+      @related_articles = Article.published_catalogue.for_ant_marine.where.not(id: @article.id).ordered.limit(3)
       @seo_title = @article.public_seo_title
       @seo_description = @article.public_seo_description
     end

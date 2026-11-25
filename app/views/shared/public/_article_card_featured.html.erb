@@ -1,0 +1,10 @@
+<%# locals: item %>
+<%= render "shared/public/featured_card",
+      icon: "file",
+      eyebrow: item.public_category,
+      meta: (item.published_at && "Published #{l(item.published_at.to_date, format: :long)}"),
+      title: item.public_title,
+      url: public_insight_path(item.slug),
+      summary: item.public_summary,
+      primary: { label: "Read article", path: public_insight_path(item.slug) },
+      secondary: { label: "Ask a question", path: contact_path } %>

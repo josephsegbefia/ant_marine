@@ -1,10 +1,41 @@
 <% content_for :public_nav, "insights" %>
-<section class="public-section public-page-banner">
-  <p class="public-eyebrow"><%= @article.public_category %></p>
-  <h1><%= @article.public_title %></h1>
-  <p class="public-hero__lede"><%= @article.public_summary %></p>
-</section>
-<section class="public-section portal-card article">
-  <%= public_render_rich_text(@article.public_body) %>
-  <p class="mt-6"><%= link_to "All insights", public_insights_path %></p>
+
+<%= render "shared/public/page_banner",
+      eyebrow: @article.public_category,
+      title: @article.public_title,
+      lede: @article.public_summary %>
+
+<section class="public-detail">
+  <nav class="public-breadcrumb" aria-label="Breadcrumb">
+    <%= link_to "Insights", public_insights_path %>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page"><%= @article.public_title %></span>
+  </nav>
+
+  <div class="public-detail__layout">
+    <article class="public-detail__article public-pattern-surface public-pattern-surface--card">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-detail__article-inner">
+        <% if @article.published_at %>
+          <p class="public-detail__meta">
+            <%= render "shared/public/icon", name: "calendar", size: 14 %>
+            Published <%= l(@article.published_at.to_date, format: :long) %>
+          </p>
+        <% end %>
+        <div class="public-detail__prose public-detail__prose--reading">
+          <%= public_render_rich_text(@article.public_body) %>
+        </div>
+      </div>
+    </article>
+
+    <%= render "shared/public/detail_aside",
+          heading_id: "article-aside-heading",
+          icon: "book",
+          title: "Have a question?",
+          text: "If this article raises questions about your own vessel, facility or project, our team is happy to help.",
+          links: @related_articles.map { |related| { label: related.public_title, path: public_insight_path(related.slug) } },
+          links_label: "More insights",
+          primary: { label: "Ask a question", path: contact_path },
+          secondary: { label: "All insights", path: public_insights_path } %>
+  </div>
 </section>

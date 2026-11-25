@@ -1,9 +1,77 @@
 <% content_for :public_nav, "training" %>
-<section class="public-section public-page-banner">
-  <h1><%= @training.public_title %></h1>
-  <p class="public-hero__lede"><%= @training.public_summary %></p>
-</section>
-<section class="public-section portal-card article">
-  <%= public_render_rich_text(@training.public_body) %>
-  <p class="mt-6"><%= link_to "Contact us about training", contact_path %></p>
+<% objectives = @training.public_learning_objectives %>
+<% topics = @training.public_topics %>
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Training",
+      title: @training.public_title,
+      lede: @training.public_summary,
+      primary_action: { label: "Ask about this training", path: contact_path } %>
+
+<section class="public-detail">
+  <nav class="public-breadcrumb" aria-label="Breadcrumb">
+    <%= link_to "Training", public_training_path %>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page"><%= @training.public_title %></span>
+  </nav>
+
+  <div class="public-detail__layout">
+    <article class="public-detail__article public-pattern-surface public-pattern-surface--card">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-detail__article-inner">
+        <% if @training.public_body.present? %>
+          <section class="public-detail__section">
+            <h2 class="public-detail__heading">About this training</h2>
+            <div class="public-detail__prose"><%= public_render_rich_text(@training.public_body) %></div>
+          </section>
+          <hr class="public-detail__divider" />
+        <% end %>
+
+        <% if objectives.any? %>
+          <section class="public-detail__section">
+            <h2 class="public-detail__heading">What you will learn</h2>
+            <ul class="public-check-list">
+              <% objectives.each do |item| %>
+                <li>
+                  <span class="public-check-list__icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 16 %></span>
+                  <span><%= item %></span>
+                </li>
+              <% end %>
+            </ul>
+          </section>
+          <hr class="public-detail__divider" />
+        <% end %>
+
+        <% if topics.any? %>
+          <section class="public-detail__section">
+            <h2 class="public-detail__heading">Topics covered</h2>
+            <ul class="public-topic-list">
+              <% topics.each do |topic| %>
+                <li><%= topic %></li>
+              <% end %>
+            </ul>
+          </section>
+          <hr class="public-detail__divider" />
+        <% end %>
+
+        <section class="public-detail__section">
+          <h2 class="public-detail__heading">How to join</h2>
+          <p class="public-detail__lede">Send us an enquiry for available dates, or ask us to arrange this training for your organisation. Dates, location and fees are confirmed with you before any booking.</p>
+        </section>
+      </div>
+    </article>
+
+    <%= render "shared/public/detail_aside",
+          heading_id: "training-info-heading",
+          icon: "book",
+          title: "Course information",
+          facts: [
+            ["Who it is for", @training.public_audience],
+            ["Format", @training.public_delivery_format.presence&.upcase_first],
+            ["Dates", "Confirmed with our team"],
+            ["Fees", "Available on request"]
+          ],
+          primary: { label: "Ask about training", path: contact_path },
+          secondary: { label: "All training", path: public_training_path } %>
+  </div>
 </section>

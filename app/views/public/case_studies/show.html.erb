@@ -1,9 +1,53 @@
 <% content_for :public_nav, "projects" %>
-<section class="public-section public-page-banner">
-  <h1><%= @case_study.public_title %></h1>
-  <p class="public-hero__lede"><%= @case_study.public_summary %></p>
-</section>
-<section class="public-section portal-card article">
-  <%= public_render_rich_text(@case_study.public_body) %>
-  <p class="mt-6"><%= link_to "All project stories", public_projects_path %></p>
+<% industry = @case_study.published_industry.presence %>
+
+<%= render "shared/public/page_banner",
+      eyebrow: industry || "Project story",
+      title: @case_study.public_title,
+      lede: @case_study.public_summary,
+      primary_action: { label: "Discuss a similar project", path: contact_path } %>
+
+<section class="public-detail">
+  <nav class="public-breadcrumb" aria-label="Breadcrumb">
+    <%= link_to "Our work", public_projects_path %>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page"><%= @case_study.public_title %></span>
+  </nav>
+
+  <div class="public-detail__layout">
+    <article class="public-detail__article public-pattern-surface public-pattern-surface--card">
+      <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+      <div class="public-detail__article-inner">
+        <% sections = [
+             ["Overview", @case_study.public_body],
+             ["The challenge", @case_study.published_client_challenge],
+             ["Our approach", @case_study.published_approach],
+             ["The work we carried out", @case_study.published_work_performed],
+             ["The outcome", @case_study.published_outcome]
+           ].select { |(_heading, html)| strip_tags(html.to_s).strip.present? } %>
+        <% sections.each_with_index do |(heading, html), index| %>
+          <% if index.positive? %><hr class="public-detail__divider" /><% end %>
+          <section class="public-detail__section">
+            <h2 class="public-detail__heading"><%= heading %></h2>
+            <div class="public-detail__prose"><%= public_render_rich_text(html) %></div>
+          </section>
+        <% end %>
+        <% if sections.empty? %>
+          <p class="public-detail__lede"><%= @case_study.public_summary %></p>
+        <% end %>
+      </div>
+    </article>
+
+    <%= render "shared/public/detail_aside",
+          heading_id: "project-snapshot-heading",
+          icon: "brief",
+          title: "Project snapshot",
+          facts: [
+            ["Service area", public_case_study_service_area(@case_study)],
+            ["Industry", industry],
+            ["Information", "Shared with client permission"]
+          ],
+          primary: { label: "Discuss a similar project", path: contact_path },
+          secondary: { label: "All project stories", path: public_projects_path } %>
+  </div>
 </section>

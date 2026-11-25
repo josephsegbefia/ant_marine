@@ -21,6 +21,15 @@ class Staff::WebsiteServiceEditorTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Return to services"
   end
 
+  test "new service form wires editor targets onto inputs so step checks can run" do
+    get new_staff_website_service_path
+    assert_response :success
+
+    assert_select "input#service_title[data-staff-service-editor-target=titleField][data-action*=titleInput]"
+    assert_select "textarea#service_summary[rows='3']"
+    assert_select "[html_options]", count: 0
+  end
+
   test "edit opens requested step" do
     get edit_staff_website_service_path(@service, step: 3)
     assert_response :success

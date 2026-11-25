@@ -7,8 +7,7 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     get root_path
     assert_response :success
     assert_select ".public-hero--home"
-    assert_select ".public-hero-image__photo"
-    assert_includes response.body, "hero-maritime"
+    assert_select ".public-hero-art__svg"
     assert_select ".public-service-card", minimum: 0
     assert_select "a.public-text-link", text: /Learn more/, minimum: 0
   end
@@ -17,8 +16,10 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     get public_services_path
     assert_response :success
     assert_select ".public-page-banner h1", text: /Practical help/
+    assert_select ".public-section--sky .public-service-showcase"
     assert_select ".public-service-card--premium", minimum: 1
     assert_includes response.body, "public-service-card__pattern"
+    assert_select ".public-notice--help"
   end
 
   test "service detail uses structured layout and contact cta" do
@@ -31,11 +32,15 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     assert_select ".public-breadcrumb a", text: "Services"
   end
 
-  test "empty our work page uses public empty state" do
+  test "empty our work page uses the featured card empty state" do
     get public_projects_path
     assert_response :success
-    assert_select ".public-empty-state"
-    assert_select ".public-empty-state__title", text: /not available yet/
+    assert_select ".public-service-showcase--solo .public-service-card--featured" do
+      assert_select ".public-service-card__title", text: /not available yet/
+      assert_select ".public-service-card__highlights li", count: 4
+      assert_select "a[href=?]", contact_path, text: "Discuss a similar project"
+    end
+    assert_select ".public-card-carousel", count: 0
   end
 
   test "header exposes primary and secondary navigation" do

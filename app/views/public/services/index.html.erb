@@ -5,13 +5,17 @@
       title: "Practical help on and off the water.",
       lede: "Find the right support for vessels, marine facilities, offshore operations and technical projects." %>
 
-<section class="public-section public-section--tight-top">
+<section class="public-section public-section--sky public-section--tight-top" aria-labelledby="services-catalogue-heading">
   <% if @services.any? %>
-    <div class="public-service-grid">
-      <% @services.each do |service| %>
-        <%= render "shared/public/service_card", service: service %>
-      <% end %>
-    </div>
+    <% unless @services.size == 1 %>
+      <header class="public-services-intro">
+        <h2 id="services-catalogue-heading" class="sr-only">Published services</h2>
+        <p>Browse what we offer today. Each service page explains scope, how we work with you, and what to expect next.</p>
+      </header>
+    <% end %>
+    <%= render "shared/public/card_carousel",
+          items: @services, label: "Published services", noun: "service",
+          card: "shared/public/service_card_featured", card_locals: { on_services_index: true } %>
   <% else %>
     <%= render "shared/public/empty_state",
           icon: "layers",
@@ -20,6 +24,15 @@
           guidance: "Describe your needs and we will help you find the right support.",
           primary_action: { label: "Contact the team", path: contact_path } %>
   <% end %>
-  <p class="public-notice public-notice--spaced">Not sure which service is right?
-    <%= link_to "Describe your needs", contact_path %> and we will help you choose.</p>
+
+  <aside class="public-notice public-notice--spaced public-notice--help" role="note">
+    <% if @services.any? && @services.size == 1 %>
+      <strong class="public-notice__title">Not sure this is the right fit?</strong>
+      <p>Tell us about your vessel, facility or project — or read <%= link_to "how we work", how_we_work_path %> before you get in touch.</p>
+      <%= link_to "Describe your needs", contact_path, class: "ant-btn-outline ant-btn-primary--compact public-notice__action" %>
+    <% else %>
+      Not sure which service is right?
+      <%= link_to "Describe your needs", contact_path %> and we will help you choose.
+    <% end %>
+  </aside>
 </section>

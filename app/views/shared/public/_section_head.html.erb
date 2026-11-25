@@ -1,12 +1,15 @@
-<%# locals: title:, subtitle: nil, link_label: nil, link_path: nil %>
+<%# locals: title:, eyebrow: nil, subtitle: nil, link_label: nil, link_path: nil, id: nil %>
 <header class="public-section__head">
   <div>
-    <h2><%= title %></h2>
+    <% if local_assigns[:eyebrow].present? %>
+      <p class="public-eyebrow"><%= eyebrow %></p>
+    <% end %>
+    <%= tag.h2 title, id: local_assigns[:id].presence %>
     <% if local_assigns[:subtitle].present? %>
       <p><%= subtitle %></p>
     <% end %>
   </div>
   <% if local_assigns[:link_path].present? %>
-    <%= link_to link_label, link_path, class: "public-text-link" %>
+    <%= link_to link_label, link_path, class: "public-text-link public-text-link--arrow" %>
   <% end %>
 </header>

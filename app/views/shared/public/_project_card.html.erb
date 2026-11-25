@@ -1,0 +1,17 @@
+<%# locals: case_study %>
+<article class="public-project-card">
+  <div class="public-project-card__art" aria-hidden="true">
+    <%= render "shared/public/icon", name: "ship", size: 40 %>
+  </div>
+  <div class="public-project-card__body">
+    <% industry = case_study.published_industry.presence || case_study.industry %>
+    <% if industry.present? %>
+      <p class="public-eyebrow"><%= industry %></p>
+    <% end %>
+    <h3 class="public-project-card__title">
+      <%= link_to case_study.public_title, public_project_path(case_study.slug), class: "public-project-card__link" %>
+    </h3>
+    <p class="public-project-card__summary"><%= case_study.public_summary %></p>
+    <span class="public-text-link public-text-link--arrow" aria-hidden="true">Read the story</span>
+  </div>
+</article>
