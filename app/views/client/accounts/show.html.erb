@@ -1,0 +1,34 @@
+<% content_for :title, "Account — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Account" %>
+<% content_for :client_nav, "account" %>
+
+<div class="client-page-head">
+  <h1>Your account</h1>
+  <p>Profile and organisation information for your client workspace.</p>
+</div>
+
+<div class="staff-editor-layout mt-6">
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Profile", heading_id: "client-account-profile", icon: "users" %>
+    <div class="staff-quote-side-panel__body">
+      <dl class="staff-quote-summary__list">
+        <div><dt>Name</dt><dd><%= @user.full_name.presence || "—" %></dd></div>
+        <div><dt>Email</dt><dd><%= @user.email %></dd></div>
+        <div><dt>Access</dt><dd><%= RoleLabels.label(@membership.role_key) %></dd></div>
+      </dl>
+      <p class="staff-quote-summary__hint mt-4">Password changes use the secure account recovery flow from the sign-in page.</p>
+      <p class="mt-3"><%= link_to "Sign out", session_path, data: { turbo_method: :delete }, class: "staff-quote-link" %></p>
+    </div>
+  </section>
+
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Organisation", heading_id: "client-account-org", icon: "brief" %>
+    <div class="staff-quote-side-panel__body">
+      <dl class="staff-quote-summary__list">
+        <div><dt>Name</dt><dd><%= @organization.name %></dd></div>
+        <div><dt>Reference</dt><dd><%= @organization.reference_number.presence || "—" %></dd></div>
+      </dl>
+      <p class="staff-quote-summary__hint mt-4">Organisation ownership and privileged roles can only be changed by authorised ANT Marine staff or your organisation owner through approved processes.</p>
+    </div>
+  </section>
+</div>

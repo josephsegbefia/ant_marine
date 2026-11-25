@@ -1,0 +1,61 @@
+<% content_for :title, "#{@request.reference_number} — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Request details" %>
+<% content_for :client_nav, "requests" %>
+
+<div class="portal-shell__back mb-4">
+  <%= ant_back_link label: "All requests", path: client_requests_path %>
+</div>
+
+<div class="client-page-head">
+  <h1><%= @request.reference_number %></h1>
+  <p><%= @request.requested_service_label %> · Sent <%= l(@request.submitted_at.to_date, format: :long) %></p>
+</div>
+
+<div class="staff-editor-layout mt-6">
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head",
+          title: "Request details",
+          heading_id: "client-request-detail-heading",
+          icon: "clipboard",
+          badge_label: client_request_status_label(@request.current_status) %>
+    <div class="staff-quote-side-panel__body">
+      <dl class="staff-quote-summary__list">
+        <div><dt>Service</dt><dd><%= @request.requested_service_label %></dd></div>
+        <div><dt>Location</dt><dd><%= @request.location %></dd></div>
+        <div><dt>Contact</dt><dd><%= @request.contact_name %></dd></div>
+        <div><dt>Company</dt><dd><%= @request.company_name %></dd></div>
+        <% if @request.vessel_name.present? %>
+          <div><dt>Vessel</dt><dd><%= @request.vessel_name %></dd></div>
+        <% end %>
+        <% if @request.project_name.present? %>
+          <div><dt>Project</dt><dd><%= @request.project_name %></dd></div>
+        <% end %>
+        <% if @request.preferred_date.present? %>
+          <div><dt>Preferred date</dt><dd><%= l(@request.preferred_date, format: :long) %> <span class="staff-quote-summary__hint">(requested, not a confirmed appointment)</span></dd></div>
+        <% end %>
+      </dl>
+      <h3 class="mt-5 text-[13px] font-medium text-[#173244]">What you asked for</h3>
+      <p class="mt-2 whitespace-pre-line text-[13px] leading-relaxed text-[#3d5a6b]"><%= @request.description %></p>
+    </div>
+  </section>
+
+  <aside class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Related quotations", heading_id: "client-request-quotes-heading", icon: "file" %>
+      <div class="staff-quote-side-panel__body">
+        <% if @releases.any? %>
+          <ul class="staff-quote-versions__list">
+            <% @releases.each do |release| %>
+              <li class="staff-quote-versions__item">
+                <p class="staff-enquiry-clarification__title"><%= link_to release.quote.reference_number, client_quotation_path(release), class: "staff-quote-link" %></p>
+                <p class="staff-enquiry-row__sub">Version <%= release.quote_revision.version_number %><% if release.simulated? %> · Simulated offer<% end %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede">No quotation has been released to your portal for this request yet.</p>
+        <% end %>
+      </div>
+    </section>
+  </aside>
+</div>

@@ -1,0 +1,56 @@
+<% content_for :title, "Quotations — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Quotations" %>
+<% content_for :client_nav, "quotations" %>
+
+<div class="client-page-head">
+  <h1>Quotations</h1>
+  <p>Offers released for <%= Current.membership.organization.name %>. Draft and unreleased versions stay with ANT Marine.</p>
+</div>
+
+<section class="staff-enquiry-panel mt-6">
+  <% if @releases.any? %>
+    <div class="staff-enquiry-table-wrap">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Work</th>
+            <th>Version</th>
+            <th>Total</th>
+            <th>Valid until</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @releases.each do |release| %>
+            <% revision = release.quote_revision %>
+            <tr>
+              <td>
+                <span class="staff-enquiry-row__ref"><%= release.quote.reference_number %></span>
+                <% if release.simulated? %>
+                  <p class="staff-enquiry-row__sub">Simulated offer</p>
+                <% end %>
+              </td>
+              <td><%= revision.title.presence || "Quotation" %></td>
+              <td><%= revision.version_number %></td>
+              <td><%= client_money(revision.total_cents, revision.currency) %></td>
+              <td><%= revision.valid_until.present? ? l(revision.valid_until, format: :long) : "—" %></td>
+              <td><%= link_to "View", client_quotation_path(release), class: "staff-quote-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="staff-enquiry-panel__footer">
+      <%= ant_pagination(@pagination, label: "quotations", path_for: ->(page) { client_quotations_path(page: page) }) %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :file,
+          title: "No quotations released yet",
+          description: "When ANT Marine releases an offer to your portal, it will appear here.",
+          guidance: "Approval inside ANT Marine does not automatically release a quotation to clients.",
+          variant: :muted
+        ) %>
+  <% end %>
+</section>

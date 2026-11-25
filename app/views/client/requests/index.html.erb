@@ -1,0 +1,53 @@
+<% content_for :title, "Service requests — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Service requests" %>
+<% content_for :client_nav, "requests" %>
+
+<div class="client-page-head">
+  <h1>My requests</h1>
+  <p>Service requests linked to <%= Current.membership.organization.name %>.</p>
+</div>
+
+<section class="staff-enquiry-panel mt-6">
+  <% if @requests.any? %>
+    <div class="staff-enquiry-table-wrap">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th>Request</th>
+            <th>Service</th>
+            <th>Sent</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @requests.each do |inquiry| %>
+            <tr>
+              <td><span class="staff-enquiry-row__ref"><%= inquiry.reference_number %></span></td>
+              <td>
+                <p class="staff-enquiry-row__title"><%= inquiry.requested_service_label %></p>
+                <% if inquiry.project_name.present? %>
+                  <p class="staff-enquiry-row__sub"><%= inquiry.project_name %></p>
+                <% end %>
+              </td>
+              <td><%= l(inquiry.submitted_at.to_date, format: :long) %></td>
+              <td><%= ant_status_badge(label: client_request_status_label(inquiry.current_status), badge_class: "ant-badge--muted") %></td>
+              <td><%= link_to "Open", client_request_path(inquiry), class: "staff-quote-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="staff-enquiry-panel__footer">
+      <%= ant_pagination(@pagination, label: "requests", path_for: ->(page) { client_requests_path(page: page) }) %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :clipboard,
+          title: "No service requests yet",
+          description: "When ANT Marine links a request to your organisation, it will appear here.",
+          guidance: "Matching an email address alone does not show a request in this portal.",
+          variant: :muted
+        ) %>
+  <% end %>
+</section>

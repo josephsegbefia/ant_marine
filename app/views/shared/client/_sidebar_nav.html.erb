@@ -2,7 +2,23 @@
   <%= link_to client_root_path,
         class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:home)}" do %>
     <%= render "shared/staff/nav_icon", name: "home" %>
-    <span>Home</span>
+    <span>Overview</span>
+  <% end %>
+
+  <% if client_can_view_requests? %>
+    <%= link_to client_requests_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:requests)}" do %>
+      <%= render "shared/staff/nav_icon", name: "clipboard" %>
+      <span>Service requests</span>
+    <% end %>
+  <% end %>
+
+  <% if client_can_view_quotations? %>
+    <%= link_to client_quotations_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:quotations)}" do %>
+      <%= render "shared/staff/nav_icon", name: "file" %>
+      <span>Quotations</span>
+    <% end %>
   <% end %>
 
   <% if client_can_invite? %>
@@ -13,6 +29,9 @@
     <% end %>
   <% end %>
 
-  <p class="client-side-label client-side-label--spaced">COMING LATER</p>
-  <p class="client-nav-note">Requests, projects, documents, reports and billing will appear here when those features are ready.</p>
+  <%= link_to client_account_path,
+        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:account)}" do %>
+    <%= render "shared/staff/nav_icon", name: "users" %>
+    <span>Account</span>
+  <% end %>
 </nav>

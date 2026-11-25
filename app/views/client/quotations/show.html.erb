@@ -1,0 +1,92 @@
+<% content_for :title, "#{@quote.reference_number} — #{Current.membership.organization.name}" %>
+<% content_for :client_page_title, "Quotation" %>
+<% content_for :client_nav, "quotations" %>
+
+<div class="portal-shell__back mb-4">
+  <%= ant_back_link label: "All quotations", path: client_quotations_path %>
+</div>
+
+<div class="client-page-head">
+  <h1>Review quotation</h1>
+  <p><%= @quote.reference_number %> · Version <%= @revision.version_number %><% if @release.simulated? %> · Simulated offer for testing<% end %></p>
+</div>
+
+<% if @release.simulated? %>
+  <div class="staff-quote-notice staff-quote-notice--warn mt-4" role="status">
+    <p class="font-semibold">This is a simulated offer for portal testing.</p>
+    <p class="mt-1 text-sm">It is not a genuine commercial offer and cannot be accepted in this release.</p>
+  </div>
+<% end %>
+
+<div class="staff-editor-layout mt-6">
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Service quotation", heading_id: "client-quote-detail-heading", icon: "file" %>
+    <div class="staff-quote-side-panel__body">
+      <dl class="staff-quote-summary__list">
+        <div><dt>Reference</dt><dd class="staff-quote-summary__ref"><%= @quote.reference_number %></dd></div>
+        <div><dt>Version</dt><dd><%= @revision.version_number %></dd></div>
+        <div><dt>Prepared for</dt><dd><%= @revision.recipient_lines["company_name"].presence || Current.membership.organization.name %></dd></div>
+        <div><dt>Work</dt><dd><%= @revision.title.presence || "—" %></dd></div>
+        <div><dt>Currency</dt><dd><%= @revision.currency %></dd></div>
+        <div><dt>Total</dt><dd><%= client_money(@revision.total_cents, @revision.currency) %></dd></div>
+        <% if @revision.valid_until.present? %>
+          <div><dt>Valid until</dt><dd><%= l(@revision.valid_until, format: :long) %></dd></div>
+        <% end %>
+      </dl>
+
+      <% if @revision.scope_description.present? %>
+        <h3 class="mt-5 text-[13px] font-medium text-[#173244]">Scope</h3>
+        <p class="mt-2 whitespace-pre-line text-[13px] text-[#3d5a6b]"><%= @revision.scope_description %></p>
+      <% end %>
+      <% if @revision.deliverables.present? %>
+        <h3 class="mt-5 text-[13px] font-medium text-[#173244]">Deliverables</h3>
+        <p class="mt-2 whitespace-pre-line text-[13px] text-[#3d5a6b]"><%= @revision.deliverables %></p>
+      <% end %>
+      <% if @revision.exclusions.present? %>
+        <h3 class="mt-5 text-[13px] font-medium text-[#173244]">Exclusions</h3>
+        <p class="mt-2 whitespace-pre-line text-[13px] text-[#3d5a6b]"><%= @revision.exclusions %></p>
+      <% end %>
+
+      <% if @revision.line_items.any? %>
+        <h3 class="mt-5 text-[13px] font-medium text-[#173244]">Line items</h3>
+        <div class="staff-enquiry-table-wrap mt-3">
+          <table class="staff-enquiry-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @revision.line_items.each do |line| %>
+                <tr>
+                  <td><%= line.description %></td>
+                  <td><%= line.quantity %></td>
+                  <td><%= line.unit %></td>
+                  <td><%= client_money(line.line_total_cents, @revision.currency) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+
+      <% if @revision.payment_terms.present? %>
+        <h3 class="mt-5 text-[13px] font-medium text-[#173244]">Terms</h3>
+        <p class="mt-2 whitespace-pre-line text-[13px] text-[#3d5a6b]"><%= @revision.payment_terms %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <aside class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Download", heading_id: "client-quote-pdf-heading", icon: "download" %>
+      <div class="staff-quote-side-panel__body">
+        <p class="staff-quote-versions__lede">Download the exact released version as a PDF. Accepting or declining is not available in this release.</p>
+        <%= link_to "Download PDF", pdf_client_quotation_path(@release), class: "ant-btn-primary ant-btn-primary--compact mt-4", target: "_blank", rel: "noopener" %>
+      </div>
+    </section>
+  </aside>
+</div>
