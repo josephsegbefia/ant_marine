@@ -54,8 +54,14 @@
       <% end %>
     <% end %>
 
-    <% if quote.status == "approved_for_issuance" %>
-      <p class="text-sm text-[#5f7d8c]"><%= Commercial::QuoteIssuance::UNAVAILABLE_MESSAGE %></p>
+    <% if quote_policy.issuance? %>
+      <div class="border-t border-[#e2eaed] pt-4" id="quote-issuance-link">
+        <p class="text-sm text-[#466270]"><span class="font-semibold text-[#102c43]">Client delivery:</span> <%= quote_delivery_summary(quote) %></p>
+        <%= link_to quote.status == "approved_for_issuance" ? "Prepare to send" : "View delivery record", staff_quotation_issuance_path(quote),
+              class: "ant-btn-primary ant-btn-primary--compact mt-2" %>
+      </div>
+    <% elsif quote.status == "approved_for_issuance" %>
+      <p class="text-sm text-[#5f7d8c]">Approved — not sent. Sending to the client needs permission to send quotations.</p>
     <% end %>
 
     <% if quote_policy.issue? %>

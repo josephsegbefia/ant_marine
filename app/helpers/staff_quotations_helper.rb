@@ -6,7 +6,7 @@ module StaffQuotationsHelper
     "pending_review" => "Awaiting review",
     "returned_for_correction" => "Returned for correction",
     "approved_for_issuance" => "Approved — not sent",
-    "issued" => "Marked issued",
+    "issued" => "Sent — not confirmed",
     "withdrawn" => "Withdrawn",
     "superseded" => "Superseded"
   }.freeze
@@ -41,11 +41,11 @@ module StaffQuotationsHelper
   end
 
   def quote_delivery_summary(quote)
-    if quote.delivery_state == "delivered"
-      "Delivery to the client has been confirmed."
-    else
-      "Not sent to the client. Sending quotations is not available yet."
-    end
+    delivery = quote.quote_deliveries.where(quote_revision_id: quote.current_revision_id).recent_first.first
+    return delivery.status_label if delivery
+    return "Approved — not sent" if quote.status == "approved_for_issuance"
+
+    "Not sent to the client."
   end
 
   def quote_editor_guidance(quote)
@@ -54,7 +54,7 @@ module StaffQuotationsHelper
     when "returned_for_correction" then "A reviewer asked for corrections. Update the quotation, then submit it for review again."
     when "pending_review" then "This quotation is waiting for a reviewer. Its content is read-only until it is approved or returned."
     when "approved_for_issuance" then "This version is approved and locked. It has not been sent to the client."
-    when "issued" then "This version is locked. Delivery to the client has not been confirmed."
+    when "issued" then "This version was sent by email and is locked. Delivery to the client has not been confirmed."
     when "withdrawn" then "This quotation was withdrawn and can no longer be changed."
     else "This quotation can no longer be changed."
     end
@@ -69,6 +69,12 @@ module StaffQuotationsHelper
     "quote.issue" => "Marked issued",
     "quote.withdraw" => "Withdrawn",
     "quote.revision_created" => "New version started",
+    "quote.delivery_prepared" => "Prepared for sending",
+    "quote.delivery_queued" => "Queued for sending",
+    "quote.delivery_cancelled" => "Prepared delivery cancelled",
+    "quote.delivery_accepted" => "Accepted by the mail system",
+    "quote.delivery_failed" => "Delivery failed",
+    "quote.delivery_outcome_unknown" => "Delivery outcome unknown",
     "quote.created_from_inquiry" => "Started from an enquiry"
   }.freeze
 

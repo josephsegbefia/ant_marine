@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -297,6 +297,46 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_190000) do
     t.index ["updated_by_membership_id"], name: "index_public_site_pages_on_updated_by_membership_id"
     t.check_constraint "page_key::text = ANY (ARRAY['homepage'::character varying, 'about'::character varying, 'industries'::character varying, 'how_we_work'::character varying, 'contact'::character varying]::text[])", name: "public_site_pages_page_key_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'in_review'::character varying, 'approved'::character varying, 'published'::character varying, 'archived'::character varying]::text[])", name: "public_site_pages_status_check"
+  end
+
+  create_table "quote_deliveries", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "quote_id", null: false
+    t.bigint "quote_revision_id", null: false
+    t.bigint "requested_by_membership_id", null: false
+    t.bigint "dispatched_by_membership_id"
+    t.string "channel", default: "email", null: false
+    t.string "status", default: "prepared", null: false
+    t.string "delivery_adapter", null: false
+    t.string "idempotency_key", null: false
+    t.string "recipient_email", null: false
+    t.string "recipient_name"
+    t.string "recipient_company"
+    t.integer "attempt_count", default: 0, null: false
+    t.datetime "prepared_at", null: false
+    t.datetime "queued_at"
+    t.datetime "attempted_at"
+    t.datetime "accepted_at"
+    t.datetime "failed_at"
+    t.datetime "confirmed_at"
+    t.datetime "cancelled_at"
+    t.string "provider_message_id"
+    t.string "provider_response"
+    t.string "failure_reason"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dispatched_by_membership_id"], name: "index_quote_deliveries_on_dispatched_by_membership_id"
+    t.index ["idempotency_key"], name: "index_quote_deliveries_on_idempotency_key", unique: true
+    t.index ["organization_id"], name: "index_quote_deliveries_on_organization_id"
+    t.index ["quote_id"], name: "index_quote_deliveries_on_quote_id"
+    t.index ["quote_revision_id"], name: "index_quote_deliveries_on_quote_revision_id"
+    t.index ["quote_revision_id"], name: "index_quote_deliveries_one_live_per_revision", unique: true, where: "((status)::text = ANY ((ARRAY['prepared'::character varying, 'queued'::character varying, 'sending'::character varying, 'accepted_by_provider'::character varying, 'outcome_unknown'::character varying, 'delivery_confirmed'::character varying])::text[]))"
+    t.index ["requested_by_membership_id"], name: "index_quote_deliveries_on_requested_by_membership_id"
+    t.check_constraint "channel::text = 'email'::text", name: "quote_deliveries_channel_check"
+    t.check_constraint "status::text <> 'accepted_by_provider'::text OR accepted_at IS NOT NULL", name: "quote_deliveries_accepted_has_timestamp"
+    t.check_constraint "status::text <> 'delivery_confirmed'::text OR confirmed_at IS NOT NULL AND provider_message_id IS NOT NULL", name: "quote_deliveries_confirmation_needs_evidence"
+    t.check_constraint "status::text = ANY (ARRAY['prepared'::character varying, 'queued'::character varying, 'sending'::character varying, 'accepted_by_provider'::character varying, 'failed'::character varying, 'outcome_unknown'::character varying, 'delivery_confirmed'::character varying, 'cancelled'::character varying]::text[])", name: "quote_deliveries_status_check"
   end
 
   create_table "quote_line_items", force: :cascade do |t|
@@ -603,6 +643,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_190000) do
   add_foreign_key "public_site_pages", "memberships", column: "published_by_membership_id"
   add_foreign_key "public_site_pages", "memberships", column: "updated_by_membership_id"
   add_foreign_key "public_site_pages", "organizations"
+  add_foreign_key "quote_deliveries", "memberships", column: "dispatched_by_membership_id"
+  add_foreign_key "quote_deliveries", "memberships", column: "requested_by_membership_id"
+  add_foreign_key "quote_deliveries", "organizations"
+  add_foreign_key "quote_deliveries", "quote_revisions"
+  add_foreign_key "quote_deliveries", "quotes"
   add_foreign_key "quote_line_items", "quote_revisions"
   add_foreign_key "quote_revisions", "memberships", column: "prepared_by_membership_id"
   add_foreign_key "quote_revisions", "memberships", column: "submitted_by_membership_id"

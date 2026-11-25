@@ -63,10 +63,19 @@ class QuotePolicy < ApplicationPolicy
     view?
   end
 
+  def send_quotation?
+    view? && allowed?("quotes.send")
+  end
+
+  def issuance?
+    send_quotation? && (record.status == "approved_for_issuance" || record.quote_deliveries.exists?)
+  end
+
   def create_revision?
     allowed?("quotes.create") && view? &&
       record.status.in?(Commercial::QuoteRevisionCreator::SOURCE_STATUSES) &&
-      record.current_revision&.version_frozen? == true
+      record.current_revision&.version_frozen? == true &&
+      !QuoteDelivery.in_flight_for?(record.current_revision)
   end
 
   class Scope < Scope

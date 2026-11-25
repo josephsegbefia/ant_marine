@@ -63,6 +63,10 @@ Rails.application.routes.draw do
         get :pdf
         get "versions/:version_number", action: :version, as: :version, constraints: { version_number: /\d+/ }
       end
+      resource :issuance, only: %i[show create], controller: "quotation_issuances" do
+        post :deliver
+        post :cancel
+      end
     end
     namespace :website do
       resources :services do

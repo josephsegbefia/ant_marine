@@ -1,0 +1,11 @@
+Dear <%= @recipient_name %>,
+
+Please find attached quotation <%= @quote.reference_number %>, version <%= @revision.version_number %>, from ANT Marine W.A.
+
+Quotation: <%= @revision.title %>
+Total: <%= Commercial::Money.display(@revision.total_cents, @revision.currency) %>
+Valid until: <%= l(@revision.valid_until, format: :long) %>
+
+The attached PDF sets out the scope, pricing and terms. If you have questions or would like any changes, please contact the ANT Marine team and quote the reference above.
+
+ANT Marine W.A.

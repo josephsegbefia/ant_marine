@@ -36,6 +36,9 @@ module Commercial
         unless SOURCE_STATUSES.include?(@quote.status) && source&.version_frozen?
           raise NotAllowed, "A new version can only be created from an approved or issued quotation."
         end
+        if QuoteDelivery.in_flight_for?(source)
+          raise NotAllowed, "This version is prepared or being sent. Cancel the prepared delivery or wait for the result first."
+        end
         raise QuoteTransition::NotAuthorized, "You do not have permission to do that." unless authorized?
 
         revision = build_revision(source)

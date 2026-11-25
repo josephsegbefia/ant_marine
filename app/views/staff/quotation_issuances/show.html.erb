@@ -1,0 +1,119 @@
+<% content_for :staff_nav, :quotations %>
+<% recipient = @revision.recipient_lines.to_h.stringify_keys %>
+<% ready = @blockers.empty? %>
+
+<div class="staff-editor-head">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="public-eyebrow"><%= @quote.reference_number %> · Version <%= @revision.version_number %></p>
+      <h1 class="staff-editor-head__title">Send quotation to client</h1>
+      <p class="staff-editor-head__lede">Check the exact approved version, the recipient and the PDF before anything is sent.</p>
+    </div>
+    <%= ant_status_badge(label: @current_delivery ? @current_delivery.status_label : quote_status_label(@quote.status),
+                         badge_class: @current_delivery ? @current_delivery.badge_variant : quote_status_badge_variant(@quote.status)) %>
+  </div>
+</div>
+
+<p class="staff-quote-notice <%= Commercial::QuoteIssuance.dispatch_available? ? "staff-quote-notice--warn" : "staff-quote-notice--error" %> mt-4" id="issuance-mode" role="status">
+  <strong>Delivery method:</strong> <%= Commercial::QuoteIssuance.mode_description %>
+</p>
+
+<div class="staff-editor-layout mt-4">
+  <div class="space-y-4">
+    <section class="portal-card" aria-labelledby="issuance-version-heading">
+      <h2 id="issuance-version-heading" class="text-base font-extrabold text-[#173244]">What will be sent</h2>
+      <dl class="staff-quote-summary__list staff-enquiry-facts">
+        <div><dt>Reference</dt><dd><%= @quote.reference_number %></dd></div>
+        <div><dt>Version</dt><dd>Version <%= @revision.version_number %> — <%= quote_revision_status_label(@revision, @quote) %></dd></div>
+        <div><dt>Title</dt><dd><%= @revision.title %></dd></div>
+        <div><dt>Approved total</dt><dd><%= format_quote_money(@revision.total_cents, @revision.currency) %></dd></div>
+        <div><dt>Valid until</dt><dd><%= @revision.valid_until ? l(@revision.valid_until, format: :long) : "Not set" %></dd></div>
+        <div><dt>Approved by</dt><dd><%= @revision.approved_by_membership ? "#{quote_member_name(@revision.approved_by_membership)} · #{l(@revision.approved_at, format: :long)}" : "Not approved" %></dd></div>
+        <div><dt>Prepared by</dt><dd><%= quote_member_name(@revision.prepared_by_membership) %></dd></div>
+        <div><dt>PDF</dt><dd><%= link_to "Preview the PDF of version #{@revision.version_number}", pdf_staff_quotation_path(@quote, version: @revision.version_number), class: "staff-quote-link", target: "_blank", rel: "noopener" %></dd></div>
+      </dl>
+    </section>
+
+    <section class="portal-card" aria-labelledby="issuance-recipient-heading">
+      <h2 id="issuance-recipient-heading" class="text-base font-extrabold text-[#173244]">Recipient</h2>
+      <p class="mt-1 text-xs text-[#5f7d8c]">Taken from the approved version. To change it, create a new version and have it approved.</p>
+      <dl class="staff-quote-summary__list staff-enquiry-facts">
+        <div><dt>Company</dt><dd><%= recipient["company_name"].presence || "Not set" %></dd></div>
+        <div><dt>Contact</dt><dd><%= recipient["contact_name"].presence || "Not set" %></dd></div>
+        <div><dt>Email</dt><dd><%= recipient["email"].presence || "Not set" %></dd></div>
+        <div><dt>Sent as</dt><dd>Email with the PDF attached. No download link and no online acceptance.</dd></div>
+      </dl>
+    </section>
+
+    <% if @deliveries.any? %>
+      <section class="portal-card" aria-labelledby="issuance-history-heading">
+        <h2 id="issuance-history-heading" class="text-base font-extrabold text-[#173244]">Delivery record</h2>
+        <ol class="staff-quote-versions__list">
+          <% @deliveries.each do |delivery| %>
+            <li class="staff-quote-versions__item" id="delivery-<%= delivery.id %>">
+              <div class="staff-quote-versions__head">
+                <span class="staff-quote-versions__title">Version <%= delivery.quote_revision.version_number %> to <%= delivery.recipient_email %></span>
+                <%= ant_status_badge(label: delivery.status_label, badge_class: delivery.badge_variant) %>
+              </div>
+              <dl class="staff-quote-versions__meta">
+                <div><dt>Prepared</dt><dd><%= l(delivery.prepared_at, format: :short) %> by <%= quote_member_name(delivery.requested_by_membership) %></dd></div>
+                <% if delivery.queued_at %><div><dt>Queued</dt><dd><%= l(delivery.queued_at, format: :short) %></dd></div><% end %>
+                <% if delivery.attempted_at %><div><dt>Attempted</dt><dd><%= l(delivery.attempted_at, format: :short) %> (attempt <%= delivery.attempt_count %>)</dd></div><% end %>
+                <% if delivery.accepted_at %><div><dt>Accepted</dt><dd><%= l(delivery.accepted_at, format: :short) %></dd></div><% end %>
+                <% if delivery.provider_message_id %><div><dt>Message ref.</dt><dd class="break-all"><%= delivery.provider_message_id %></dd></div><% end %>
+                <% if delivery.failure_reason %><div><dt>Details</dt><dd><%= delivery.failure_reason %></dd></div><% end %>
+                <div><dt>Method</dt><dd><%= delivery.local_adapter? ? "Test mail system (#{delivery.delivery_adapter})" : "Email provider" %></dd></div>
+              </dl>
+            </li>
+          <% end %>
+        </ol>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="staff-editor-layout__aside space-y-4" aria-label="Sending">
+    <section class="portal-card" aria-labelledby="issuance-action-heading">
+      <h2 id="issuance-action-heading" class="text-base font-extrabold text-[#173244]">Sending</h2>
+      <% if @current_delivery&.status == "prepared" %>
+        <p class="mt-2 text-sm text-[#466270]">Prepared for sending to <strong><%= @current_delivery.recipient_email %></strong>. Nothing has been sent yet.</p>
+        <%= button_to "Send now", deliver_staff_quotation_issuance_path(@quote),
+              method: :post, params: { delivery_id: @current_delivery.id },
+              class: "ant-btn-primary ant-btn-primary--compact mt-4 w-full justify-center",
+              disabled: !ready,
+              form: { data: { turbo_confirm: "Send version #{@revision.version_number} to #{@current_delivery.recipient_email}?" } } %>
+        <%= button_to "Cancel", cancel_staff_quotation_issuance_path(@quote),
+              method: :post, params: { delivery_id: @current_delivery.id },
+              class: "ant-btn-outline ant-btn-outline--compact mt-2 w-full justify-center" %>
+      <% elsif @current_delivery %>
+        <p class="mt-2 text-sm text-[#466270]"><%= @current_delivery.status_label %>.</p>
+        <% if @current_delivery.status == "outcome_unknown" %>
+          <p class="mt-2 text-xs text-[#5f7d8c]">This version will not be sent again automatically. Check with the recipient before taking any further action.</p>
+        <% elsif @current_delivery.status == "accepted_by_provider" %>
+          <p class="mt-2 text-xs text-[#5f7d8c]">“Accepted” means the mail system took the message. It does not confirm the client received or read it.</p>
+        <% end %>
+      <% end %>
+
+      <% if @current_delivery.nil? || @current_delivery.status.in?(%w[failed cancelled]) %>
+        <% if ready %>
+          <%= form_with url: staff_quotation_issuance_path(@quote), method: :post, class: "mt-3 space-y-3", id: "issuance-prepare" do %>
+            <%= hidden_field_tag :expected_revision_id, @revision.id, id: nil %>
+            <%= hidden_field_tag :expected_lock_version, @quote.lock_version, id: nil %>
+            <label class="flex items-start gap-2 text-sm text-[#28485a]">
+              <input type="checkbox" name="confirm_checked" value="1" required class="mt-1 accent-[#25877f]">
+              <span>I have checked the recipient, the total and the PDF for version <%= @revision.version_number %>.</span>
+            </label>
+            <button type="submit" class="ant-btn-primary ant-btn-primary--compact w-full justify-center">Prepare for sending</button>
+          <% end %>
+        <% else %>
+          <div class="staff-quote-notice staff-quote-notice--warn mt-3" id="issuance-blockers" role="status">
+            <p class="font-semibold text-[#102c43]">This version cannot be sent yet</p>
+            <ul class="mt-1 list-disc pl-5">
+              <% @blockers.each do |blocker| %><li><%= blocker %></li><% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% end %>
+    </section>
+    <%= link_to "Back to quotation", edit_staff_quotation_path(@quote, editor_step: 5), class: "staff-editor-footer__return-link" %>
+  </aside>
+</div>

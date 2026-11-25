@@ -17,6 +17,7 @@ class Quote < ApplicationRecord
   belongs_to :updated_by_membership, class_name: "Membership", optional: true
 
   has_many :quote_revisions, dependent: :restrict_with_exception
+  has_many :quote_deliveries, dependent: :restrict_with_exception
 
   validates :reference_number, presence: true, uniqueness: { scope: :organization_id }
   validates :status, inclusion: { in: STATUSES }
@@ -68,7 +69,7 @@ class Quote < ApplicationRecord
     when "pending_review" then "Awaiting reviewer decision"
     when "returned_for_correction" then "Make the requested corrections"
     when "approved_for_issuance" then "Approved — not yet sent to the client"
-    when "issued" then "Marked issued — delivery not confirmed"
+    when "issued" then "Sent — delivery not confirmed"
     when "withdrawn" then "Withdrawn"
     when "superseded" then "Replaced by a newer version"
     else "View"
