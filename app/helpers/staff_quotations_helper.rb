@@ -65,6 +65,7 @@ module StaffQuotationsHelper
     "quote.submit_for_review" => "Submitted for review",
     "quote.return_for_correction" => "Returned for correction",
     "quote.approve" => "Approved",
+    "quote.approval_refused" => "Approval refused — another reviewer needed",
     "quote.issue" => "Marked issued",
     "quote.withdraw" => "Withdrawn"
   }.freeze

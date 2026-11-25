@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -340,9 +340,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_090000) do
     t.datetime "issued_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "prepared_by_membership_id"
+    t.bigint "submitted_by_membership_id"
+    t.bigint "contributor_membership_ids", default: [], null: false, array: true
+    t.index ["prepared_by_membership_id"], name: "index_quote_revisions_on_prepared_by_membership_id"
     t.index ["quote_id", "version_number"], name: "index_quote_revisions_on_quote_id_and_version_number", unique: true
     t.index ["quote_id"], name: "index_quote_revisions_on_quote_id"
+    t.index ["submitted_by_membership_id"], name: "index_quote_revisions_on_submitted_by_membership_id"
     t.check_constraint "(revision_status::text <> ALL (ARRAY['approved'::character varying, 'issued'::character varying]::text[])) OR frozen_at IS NOT NULL", name: "quote_revisions_approved_are_frozen"
+    t.check_constraint "approved_by_membership_id IS NULL OR approved_by_membership_id IS DISTINCT FROM prepared_by_membership_id AND approved_by_membership_id IS DISTINCT FROM submitted_by_membership_id AND NOT (approved_by_membership_id = ANY (contributor_membership_ids))", name: "quote_revisions_approver_is_independent"
     t.check_constraint "currency::text = ANY (ARRAY['GHS'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying]::text[])", name: "quote_revisions_currency_check"
     t.check_constraint "revision_status::text = ANY (ARRAY['draft'::character varying, 'pending_review'::character varying, 'approved'::character varying, 'issued'::character varying, 'superseded'::character varying]::text[])", name: "quote_revisions_status_check"
     t.check_constraint "subtotal_cents >= 0 AND total_cents >= 0", name: "quote_revisions_totals_non_negative"
@@ -553,6 +559,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_090000) do
   add_foreign_key "public_site_pages", "memberships", column: "updated_by_membership_id"
   add_foreign_key "public_site_pages", "organizations"
   add_foreign_key "quote_line_items", "quote_revisions"
+  add_foreign_key "quote_revisions", "memberships", column: "prepared_by_membership_id"
+  add_foreign_key "quote_revisions", "memberships", column: "submitted_by_membership_id"
   add_foreign_key "quote_revisions", "quotes"
   add_foreign_key "quotes", "organizations"
   add_foreign_key "quotes", "organizations", column: "client_organization_id"

@@ -39,13 +39,19 @@ class QuotePolicyTest < ActiveSupport::TestCase
     policy = QuotePolicy.new(@coordinator, @quote)
     assert_not policy.update?
     assert_not policy.submit_for_review?
-    assert policy.approve?
+    assert_not policy.approve?, "the preparer cannot approve their own version"
+    assert policy.another_reviewer_required?
     assert policy.return_for_correction?
 
-    deny_permission!(@coordinator, "quotes.approve")
-    restricted = QuotePolicy.new(Membership.find(@coordinator.id), @quote)
+    reviewer = QuotePolicy.new(memberships(:ops_manager_membership), @quote)
+    assert reviewer.approve?
+    assert_not reviewer.another_reviewer_required?
+
+    deny_permission!(memberships(:ops_manager_membership), "quotes.approve")
+    restricted = QuotePolicy.new(Membership.find(memberships(:ops_manager_membership).id), @quote)
     assert_not restricted.approve?
     assert_not restricted.return_for_correction?
+    assert_not restricted.another_reviewer_required?
   end
 
   test "frozen approved revision allows view-only edit access not update" do

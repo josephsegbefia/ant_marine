@@ -3,11 +3,24 @@
 class QuoteLineItem < ApplicationRecord
   QUANTITY_PATTERN = /\A\d+(\.\d+)?\z/
   MAX_QUANTITY = BigDecimal("1000000")
+  COMMON_UNITS = {
+    "each" => "Each",
+    "hour" => "Hour",
+    "day" => "Day",
+    "visit" => "Visit",
+    "survey" => "Survey",
+    "report" => "Report",
+    "lot" => "Lot"
+  }.freeze
+  OTHER_UNIT = "other"
+  CUSTOM_UNIT_MAX = 30
+  CUSTOM_UNIT_PATTERN = %r{\A[\p{L}\p{N}][\p{L}\p{N} .,/()²³%-]*\z}
 
   belongs_to :quote_revision, inverse_of: :line_items
 
   validates :description, length: { maximum: 500 }
-  validates :unit, presence: { message: "Enter a unit, for example each or day." }, length: { maximum: 30 }
+  validates :unit, presence: { message: "Choose a unit, or choose Other and type one." }, length: { maximum: CUSTOM_UNIT_MAX }
+  validate :custom_unit_format, if: :unit_changed?
   validates :unit_price_cents, numericality: { greater_than_or_equal_to: 0, only_integer: true }
   validate :quantity_format
   validate :unit_price_input
@@ -31,6 +44,32 @@ class QuoteLineItem < ApplicationRecord
     quantity_will_change! if value.is_a?(String) && !value.strip.match?(QUANTITY_PATTERN)
   end
 
+  def unit_choice=(value)
+    @unit_choice = value.to_s
+    apply_unit_choice
+  end
+
+  def unit_other=(value)
+    @unit_other = value.to_s
+    apply_unit_choice
+  end
+
+  # Values outside the common list (including older free-text units) appear as Other
+  # with the stored text kept exactly as it was.
+  def unit_choice
+    return @unit_choice if @unit_choice.present?
+    return "each" if unit.blank?
+
+    COMMON_UNITS.key?(unit) ? unit : OTHER_UNIT
+  end
+
+  def unit_other
+    return @unit_other if @unit_other
+    return "" if COMMON_UNITS.key?(unit.to_s)
+
+    unit.to_s
+  end
+
   def unit_price
     return @unit_price_input if @unit_price_input
     return "" if new_record? && unit_price_cents.to_i.zero?
@@ -50,6 +89,37 @@ class QuoteLineItem < ApplicationRecord
   end
 
   private
+
+    def apply_unit_choice
+      return if @unit_choice.blank?
+
+      if COMMON_UNITS.key?(@unit_choice)
+        self.unit = @unit_choice
+      elsif @unit_choice == OTHER_UNIT
+        custom = @unit_other.to_s.squish
+        stored = unit_in_database.to_s
+        self.unit =
+          if stored.present? && custom == stored.squish
+            stored
+          elsif COMMON_UNITS.key?(custom.downcase)
+            custom.downcase
+          else
+            custom
+          end
+      else
+        self.unit = ""
+      end
+    end
+
+    def custom_unit_format
+      return if unit.blank? || COMMON_UNITS.key?(unit)
+
+      if unit.casecmp?(OTHER_UNIT)
+        errors.add(:unit, "Type the unit you need instead of “Other”.")
+      elsif !unit.match?(CUSTOM_UNIT_PATTERN)
+        errors.add(:unit, "Use letters, numbers, spaces or . , / ( ) % - in the unit.")
+      end
+    end
 
     def normalize_description
       self.description = description.to_s.strip

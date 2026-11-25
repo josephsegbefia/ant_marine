@@ -37,7 +37,14 @@ class Commercial::MoneyTest < ActiveSupport::TestCase
     assert_equal "GHS 2,500.00", Commercial::Money.display(250_000, "GHS")
     assert_equal "USD 0.05", Commercial::Money.display(5, "USD")
     assert_equal "EUR 1,000,000.10", Commercial::Money.display(100_000_010, "EUR")
-    assert_equal "1250.00", Commercial::Money.to_input(125_000, "GHS")
+    assert_equal "1,250.00", Commercial::Money.to_input(125_000, "GHS")
+    assert_equal "0.05", Commercial::Money.to_input(5, "USD")
+  end
+
+  test "form values read back to the same amount" do
+    [ 0, 5, 125_000, 100_000_010 ].each do |minor|
+      assert_equal minor, Commercial::Money.parse_minor(Commercial::Money.to_input(minor, "GHS"), "GHS")
+    end
   end
 
   test "only supported currencies are recognised" do

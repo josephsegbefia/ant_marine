@@ -93,14 +93,65 @@ Environments seeded before F4-02A must run `Authorization::CatalogueSeeder.seed!
 
 ### Open decisions for the product owner
 
-- Whether the preparer may approve their own quotation (currently allowed when they hold `quotes.approve`).
-- Tax, deposit and standard legal terms.
-- A fixed list of units (currently free text, 30 characters).
+- Self-approval: resolved in F4-02A-H2 (four-eyes approval, below).
+- Unit list: resolved in F4-02A-H2 (common units plus Other, below).
+- Tax, deposit and standard legal terms remain open (see F4-02A-H2 outstanding commercial policies).
 - Database triggers are not used because the schema is kept in `schema.rb`; protection is in model guards plus check constraints.
 
 ### Evidence
 
 `verify_foundation.sh` PASS, 413 tests. Browser: preparer journey (create, client, scope, pricing with live totals, reorder, validation errors, terms, review, submit) at 1440px; read-only pricing at 768px and 390px; PDF rendered and inspected. Reviewer approve/return in the browser is **unverified** (covered by integration tests).
+
+## F4-02A-H2 reviewer separation (2026-11-25)
+
+PO decisions: preparers must not approve their own revisions; taxes, deposits and legal terms stay unconfigured until approved; units use a common list with an accessible Other option.
+
+### Revision attribution
+
+Each `QuoteRevision` records who is accountable for its content:
+
+- `prepared_by_membership_id` — the membership that created the version (set by `QuoteBuilder`).
+- `submitted_by_membership_id` — the membership that last submitted it for review.
+- `contributor_membership_ids` — every membership that made a material edit. A save that changes nothing (only bookkeeping fields) adds no contributor.
+
+Attribution is per version, so a new version prepared by someone else is judged on its own authors. The migration backfills preparer/contributor from `quotes.created_by` and the submitter from the latest `quote.submit_for_review` audit event, for **unfrozen versions only**; approved and issued history is not rewritten. Attribution fields are covered by the frozen-version guard.
+
+### Four-eyes approval
+
+An approval succeeds only when the acting membership:
+
+1. is active and its user is active;
+2. holds `quotes.approve` and can view the quotation (`QuotePolicy#review?`);
+3. acts on the current version: the form posts `expected_revision_id` and `expected_lock_version`, and both must match the locked rows, with the version still `pending_review` (otherwise "This quotation changed after you opened it. Nothing was changed.");
+4. is not the preparer, the submitter or a contributor of that version — compared by membership and by user;
+5. finds a recorded preparer (versions with no attribution must be returned for correction first).
+
+The rule lives in `Commercial::QuoteTransition` (authoritative, inside the row locks), is mirrored by `QuotePolicy#approve?` / `#another_reviewer_required?` for the UI, by a `QuoteRevision` validation and by the DB check `quote_revisions_approver_is_independent`. There is no Super Admin bypass. A refused self-approval writes a `quote.approval_refused` audit event (reference, revision, reason) after the transaction rolls back, and shows in history as "Approval refused — another reviewer needed". Return for correction also requires the current version and `quotes.approve`, but not independence: a preparer with approval permission may pull their own submission back for correction. Nothing is approved automatically.
+
+UI: a preparer with approval permission sees "Another reviewer must approve this version" instead of an Approve button; others see "Waiting for a reviewer with approval permission who did not prepare this version."
+
+### Units
+
+The unit field is a native select: Each, Hour, Day, Visit, Survey, Report, Lot, Other…. Choosing Other reveals a labelled "Your unit" field (max 30 characters; letters, numbers, spaces and `. , / ( ) ² ³ % -`). An Other value that matches a common unit is stored as that unit. Existing free-text units are shown as Other with their stored text and are saved back unchanged unless the user edits them; the PDF and review print the stored unit, so frozen PDFs are unaffected. Editor amounts are rendered with thousands separators ("1,500.00") in both editable and read-only states.
+
+### Outstanding commercial policies (not configured)
+
+- VAT / NHIL / GETFund or other tax rates and how they appear on quotations.
+- Deposit or advance-payment requirements.
+- Standard legal terms, liability and acceptance wording.
+- Issuance channel, sender identity, template and acceptance rules (see Issuance activation conditions).
+
+Only values typed into an individual quotation (payment terms, commercial exclusions, additional conditions) appear on the PDF.
+
+### Production database immutability considerations
+
+- Check constraints (`quote_revisions_approved_are_frozen`, `quote_revisions_approver_is_independent`, line-item and status checks) run on every insert/update, including SQL outside Rails.
+- Content immutability of frozen versions and line items is enforced by model guards only; raw SQL `UPDATE`/`DELETE` by a privileged database user could still alter history. Closing that gap needs triggers or a restricted application role, which requires moving to `structure.sql` — a separate, approved change.
+- Production deployment must run the migration (adds three columns and one constraint; backfill touches only unfrozen rows) and the catalogue seeder if not already run.
+
+### Evidence
+
+Browser (local dev, three temporary staff identities, later suspended with rotated passwords): preparer created ANT-Q-2026-00005 with a Day line and an Other "tonne" line (GHS 3,361.50), submitted, and was shown the separate-reviewer notice with no Approve button; reviewer returned it with a reason; preparer saw the reason, corrected the title and resubmitted; reviewer approved; the version became read-only ("Approved total. This version is locked."), title/unit edits and a self-approver write were refused, issuance was refused, the PDF showed the corrected approved version; a general staff user was denied the quotation.
 
 ## F4-02B recommended
 

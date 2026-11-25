@@ -36,9 +36,24 @@
       <input class="ant-control w-full" id="<%= dom %>_quantity" name="<%= prefix %>[quantity]" value="<%= item.quantity_input %>"
              inputmode="decimal" autocomplete="off" data-quote-pricing-target="quantity" data-action="input->quote-pricing#recalculate">
     </div>
-    <div>
-      <label class="ant-field__label" for="<%= dom %>_unit">Unit</label>
-      <input class="ant-control w-full" id="<%= dom %>_unit" name="<%= prefix %>[unit]" value="<%= item.unit.presence || "each" %>" maxlength="30">
+    <div class="staff-quote-line__unit">
+      <label class="ant-field__label" for="<%= dom %>_unit_choice">Unit</label>
+      <select class="ant-control w-full" id="<%= dom %>_unit_choice" name="<%= prefix %>[unit_choice]"
+              data-quote-pricing-target="unitChoice" data-action="change->quote-pricing#unitChanged"
+              <% if item.errors[:unit].any? %>aria-invalid="true"<% end %>>
+        <% QuoteLineItem::COMMON_UNITS.each do |value, label| %>
+          <option value="<%= value %>" <%= "selected" if item.unit_choice == value %>><%= label %></option>
+        <% end %>
+        <option value="<%= QuoteLineItem::OTHER_UNIT %>" <%= "selected" if item.unit_choice == QuoteLineItem::OTHER_UNIT %>>Other…</option>
+      </select>
+      <div class="staff-quote-line__unit-other" data-quote-pricing-target="unitOtherField"
+           <%= "hidden" unless item.unit_choice == QuoteLineItem::OTHER_UNIT %>>
+        <label class="ant-field__label" for="<%= dom %>_unit_other">Your unit</label>
+        <input class="ant-control w-full" id="<%= dom %>_unit_other" name="<%= prefix %>[unit_other]" value="<%= item.unit_other %>"
+               maxlength="<%= QuoteLineItem::CUSTOM_UNIT_MAX %>" autocomplete="off" placeholder="For example: tonne"
+               data-quote-pricing-target="unitOther"
+               <% unless item.unit_choice == QuoteLineItem::OTHER_UNIT %>disabled<% end %>>
+      </div>
     </div>
     <div>
       <label class="ant-field__label" for="<%= dom %>_unit_price">Unit price</label>

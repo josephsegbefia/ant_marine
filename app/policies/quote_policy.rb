@@ -34,7 +34,15 @@ class QuotePolicy < ApplicationPolicy
   end
 
   def approve?
-    review?
+    review? && independent_reviewer?
+  end
+
+  def review?
+    view? && allowed?("quotes.approve") && record.status == "pending_review"
+  end
+
+  def another_reviewer_required?
+    review? && !independent_reviewer?
   end
 
   def issue?
@@ -70,7 +78,8 @@ class QuotePolicy < ApplicationPolicy
       allowed?("quotes.create") && view? && record.editable?
     end
 
-    def review?
-      view? && allowed?("quotes.approve") && record.status == "pending_review"
+    def independent_reviewer?
+      revision = record.current_revision
+      revision.present? && revision.attribution_recorded? && !revision.prepared_or_edited_by?(membership)
     end
 end

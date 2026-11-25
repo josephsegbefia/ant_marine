@@ -16,7 +16,12 @@ module Commercial
             updated_by_membership: membership,
             prospective_client: {}
           )
-          revision = quote.quote_revisions.create!(version_number: 1, title: "")
+          revision = quote.quote_revisions.create!(
+            version_number: 1,
+            title: "",
+            prepared_by_membership: membership,
+            contributor_membership_ids: [ membership.id ]
+          )
           quote.update!(current_revision: revision)
           AuditEvent.record!(
             event_type: "quote.created",

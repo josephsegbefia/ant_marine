@@ -15,7 +15,8 @@ module Staff
       5 => :review
     }.freeze
 
-    LINE_ITEM_FIELDS = %i[id description quantity unit unit_price position _destroy].freeze
+    LINE_ITEM_FIELDS = %i[id description quantity unit unit_choice unit_other unit_price position _destroy].freeze
+    QUOTE_BOOKKEEPING_ATTRIBUTES = %w[updated_at updated_by_membership_id lock_version].freeze
 
     TRANSITION_NOTICES = {
       submit_for_review: "Quotation submitted for review.",
@@ -66,6 +67,7 @@ module Staff
         render_editor_with_errors
         return
       end
+      @revision.record_contributor(Current.membership) if material_change?
 
       Quote.transaction do
         @quote.save!
@@ -158,7 +160,13 @@ module Staff
 
       def run_transition(action, reason: nil, success_step: review_step)
         authorize @quote, :show?
-        Commercial::QuoteTransition.apply!(quote: @quote, action: action, membership: Current.membership, reason: reason)
+        Commercial::QuoteTransition.apply!(
+          quote: @quote,
+          action: action,
+          membership: Current.membership,
+          reason: reason,
+          expected_version: { revision_id: params[:expected_revision_id], lock_version: params[:expected_lock_version] }
+        )
         redirect_to edit_staff_quotation_path(@quote, editor_step: success_step), notice: TRANSITION_NOTICES[action]
       rescue Commercial::QuoteTransition::NotReady => e
         redirect_to edit_staff_quotation_path(@quote, editor_step: review_step),
@@ -166,6 +174,12 @@ module Staff
                            "#{e.issues.size == 1 ? 'needs' : 'need'} attention — see the checklist below."
       rescue Commercial::QuoteTransition::InvalidTransition => e
         redirect_to edit_staff_quotation_path(@quote, editor_step: review_step), alert: e.message
+      end
+
+      def material_change?
+        (@quote.changed - QUOTE_BOOKKEEPING_ATTRIBUTES).any? ||
+          @revision.changed? ||
+          @revision.line_items.any? { |item| item.new_record? || item.changed? || item.marked_for_destruction? }
       end
 
       def scoped_quotes

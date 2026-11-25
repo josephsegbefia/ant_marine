@@ -24,18 +24,30 @@
       <p class="text-sm text-[#5f7d8c]">You can prepare this draft, but another colleague with quotation access must submit it.</p>
     <% end %>
 
+    <% expected_version = { expected_revision_id: revision.id, expected_lock_version: quote.lock_version } %>
     <% if quote_policy.approve? %>
       <%= button_to "Approve this version", approve_staff_quotation_path(quote),
             method: :post,
+            params: expected_version,
             class: "ant-btn-primary ant-btn-primary--compact",
             disabled: !readiness.ready?,
             form: { data: { turbo_confirm: "Approve version #{revision.version_number}? It will be locked and cannot be edited." } } %>
+    <% elsif quote_policy.another_reviewer_required? %>
+      <div class="staff-quote-notice staff-quote-notice--warn" id="quote-another-reviewer" role="status">
+        <p class="font-semibold text-[#102c43]">Another reviewer must approve this version</p>
+        <p class="mt-1 text-sm text-[#466270]">
+          You prepared, submitted or edited version <%= revision.version_number %>, so you cannot approve it.
+          Ask a colleague with approval permission to review it. You can still return it for correction.
+        </p>
+      </div>
     <% elsif quote.status == "pending_review" %>
-      <p class="text-sm text-[#5f7d8c]">Waiting for a reviewer with approval permission.</p>
+      <p class="text-sm text-[#5f7d8c]">Waiting for a reviewer with approval permission who did not prepare this version.</p>
     <% end %>
 
     <% if quote_policy.return_for_correction? %>
       <%= form_with url: return_for_correction_staff_quotation_path(quote), method: :post, class: "space-y-2" do %>
+        <%= hidden_field_tag :expected_revision_id, revision.id, id: nil %>
+        <%= hidden_field_tag :expected_lock_version, quote.lock_version, id: nil %>
         <label class="ant-field__label" for="quote_return_reason">What needs to be corrected?</label>
         <textarea class="ant-control w-full" rows="3" id="quote_return_reason" name="reason" maxlength="1000"></textarea>
         <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Return for correction</button>

@@ -2404,11 +2404,19 @@
   }
 
   .staff-quote-line__grid {
-    @apply grid grid-cols-2 gap-3 md:grid-cols-[6rem_7rem_minmax(0,1fr)_minmax(8rem,10rem)] md:items-end;
+    @apply grid grid-cols-2 gap-3 md:grid-cols-[6rem_8rem_minmax(0,1fr)_minmax(8rem,10rem)] md:items-start;
   }
 
   .staff-quote-line__description {
     @apply col-span-full;
+  }
+
+  .staff-quote-line__unit-other {
+    @apply mt-2;
+  }
+
+  .staff-quote-line__unit-other[hidden] {
+    @apply hidden;
   }
 
   .staff-quote-line__money {
@@ -2424,7 +2432,7 @@
   }
 
   .staff-quote-line__total {
-    @apply flex flex-col gap-1 text-right text-sm font-semibold tabular-nums text-[#102c43] md:pb-2;
+    @apply flex flex-col gap-1 text-right text-sm font-semibold tabular-nums text-[#102c43] md:pt-px;
   }
 
   .staff-quote-line__errors {

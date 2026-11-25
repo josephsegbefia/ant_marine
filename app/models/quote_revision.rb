@@ -10,6 +10,8 @@ class QuoteRevision < ApplicationRecord
   belongs_to :quote
   belongs_to :approved_by_membership, class_name: "Membership", optional: true
   belongs_to :issued_by_membership, class_name: "Membership", optional: true
+  belongs_to :prepared_by_membership, class_name: "Membership", optional: true
+  belongs_to :submitted_by_membership, class_name: "Membership", optional: true
 
   has_many :line_items, -> { order(:position, :id) },
            class_name: "QuoteLineItem", dependent: :restrict_with_exception, inverse_of: :quote_revision
@@ -22,6 +24,7 @@ class QuoteRevision < ApplicationRecord
   validates :title, length: { maximum: 200 }
   validate :line_item_limit
   validate :prevent_mutation_when_frozen, on: :update
+  validate :approver_is_independent, if: :approved_by_membership_id_changed?
 
   before_validation :assign_line_positions
   before_save :recalculate_totals!
@@ -41,6 +44,32 @@ class QuoteRevision < ApplicationRecord
 
   def active_line_items
     line_items.reject(&:marked_for_destruction?)
+  end
+
+  def record_contributor(membership)
+    return if membership.nil?
+
+    self.prepared_by_membership_id ||= membership.id
+    self.contributor_membership_ids = (Array(contributor_membership_ids) | [ membership.id ])
+  end
+
+  def accountable_membership_ids
+    ([ prepared_by_membership_id, submitted_by_membership_id ] + Array(contributor_membership_ids)).compact.uniq
+  end
+
+  def attribution_recorded?
+    prepared_by_membership_id.present?
+  end
+
+  # Separation of duties is per person: a user who prepared, submitted or edited this
+  # version cannot approve it through any of their memberships or roles.
+  def prepared_or_edited_by?(membership)
+    return false if membership.nil?
+
+    ids = accountable_membership_ids
+    return true if ids.include?(membership.id)
+
+    Membership.where(id: ids, user_id: membership.user_id).exists?
   end
 
   private
@@ -78,6 +107,13 @@ class QuoteRevision < ApplicationRecord
                      line_items.any? { |item| item.new_record? || item.changed? || item.marked_for_destruction? }
 
       errors.add(:base, FROZEN_MESSAGE) if disallowed.any? || status_change || line_changes
+    end
+
+    def approver_is_independent
+      return if approved_by_membership_id.blank?
+      return unless prepared_or_edited_by?(approved_by_membership)
+
+      errors.add(:base, "A different reviewer must approve this version.")
     end
 
     def prevent_destroy_when_frozen

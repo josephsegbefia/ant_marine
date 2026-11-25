@@ -75,7 +75,7 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
     assert_select "button[role=tab]", 5
     assert_select "label", text: "Unit price"
     assert_select "label", text: /cents/i, count: 0
-    assert_select "input[name$='[unit_price]'][value='1250.00']"
+    assert_select "input[name$='[unit_price]'][value='1,250.00']"
     assert_includes response.body, "GHS 2,500.00"
     # No automatically appended blank line item
     assert_select "ol[data-quote-pricing-target=list] > li", 1
@@ -238,12 +238,27 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
 
     get edit_staff_quotation_path(quote, editor_step: 5)
     assert_select "#quote-editor-form fieldset[disabled]", 4
-    assert_select "button", text: "Approve this version"
+    assert_select "button", text: "Approve this version", count: 0
+    assert_select "#quote-another-reviewer", text: /Another reviewer must approve this version/
     assert_includes response.body, "Pricing is read-only while the quotation is being reviewed."
     assert_not_includes response.body, "Approved total."
 
-    post approve_staff_quotation_path(quote)
+    # A forged request from the preparer is refused and recorded.
+    assert_difference -> { AuditEvent.where(event_type: "quote.approval_refused").count }, 1 do
+      post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
+    end
+    assert_match(/different reviewer must approve/, flash[:alert])
+    assert_equal "pending_review", quote.reload.status
+
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    get edit_staff_quotation_path(quote, editor_step: 5)
+    assert_select "button", text: "Approve this version"
+    assert_select "input[name=expected_revision_id][value='#{quote.current_revision_id}']"
+    assert_select "input[name=expected_lock_version][value='#{quote.lock_version}']"
+
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
     assert_equal "approved_for_issuance", quote.reload.status
+    assert_equal memberships(:ops_manager_membership).id, quote.current_revision.approved_by_membership_id
     assert_match(/has not been sent/, flash[:notice])
 
     get edit_staff_quotation_path(quote, editor_step: 5)
@@ -271,19 +286,52 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
   test "reviewer without approval permission cannot approve or return" do
     quote = create_ready_quote
     post submit_for_review_staff_quotation_path(quote)
-    deny_permission!(memberships(:dual_staff), "quotes.approve")
+    deny_permission!(memberships(:ops_manager_membership), "quotes.approve")
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
 
-    post approve_staff_quotation_path(quote)
+    get edit_staff_quotation_path(quote, editor_step: 5)
+    assert_select "button", text: "Approve this version", count: 0
+    assert_select "#quote-another-reviewer", 0
+
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
     assert_equal "You do not have permission to do that.", flash[:alert]
-    post return_for_correction_staff_quotation_path(quote), params: { reason: "Fix it" }
+    post return_for_correction_staff_quotation_path(quote), params: reviewer_form_params(quote).merge(reason: "Fix it")
     assert_equal "pending_review", quote.reload.status
   end
 
-  test "reviewer returns for correction and the preparer sees the reason" do
+  test "super administrator who prepared a quotation cannot approve it" do
+    sign_in_as(users(:super_admin), membership: memberships(:super_admin_membership))
+    quote = create_ready_quote(membership: memberships(:super_admin_membership))
+    post submit_for_review_staff_quotation_path(quote)
+
+    get edit_staff_quotation_path(quote, editor_step: 5)
+    assert_select "button", text: "Approve this version", count: 0
+    assert_select "#quote-another-reviewer"
+
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
+    assert_match(/different reviewer must approve/, flash[:alert])
+    assert_equal "pending_review", quote.reload.status
+  end
+
+  test "approval without the reviewed version, or with an outdated one, changes nothing" do
     quote = create_ready_quote
     post submit_for_review_staff_quotation_path(quote)
     sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
-    post return_for_correction_staff_quotation_path(quote), params: { reason: "Please add the dive team size." }
+
+    post approve_staff_quotation_path(quote)
+    assert_match(/changed after you opened it/, flash[:alert])
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote).merge(expected_lock_version: 0)
+    assert_match(/changed after you opened it/, flash[:alert])
+    assert_equal "pending_review", quote.reload.status
+    assert_nil quote.current_revision.frozen_at
+  end
+
+  test "return for correction, correction, resubmission and approval by another reviewer" do
+    quote = create_ready_quote
+    post submit_for_review_staff_quotation_path(quote)
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    opened = reviewer_form_params(quote)
+    post return_for_correction_staff_quotation_path(quote), params: opened.merge(reason: "Please add the dive team size.")
     assert_equal "returned_for_correction", quote.reload.status
 
     sign_in_as(users(:dual_domain), membership: memberships(:dual_staff))
@@ -291,6 +339,84 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Please add the dive team size."
     patch_quote(quote, revision_params: { title: "Corrected title" }, step: 2)
     assert_equal "Corrected title", quote.reload.current_revision.title
+    post submit_for_review_staff_quotation_path(quote)
+    assert_equal "pending_review", quote.reload.status
+
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    post approve_staff_quotation_path(quote), params: opened
+    assert_match(/changed after you opened it/, flash[:alert])
+
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
+    quote.reload
+    assert_equal "approved_for_issuance", quote.status
+    assert_equal "Corrected title", quote.current_revision.title
+    assert_equal memberships(:ops_manager_membership).id, quote.current_revision.approved_by_membership_id
+    assert_equal memberships(:dual_staff).id, quote.current_revision.prepared_by_membership_id
+  end
+
+  test "a reviewer who edits a returned quotation can no longer approve it" do
+    quote = create_ready_quote
+    post submit_for_review_staff_quotation_path(quote)
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    post return_for_correction_staff_quotation_path(quote), params: reviewer_form_params(quote).merge(reason: "Shorten the title.")
+    patch_quote(quote, revision_params: { title: "Reviewer edit" }, step: 2)
+    assert_includes quote.reload.current_revision.contributor_membership_ids, memberships(:ops_manager_membership).id
+
+    sign_in_as(users(:dual_domain), membership: memberships(:dual_staff))
+    post submit_for_review_staff_quotation_path(quote)
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    post approve_staff_quotation_path(quote), params: reviewer_form_params(quote)
+    assert_match(/different reviewer must approve/, flash[:alert])
+    assert_equal "pending_review", quote.reload.status
+  end
+
+  test "saving without changes does not make the person a contributor" do
+    quote = create_ready_quote
+    sign_in_as(users(:ops_manager), membership: memberships(:ops_manager_membership))
+    patch_quote(quote, revision_params: { title: quote.current_revision.title }, step: 2)
+    assert_redirected_to edit_staff_quotation_path(quote, editor_step: 2)
+    assert_equal [ memberships(:dual_staff).id ], quote.reload.current_revision.contributor_membership_ids
+  end
+
+  test "common units and a custom Other unit are saved; invalid custom units are refused" do
+    quote = create_draft_quote
+    patch_quote(quote, step: 3, revision_params: { line_items_attributes: {
+      "0" => { description: "Diving day", quantity: "2", unit_choice: "day", unit_other: "", unit_price: "500" },
+      "1" => { description: "Sediment", quantity: "3", unit_choice: "other", unit_other: "  tonne ", unit_price: "10" }
+    } })
+    assert_redirected_to edit_staff_quotation_path(quote, editor_step: 3)
+    assert_equal %w[day tonne], quote.reload.current_revision.line_items.map(&:unit)
+
+    get edit_staff_quotation_path(quote, editor_step: 3)
+    assert_select "select[name$='[unit_choice]'] option[selected][value=day]"
+    assert_select "select[name$='[unit_choice]'] option[selected][value=other]"
+    assert_select "input[name$='[unit_other]'][value=tonne]"
+
+    item = quote.current_revision.line_items.last
+    [ [ "other", "" ], [ "other", "Other" ], [ "other", "<b>bad</b>" ], [ "fortnight", "" ] ].each do |choice, other|
+      patch_quote(quote, step: 3, revision_params: { line_items_attributes: { "0" => { id: item.id, unit_choice: choice, unit_other: other } } })
+      assert_response :unprocessable_entity, "#{choice}/#{other} should be refused"
+      assert_equal "tonne", item.reload.unit
+    end
+    assert_includes response.body, "Choose a unit, or choose Other and type one."
+  end
+
+  test "older free-text units are shown as Other and kept unchanged when saved" do
+    quote = create_ready_quote
+    item = quote.current_revision.line_items.first
+    item.update_columns(unit: "Per m^2 ")
+
+    get edit_staff_quotation_path(quote, editor_step: 3)
+    assert_select "select[name$='[unit_choice]'] option[selected][value=other]"
+    assert_select "input[name$='[unit_other]'][value='Per m^2 ']"
+
+    patch_quote(quote, step: 3, revision_params: { line_items_attributes: {
+      "0" => { id: item.id, description: "Hull inspection (updated)", unit_choice: "other", unit_other: "Per m^2" }
+    } })
+    assert_redirected_to edit_staff_quotation_path(quote, editor_step: 3)
+    item.reload
+    assert_equal "Per m^2 ", item.unit
+    assert_equal "Hull inspection (updated)", item.description
   end
 
   test "issue endpoint is gated and makes no delivery claim" do

@@ -43,19 +43,20 @@ module Commercial
     end
 
     def to_input(minor, currency)
-      places = minor_units(currency)
-      whole, fraction = minor.to_i.divmod(10**places)
-      places.zero? ? whole.to_s : "#{whole}.#{fraction.to_s.rjust(places, '0')}"
+      grouped_amount(minor.to_i, currency)
     end
 
     def display(minor, currency)
       value = minor.to_i
       sign = value.negative? ? "-" : ""
+      "#{currency} #{sign}#{grouped_amount(value.abs, currency)}"
+    end
+
+    def grouped_amount(minor, currency)
       places = minor_units(currency)
-      whole, fraction = value.abs.divmod(10**places)
+      whole, fraction = minor.divmod(10**places)
       grouped = whole.to_s.reverse.scan(/\d{1,3}/).join(",").reverse
-      amount = places.zero? ? grouped : "#{grouped}.#{fraction.to_s.rjust(places, '0')}"
-      "#{currency} #{sign}#{amount}"
+      places.zero? ? grouped : "#{grouped}.#{fraction.to_s.rjust(places, '0')}"
     end
   end
 end

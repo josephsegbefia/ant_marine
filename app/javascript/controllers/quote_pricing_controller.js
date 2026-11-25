@@ -7,7 +7,8 @@ const QUANTITY_PATTERN = /^\d+(\.\d{1,3})?$/
 // (BigInt) so the preview matches the server's BigDecimal calculation.
 export default class extends Controller {
   static targets = ["list", "row", "template", "empty", "position", "destroy", "number",
-    "quantity", "price", "lineTotal", "total", "totalNote", "currency", "currencyLabel"]
+    "quantity", "price", "lineTotal", "total", "totalNote", "currency", "currencyLabel",
+    "unitChoice", "unitOther", "unitOtherField"]
 
   static values = { currency: String }
 
@@ -26,6 +27,18 @@ export default class extends Controller {
     this.changed()
     const rows = this.activeRows()
     rows[rows.length - 1]?.querySelector("input[name$='[description]']")?.focus()
+  }
+
+  unitChanged(event) {
+    const row = event.target.closest("[data-quote-pricing-target~='row']")
+    const field = row?.querySelector("[data-quote-pricing-target~='unitOtherField']")
+    const input = row?.querySelector("[data-quote-pricing-target~='unitOther']")
+    if (!field || !input) return
+
+    const other = event.target.value === "other"
+    field.hidden = !other
+    input.disabled = !other
+    if (other) input.focus()
   }
 
   remove(event) {
