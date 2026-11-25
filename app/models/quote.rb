@@ -11,6 +11,7 @@ class Quote < ApplicationRecord
   belongs_to :organization
   belongs_to :client_organization, class_name: "Organization", optional: true
   belongs_to :service, optional: true
+  belongs_to :service_inquiry, optional: true
   belongs_to :current_revision, class_name: "QuoteRevision", optional: true
   belongs_to :created_by_membership, class_name: "Membership", optional: true
   belongs_to :updated_by_membership, class_name: "Membership", optional: true
@@ -23,6 +24,8 @@ class Quote < ApplicationRecord
   validate :client_organization_must_be_an_active_client, if: :client_organization_id_changed?
   validate :service_must_belong_to_organization, if: :service_id_changed?
   validate :recipient_locked_outside_editing, on: :update
+  validate :service_inquiry_link_is_permanent, on: :update
+  validate :service_inquiry_belongs_to_organization, if: :service_inquiry_id_changed?
 
   scope :for_ant_marine, -> { joins(:organization).where(organizations: { kind: "ant_marine" }) }
   scope :recent_first, -> { order(created_at: :desc) }
@@ -98,5 +101,17 @@ class Quote < ApplicationRecord
       return unless (changed & RECIPIENT_ATTRIBUTES).any?
 
       errors.add(:base, "The client and service cannot be changed while this quotation is #{status_in_database.humanize.downcase}.")
+    end
+
+    def service_inquiry_link_is_permanent
+      return unless service_inquiry_id_changed? && service_inquiry_id_in_database.present?
+
+      errors.add(:base, "The enquiry linked to this quotation cannot be changed.")
+    end
+
+    def service_inquiry_belongs_to_organization
+      return if service_inquiry.nil? || service_inquiry.organization_id == organization_id
+
+      errors.add(:base, "This enquiry belongs to a different organisation.")
     end
 end

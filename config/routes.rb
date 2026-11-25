@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   get "industries", to: "public/pages#show", defaults: { page: "industries" }, as: :industries
   get "how-we-work", to: "public/pages#show", defaults: { page: "how-we-work" }, as: :how_we_work
   get "contact", to: "public/pages#show", defaults: { page: "contact" }, as: :contact
+  get "request-a-quote", to: "public/service_inquiries#new", as: :public_enquiry
+  post "request-a-quote", to: "public/service_inquiries#create"
+  get "request-a-quote/received", to: "public/service_inquiries#received", as: :public_enquiry_received
   get "insights", to: "public/articles#index", as: :public_insights
   get "insights/:slug", to: "public/articles#show", as: :public_insight
   get "projects", to: "public/case_studies#index", as: :public_projects
@@ -44,6 +47,11 @@ Rails.application.routes.draw do
       end
     end
     resources :client_invitations, only: %i[new create]
+    resources :service_inquiries, path: "enquiries", only: %i[index show] do
+      member do
+        post :prepare_quotation
+      end
+    end
     resources :quotations, except: :destroy do
       member do
         post :submit_for_review

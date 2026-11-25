@@ -1,0 +1,50 @@
+<% content_for :staff_nav, :enquiries %>
+
+<%= ant_page_header(
+      title: "Enquiries",
+      description: "Requests sent through the public website. Open a request to review it and prepare a quotation where appropriate."
+    ) %>
+
+<section class="staff-website-hub mt-6">
+  <%= form_with url: staff_service_inquiries_path, method: :get, class: "staff-filter-bar mb-4 flex flex-wrap gap-3 items-end", local: true do %>
+    <div class="flex-1 min-w-[12rem]">
+      <label class="ant-field__label" for="q">Search</label>
+      <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, company or contact">
+    </div>
+    <div>
+      <label class="ant-field__label" for="status">Status</label>
+      <select name="status" id="status" class="ant-control">
+        <option value="all" <%= "selected" if params[:status].blank? || params[:status] == "all" %>>All statuses</option>
+        <% ServiceInquiry::STATUSES.each do |status| %>
+          <option value="<%= status %>" <%= "selected" if params[:status] == status %>><%= ServiceInquiry.status_label(status) %></option>
+        <% end %>
+      </select>
+    </div>
+    <button type="submit" class="ant-btn-outline ant-btn-primary--compact">Apply</button>
+  <% end %>
+
+  <% if @inquiries.any? %>
+    <div class="staff-content-list">
+      <% @inquiries.each do |inquiry| %>
+        <%= ant_content_record(
+              title: inquiry.company_name,
+              description: "#{inquiry.reference_number} · #{inquiry.requested_service_label}",
+              meta: "Received #{l(inquiry.submitted_at, format: :short)} · #{inquiry.contact_name}",
+              guidance: enquiry_quote_progress(inquiry),
+              icon: "mail",
+              status_label: ServiceInquiry.status_label(inquiry.current_status),
+              status_badge_class: enquiry_status_badge_variant(inquiry.current_status),
+              primary_action: { label: "Open", path: staff_service_inquiry_path(inquiry) }
+            ) %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :mail,
+          title: params[:q].present? || params[:status].present? ? "No enquiries match these filters" : "No enquiries yet",
+          description: "Requests sent through the website’s “Request a quote” form will appear here.",
+          variant: :default,
+          size: :spacious
+        ) %>
+  <% end %>
+</section>

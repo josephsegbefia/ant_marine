@@ -1,0 +1,36 @@
+<%# locals: (form:, method:, label:, type: :text, required: false, hint: nil, **options) %>
+<% field_id = "service_inquiry_#{method}" %>
+<% error = form.object.errors[method].first %>
+<% described = [ (hint ? "#{field_id}-hint" : nil), (error ? "#{field_id}-error" : nil) ].compact.join(" ").presence %>
+<% attributes = {
+     id: field_id,
+     class: "ant-control public-enquiry__control",
+     required: required,
+     maxlength: ServiceInquiry::LIMITS[method],
+     aria: { invalid: (error ? true : nil), describedby: described }
+   }.merge(options) %>
+
+<div class="ant-field public-enquiry__field<%= " public-enquiry__field--wide" if type == :textarea %>">
+  <%= form.label method, for: field_id, class: "ant-field__label public-enquiry__label" do %>
+    <%= label %>
+    <% unless required %><span class="public-enquiry__optional">Optional</span><% end %>
+  <% end %>
+  <% case type %>
+  <% when :email %>
+    <%= form.email_field method, attributes.merge(autocomplete: "email") %>
+  <% when :tel %>
+    <%= form.telephone_field method, attributes.merge(autocomplete: "tel") %>
+  <% when :date %>
+    <%= form.date_field method, attributes.except(:maxlength).merge(min: Date.current.iso8601) %>
+  <% when :textarea %>
+    <%= form.text_area method, attributes.merge(rows: 7) %>
+  <% else %>
+    <%= form.text_field method, attributes %>
+  <% end %>
+  <% if hint %>
+    <p class="ant-field__hint public-enquiry__hint" id="<%= field_id %>-hint"><%= hint %></p>
+  <% end %>
+  <% if error %>
+    <p class="ant-field__error public-enquiry__error" id="<%= field_id %>-error"><%= error %></p>
+  <% end %>
+</div>

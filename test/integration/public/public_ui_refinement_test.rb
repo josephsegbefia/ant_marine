@@ -22,12 +22,13 @@ class Public::PublicUiRefinementTest < ActionDispatch::IntegrationTest
     assert_select ".public-notice--help"
   end
 
-  test "service detail uses structured layout and contact cta" do
+  test "service detail uses structured layout and enquiry cta" do
     get public_service_path("published-surveys")
     assert_response :success
     assert_select ".public-detail__layout"
     assert_select ".public-detail__article"
-    assert_select "a[href=?]", contact_path, text: "Enquire about this service"
+    assert_select "a[href=?]", public_enquiry_path(service: "published-surveys"), text: "Enquire about this service"
+    assert_select "a[href=?]", public_enquiry_path(service: "published-surveys"), text: "Request a quote"
     assert_select "a[href=?]", contact_path, text: "Contact the team"
     assert_select ".public-breadcrumb a", text: "Services"
   end

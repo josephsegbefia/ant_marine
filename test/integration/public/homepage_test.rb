@@ -16,10 +16,10 @@ class Public::HomepageTest < ActionDispatch::IntegrationTest
     assert_select "#public-cta-heading", text: "Tell us what you need."
   end
 
-  test "closing call to action points to contact and offers workspace sign in" do
+  test "closing call to action points to the quote request form and offers workspace sign in" do
     get root_path
 
-    assert_select ".public-cta a[href=?]", contact_path, text: "Get in touch"
+    assert_select ".public-cta a[href=?]", public_enquiry_path, text: "Request a quote"
     assert_select ".public-cta a[href=?]", new_session_path
     assert_no_match(/Online quote and booking forms are not available yet/, response.body)
   end
@@ -118,7 +118,7 @@ class Public::HomepageTest < ActionDispatch::IntegrationTest
     get public_services_path
 
     assert_select ".public-card-carousel .public-card-carousel__slide", count: 3
-    assert_select ".public-card-carousel .public-service-card__footer a[href=?]", contact_path, minimum: 3
+    assert_select ".public-card-carousel .public-service-card__footer a[href^=?]", "#{public_enquiry_path}?service=", minimum: 3
   end
 
   private

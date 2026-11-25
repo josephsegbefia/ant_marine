@@ -4,7 +4,7 @@
       eyebrow: public_service_category_label(@service),
       title: @service.public_title,
       lede: @service.public_summary,
-      primary_action: { label: "Enquire about this service", path: contact_path } %>
+      primary_action: { label: "Enquire about this service", path: public_enquiry_path(service: @service.slug) } %>
 
 <section class="public-detail">
   <nav class="public-breadcrumb" aria-label="Breadcrumb">
@@ -75,7 +75,8 @@
         <h2 id="service-audience-heading" class="public-detail-aside__title">Who this service is for</h2>
         <p class="public-detail-aside__text"><%= @service.public_audience.presence || "Marine operators and project teams working on vessels, facilities and offshore projects." %></p>
         <div class="public-detail-aside__actions">
-          <%= link_to "Contact the team", contact_path, class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+          <%= link_to "Request a quote", public_enquiry_path(service: @service.slug), class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+          <%= link_to "Contact the team", contact_path, class: "public-detail-aside__secondary" %>
           <%= link_to "All services", public_services_path, class: "public-detail-aside__secondary" %>
         </div>
       </div>

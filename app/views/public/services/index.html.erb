@@ -29,10 +29,10 @@
     <% if @services.any? && @services.size == 1 %>
       <strong class="public-notice__title">Not sure this is the right fit?</strong>
       <p>Tell us about your vessel, facility or project — or read <%= link_to "how we work", how_we_work_path %> before you get in touch.</p>
-      <%= link_to "Describe your needs", contact_path, class: "ant-btn-outline ant-btn-primary--compact public-notice__action" %>
+      <%= link_to "Describe your needs", public_enquiry_path, class: "ant-btn-outline ant-btn-primary--compact public-notice__action" %>
     <% else %>
       Not sure which service is right?
-      <%= link_to "Describe your needs", contact_path %> and we will help you choose.
+      <%= link_to "Describe your needs", public_enquiry_path %> and we will help you choose.
     <% end %>
   </aside>
 </section>

@@ -13,6 +13,14 @@
     <% end %>
   <% end %>
 
+  <% if staff_can_view_enquiries? %>
+    <%= link_to staff_service_inquiries_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:enquiries)}" do %>
+      <%= render "shared/staff/nav_icon", name: "inbox" %>
+      <span>Enquiries</span>
+    <% end %>
+  <% end %>
+
   <% if staff_can_manage_quotations? %>
     <%= link_to staff_quotations_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:quotations)}" do %>

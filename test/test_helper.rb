@@ -7,6 +7,7 @@ require_relative "test_helpers/session_test_helper"
 require_relative "test_helpers/invitation_test_helper"
 require_relative "test_helpers/storage_test_helper"
 require_relative "test_helpers/quote_test_helper"
+require_relative "test_helpers/enquiry_test_helper"
 
 module ActiveSupport
   class TestCase

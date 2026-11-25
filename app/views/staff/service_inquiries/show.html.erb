@@ -1,0 +1,99 @@
+<% content_for :staff_nav, :enquiries %>
+<% inquiry_policy = policy(@inquiry) %>
+
+<div class="staff-editor-head">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <p class="public-eyebrow">Enquiry · <%= @inquiry.reference_number %></p>
+      <h1 class="staff-editor-head__title"><%= @inquiry.company_name %></h1>
+      <p class="staff-editor-head__lede">
+        Received <%= l(@inquiry.submitted_at, format: :long) %> through the <%= enquiry_channel_label(@inquiry.channel).downcase %>.
+      </p>
+    </div>
+    <%= ant_status_badge(label: ServiceInquiry.status_label(@inquiry.current_status),
+                         badge_class: enquiry_status_badge_variant(@inquiry.current_status)) %>
+  </div>
+</div>
+
+<div class="staff-editor-layout mt-4">
+  <div class="space-y-4">
+    <section class="portal-card" aria-labelledby="enquiry-contact-heading">
+      <h2 id="enquiry-contact-heading" class="text-base font-extrabold text-[#173244]">Request information</h2>
+      <dl class="staff-quote-summary__list staff-enquiry-facts">
+        <div><dt>Company</dt><dd><%= @inquiry.company_name %></dd></div>
+        <div><dt>Contact</dt><dd><%= @inquiry.contact_name %></dd></div>
+        <div><dt>Email</dt><dd><%= mail_to @inquiry.contact_email, nil, class: "staff-quote-link" %></dd></div>
+        <div><dt>Phone</dt><dd><%= @inquiry.contact_phone.presence || "Not provided" %></dd></div>
+        <div><dt>Location</dt><dd><%= @inquiry.location %></dd></div>
+        <div>
+          <dt>Preferred date</dt>
+          <dd>
+            <% if @inquiry.preferred_date %>
+              <%= l(@inquiry.preferred_date, format: :long) %>
+              <span class="block text-xs font-normal text-[#5f7d8c]">Requested by the client — not a confirmed booking</span>
+            <% else %>
+              No date given
+            <% end %>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="portal-card" aria-labelledby="enquiry-work-heading">
+      <h2 id="enquiry-work-heading" class="text-base font-extrabold text-[#173244]">What they need</h2>
+      <dl class="staff-quote-summary__list staff-enquiry-facts">
+        <div><dt>Service</dt><dd><%= @inquiry.requested_service_label %></dd></div>
+        <div><dt>Project</dt><dd><%= @inquiry.project_name.presence || "Not provided" %></dd></div>
+        <div><dt>Vessel or facility</dt><dd><%= @inquiry.vessel_name.presence || "Not provided" %></dd></div>
+      </dl>
+      <div class="staff-enquiry-description mt-4">
+        <%= simple_format(h(@inquiry.description), {}, sanitize: false) %>
+      </div>
+      <p class="mt-3 text-xs text-[#5f7d8c]">Attachments cannot be sent through the website yet. If the client mentions documents, agree a secure way to receive them.</p>
+    </section>
+  </div>
+
+  <aside class="staff-editor-layout__aside space-y-4" aria-label="Quotation for this enquiry">
+    <section class="portal-card" aria-labelledby="enquiry-quote-heading">
+      <h2 id="enquiry-quote-heading" class="text-base font-extrabold text-[#173244]">Quotation</h2>
+      <% if @open_quote %>
+        <p class="mt-2 text-sm text-[#466270]">A quotation has already been started for this enquiry.</p>
+        <dl class="staff-quote-summary__list">
+          <div><dt>Reference</dt><dd><%= @open_quote.reference_number %></dd></div>
+          <div><dt>Status</dt><dd><%= quote_status_label(@open_quote.status) %></dd></div>
+        </dl>
+        <% if policy(@open_quote).show? %>
+          <%= link_to "Open quotation", edit_staff_quotation_path(@open_quote), class: "ant-btn-primary ant-btn-primary--compact mt-4 w-full justify-center" %>
+        <% end %>
+      <% elsif inquiry_policy.prepare_quotation? %>
+        <p class="mt-2 text-sm text-[#466270]">
+          Start a draft quotation with the client’s details and request filled in. You will still need to write the scope, pricing and terms.
+        </p>
+        <%= button_to "Prepare quotation", prepare_quotation_staff_service_inquiry_path(@inquiry),
+              method: :post,
+              class: "ant-btn-primary ant-btn-primary--compact mt-4 w-full justify-center",
+              form: { data: { turbo_confirm: "Start a draft quotation for #{@inquiry.company_name}?" } } %>
+      <% else %>
+        <p class="mt-2 text-sm text-[#5f7d8c]">You can view this enquiry, but preparing quotations needs quotation permission.</p>
+      <% end %>
+    </section>
+
+    <% if @history.any? %>
+      <section class="portal-card" aria-labelledby="enquiry-history-heading">
+        <h2 id="enquiry-history-heading" class="text-sm font-semibold text-[#102c43]">History</h2>
+        <ol class="staff-quote-history">
+          <% @history.each do |event| %>
+            <li>
+              <span class="font-semibold text-[#102c43]"><%= enquiry_history_label(event.event_type) %></span>
+              <span class="text-[#5f7d8c]">· <%= event.actor_membership&.user&.full_name.presence || (event.actor_membership ? "Staff" : "Website") %> · <%= l(event.occurred_at, format: :short) %></span>
+            </li>
+          <% end %>
+        </ol>
+      </section>
+    <% end %>
+  </aside>
+</div>
+
+<div class="staff-editor-return">
+  <%= link_to "Return to enquiries", staff_service_inquiries_path, class: "staff-editor-footer__return-link" %>
+</div>

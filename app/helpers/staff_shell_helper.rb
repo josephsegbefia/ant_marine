@@ -34,6 +34,15 @@ module StaffShellHelper
     )
   end
 
+  def staff_can_view_enquiries?
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "inquiries.view_all"
+    )
+  end
+
   def staff_can_manage_website?
     return false unless Current.membership&.staff_domain?
 

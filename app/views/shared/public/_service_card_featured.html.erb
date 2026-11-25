@@ -28,7 +28,7 @@
     <footer class="public-service-card__footer public-service-card__footer--featured">
       <%= link_to "Explore this service", public_service_path(service.slug), class: "ant-btn-primary ant-btn-primary--compact" %>
       <% if local_assigns[:on_services_index] %>
-        <%= link_to "Contact the team", contact_path, class: "public-text-link" %>
+        <%= link_to "Request a quote", public_enquiry_path(service: service.slug), class: "public-text-link" %>
       <% else %>
         <%= link_to "All services", public_services_path, class: "public-text-link" %>
       <% end %>

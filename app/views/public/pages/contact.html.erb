@@ -49,9 +49,9 @@
         </ul>
         <p class="public-notice public-notice--spaced">
           <% if email || phone %>
-            An online enquiry form is coming soon. Until then, please use the details above.
+            Need a quotation? <%= link_to "Send us a request online", public_enquiry_path %> — no account needed.
           <% else %>
-            Our contact details are being confirmed and an online enquiry form is coming soon. Existing clients can reach the team through their workspace.
+            Our contact details are being confirmed. To ask for a quotation, <%= link_to "send us a request online", public_enquiry_path %> — no account needed. Existing clients can reach the team through their workspace.
           <% end %>
         </p>
       </div>

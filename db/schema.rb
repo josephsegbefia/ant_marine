@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -368,11 +368,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_170000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "current_revision_id"
+    t.bigint "service_inquiry_id"
     t.index ["client_organization_id"], name: "index_quotes_on_client_organization_id"
     t.index ["current_revision_id"], name: "index_quotes_on_current_revision_id"
     t.index ["organization_id", "reference_number"], name: "index_quotes_on_organization_id_and_reference_number", unique: true
     t.index ["organization_id"], name: "index_quotes_on_organization_id"
     t.index ["service_id"], name: "index_quotes_on_service_id"
+    t.index ["service_inquiry_id"], name: "index_quotes_on_service_inquiry_id"
+    t.index ["service_inquiry_id"], name: "index_quotes_one_open_quote_per_inquiry", unique: true, where: "((service_inquiry_id IS NOT NULL) AND ((status)::text <> ALL ((ARRAY['withdrawn'::character varying, 'superseded'::character varying])::text[])))"
     t.index ["status"], name: "index_quotes_on_status"
     t.check_constraint "delivery_state::text = ANY (ARRAY['not_prepared'::character varying, 'prepared'::character varying, 'delivery_pending'::character varying, 'delivery_attempted'::character varying, 'delivered'::character varying, 'delivery_failed'::character varying]::text[])", name: "quotes_delivery_state_check"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'pending_review'::character varying, 'returned_for_correction'::character varying, 'approved_for_issuance'::character varying, 'issued'::character varying, 'withdrawn'::character varying, 'superseded'::character varying]::text[])", name: "quotes_status_check"
@@ -386,6 +389,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_170000) do
     t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
     t.index ["role_key", "permission_id"], name: "index_role_permissions_on_role_key_and_permission_id", unique: true
     t.index ["role_key"], name: "index_role_permissions_on_role_key"
+  end
+
+  create_table "service_inquiries", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "client_organization_id"
+    t.bigint "service_id"
+    t.string "reference_number", null: false
+    t.string "channel", default: "public_form", null: false
+    t.string "current_status", default: "submitted", null: false
+    t.string "service_title_snapshot"
+    t.string "company_name", null: false
+    t.string "contact_name", null: false
+    t.string "contact_email", null: false
+    t.string "contact_phone"
+    t.string "project_name"
+    t.string "vessel_name"
+    t.string "location", null: false
+    t.text "description", null: false
+    t.date "preferred_date"
+    t.string "submission_token", null: false
+    t.jsonb "submission_metadata", default: {}, null: false
+    t.datetime "submitted_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_organization_id"], name: "index_service_inquiries_on_client_organization_id"
+    t.index ["current_status", "created_at"], name: "index_service_inquiries_on_current_status_and_created_at"
+    t.index ["organization_id"], name: "index_service_inquiries_on_organization_id"
+    t.index ["reference_number"], name: "index_service_inquiries_on_reference_number", unique: true
+    t.index ["service_id"], name: "index_service_inquiries_on_service_id"
+    t.index ["submission_token"], name: "index_service_inquiries_on_submission_token", unique: true
+    t.check_constraint "channel::text = ANY (ARRAY['public_form'::character varying, 'contact_form'::character varying, 'client_portal'::character varying, 'staff'::character varying]::text[])", name: "service_inquiries_channel_check"
+    t.check_constraint "char_length(description) <= 4000 AND char_length(company_name::text) <= 160 AND char_length(contact_name::text) <= 120 AND char_length(contact_email::text) <= 254 AND char_length(location::text) <= 200", name: "service_inquiries_length_check"
+    t.check_constraint "current_status::text = ANY (ARRAY['submitted'::character varying, 'under_review'::character varying, 'needs_clarification'::character varying, 'qualified'::character varying, 'unqualified'::character varying, 'merged'::character varying, 'closed'::character varying]::text[])", name: "service_inquiries_status_check"
   end
 
   create_table "services", force: :cascade do |t|
@@ -565,8 +601,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_170000) do
   add_foreign_key "quotes", "organizations"
   add_foreign_key "quotes", "organizations", column: "client_organization_id"
   add_foreign_key "quotes", "quote_revisions", column: "current_revision_id"
+  add_foreign_key "quotes", "service_inquiries"
   add_foreign_key "quotes", "services"
   add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "service_inquiries", "organizations"
+  add_foreign_key "service_inquiries", "organizations", column: "client_organization_id"
+  add_foreign_key "service_inquiries", "services"
   add_foreign_key "services", "memberships", column: "approved_by_membership_id"
   add_foreign_key "services", "memberships", column: "created_by_membership_id"
   add_foreign_key "services", "memberships", column: "published_by_membership_id"

@@ -1,0 +1,51 @@
+<% content_for :title, "Request received — ANT Marine W.A." %>
+<% content_for :head do %><meta name="robots" content="noindex"><% end %>
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Service enquiries",
+      title: "Request received",
+      lede: "Thank you for getting in touch with ANT Marine W.A." %>
+
+<section class="public-detail public-enquiry">
+  <div class="public-enquiry-received public-pattern-surface public-pattern-surface--card">
+    <span class="public-service-card__pattern public-detail__article-pattern" aria-hidden="true"></span>
+    <div class="public-enquiry-received__inner">
+      <span class="public-enquiry-received__icon" aria-hidden="true"><%= render "shared/public/icon", name: "check", size: 28 %></span>
+      <h2 class="public-enquiry-received__title">Your request has been received.</h2>
+      <p class="public-enquiry-received__lede">Please keep your reference number. It helps our team find your request quickly if you contact us.</p>
+
+      <dl class="public-enquiry-received__facts">
+        <div>
+          <dt>Reference</dt>
+          <dd class="public-enquiry-received__reference"><%= @inquiry.reference_number %></dd>
+        </div>
+        <div>
+          <dt>Service</dt>
+          <dd><%= @inquiry.requested_service_label %></dd>
+        </div>
+        <div>
+          <dt>Received</dt>
+          <dd><%= l(@inquiry.submitted_at, format: :long) %></dd>
+        </div>
+      </dl>
+
+      <h3 class="public-enquiry-received__subheading">What happens next</h3>
+      <ol class="public-process-steps">
+        <li><span class="public-process-steps__num" aria-hidden="true">1</span><span>Our team reviews your request.</span></li>
+        <li><span class="public-process-steps__num" aria-hidden="true">2</span><span>If we need more information, we will contact you using the details you provided.</span></li>
+        <li><span class="public-process-steps__num" aria-hidden="true">3</span><span>Where the work is a good fit, we will prepare a quotation for you to review.</span></li>
+      </ol>
+
+      <p class="public-notice public-notice--spaced">
+        Nothing has been booked yet<%= " — your preferred date is a request, not a confirmed appointment" if @inquiry.preferred_date %>.
+        We do not send an automatic confirmation email, so please keep this reference for your records.
+        If your request is urgent, <%= link_to "contact the team", contact_path %>.
+      </p>
+
+      <div class="public-enquiry-received__actions">
+        <%= link_to "Back to home", root_path, class: "ant-btn-primary" %>
+        <%= link_to "Explore services", public_services_path, class: "ant-btn-outline" %>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,192 @@
+<% content_for :title, "Request a quote — ANT Marine W.A." %>
+<% content_for :head do %><meta name="robots" content="noindex"><% end %>
+<% steps = [ "Service", "About the work", "Your details", "Review & send" ] %>
+<% errors = @inquiry.errors %>
+
+<%= render "shared/public/page_banner",
+      eyebrow: "Service enquiries",
+      title: "Request a quote",
+      lede: "Tell us about your project. We’ll review your request and contact you with the next steps." %>
+
+<section class="public-detail public-enquiry"
+         data-controller="enquiry-wizard"
+         data-enquiry-wizard-step-value="<%= @step %>"
+         data-enquiry-wizard-total-value="<%= steps.size %>">
+  <ol class="public-enquiry__stepper" aria-label="Request progress">
+    <% steps.each_with_index do |label, index| %>
+      <% number = index + 1 %>
+      <li class="public-enquiry__step<%= " is-current" if number == @step %><%= " is-done" if number < @step %>"
+          data-enquiry-wizard-target="indicator" data-step="<%= number %>"
+          <%= "aria-current=step" if number == @step %>>
+        <span class="public-enquiry__step-num" aria-hidden="true"><%= number %></span>
+        <span class="public-enquiry__step-label"><%= label %></span>
+      </li>
+    <% end %>
+  </ol>
+
+  <div class="public-enquiry__layout">
+    <%= form_with model: @inquiry, url: public_enquiry_path, method: :post, scope: :service_inquiry,
+          class: "public-enquiry__form", data: { turbo: false, enquiry_wizard_target: "form", action: "submit->enquiry-wizard#submit" } do |form| %>
+      <%= hidden_field_tag :submission_token, @submission_token %>
+      <%= hidden_field_tag :form_stamp, @form_stamp %>
+      <%= hidden_field_tag :entry_service, @preselected_service&.slug %>
+      <div class="public-enquiry__trap" aria-hidden="true">
+        <label for="company_website">Leave this field empty</label>
+        <input type="text" name="company_website" id="company_website" tabindex="-1" autocomplete="off" value="">
+      </div>
+
+      <% if flash[:alert].present? || errors.any? %>
+        <div class="public-enquiry__alert" role="alert" tabindex="-1" data-enquiry-wizard-target="alert">
+          <p class="public-enquiry__alert-title"><%= flash[:alert] || "Please check the highlighted details and send again." %></p>
+          <% if errors.any? %>
+            <ul>
+              <% errors.each do |error| %>
+                <% anchor = error.attribute == :service_choice ? "service-choice" : "service_inquiry_#{error.attribute}" %>
+                <li><a href="#<%= anchor %>" data-action="enquiry-wizard#reveal"><%= error.message %></a></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Step 1 %>
+      <fieldset class="public-enquiry__panel" data-enquiry-wizard-target="panel" data-step="1" id="service-choice">
+        <legend class="public-enquiry__panel-title">Which service do you need?</legend>
+        <p class="public-enquiry__panel-lede">Choose the closest match. If you are not sure, choose “I’m not sure yet” and describe the work in the next step.</p>
+        <% if @preselected_service %>
+          <p class="public-notice public-enquiry__preselected">
+            You came from <strong><%= @preselected_service.public_title %></strong>. You can choose a different service below.
+          </p>
+        <% end %>
+        <div class="public-enquiry__choices" role="radiogroup" aria-label="Service needed"
+             <%= "aria-describedby=service-choice-error" if errors[:service_choice].any? %>>
+          <% @services.each do |service| %>
+            <label class="public-enquiry__choice">
+              <%= radio_button_tag "service_inquiry[service_choice]", service.slug, @inquiry.service_choice == service.slug,
+                    id: "service_inquiry_service_choice_#{service.slug}", required: true,
+                    data: { review_value: service.public_title, enquiry_wizard_target: "choice" } %>
+              <span class="public-enquiry__choice-icon" aria-hidden="true"><%= render "shared/public/icon", name: public_service_icon_key(service), size: 20 %></span>
+              <span class="public-enquiry__choice-body">
+                <span class="public-enquiry__choice-title"><%= service.public_title %></span>
+                <% if service.public_summary.present? %>
+                  <span class="public-enquiry__choice-text"><%= truncate(service.public_summary, length: 110) %></span>
+                <% end %>
+              </span>
+            </label>
+          <% end %>
+          <label class="public-enquiry__choice public-enquiry__choice--unsure">
+            <%= radio_button_tag "service_inquiry[service_choice]", ServiceInquiry::NOT_SURE, @inquiry.service_choice == ServiceInquiry::NOT_SURE,
+                  id: "service_inquiry_service_choice_not_sure", required: true,
+                  data: { review_value: "Not sure yet — needs advice", enquiry_wizard_target: "choice" } %>
+            <span class="public-enquiry__choice-icon" aria-hidden="true"><%= render "shared/public/icon", name: "compass", size: 20 %></span>
+            <span class="public-enquiry__choice-body">
+              <span class="public-enquiry__choice-title">I’m not sure yet</span>
+              <span class="public-enquiry__choice-text">Describe what you need and our team will advise on the right service.</span>
+            </span>
+          </label>
+        </div>
+        <% if errors[:service_choice].any? %>
+          <p class="ant-field__error public-enquiry__error" id="service-choice-error"><%= errors[:service_choice].first %></p>
+        <% end %>
+        <div class="public-enquiry__nav" data-enquiry-wizard-target="nav" hidden>
+          <span></span>
+          <button type="button" class="ant-btn-primary" data-action="enquiry-wizard#next">Continue</button>
+        </div>
+      </fieldset>
+
+      <%# Step 2 %>
+      <fieldset class="public-enquiry__panel" data-enquiry-wizard-target="panel" data-step="2">
+        <legend class="public-enquiry__panel-title">Tell us about the work</legend>
+        <p class="public-enquiry__panel-lede">A short description is enough. Our team will ask for anything else we need.</p>
+        <div class="public-enquiry__grid">
+          <%= render "public/service_inquiries/field", form: form, method: :project_name, label: "Project name",
+                hint: "A short name you use for this work, if any." %>
+          <%= render "public/service_inquiries/field", form: form, method: :vessel_name, label: "Vessel or facility name",
+                hint: "If the work relates to a vessel, rig or facility." %>
+          <%= render "public/service_inquiries/field", form: form, method: :location, label: "Location", required: true,
+                placeholder: "Town, port or offshore area" %>
+          <%= render "public/service_inquiries/field", form: form, method: :preferred_date, label: "Preferred date", type: :date,
+                hint: "This is a request only — it is not a confirmed booking." %>
+          <%= render "public/service_inquiries/field", form: form, method: :description, label: "Tell us what you need",
+                type: :textarea, required: true,
+                hint: "Explain the work in your own words. It’s fine if you don’t know the technical name." %>
+        </div>
+        <p class="public-enquiry__note">
+          <%= render "shared/public/icon", name: "file", size: 16 %>
+          <span>Have drawings, photos or documents? Mention them here — we will tell you how to share them securely once we review your request.</span>
+        </p>
+        <div class="public-enquiry__nav" data-enquiry-wizard-target="nav" hidden>
+          <button type="button" class="ant-btn-outline" data-action="enquiry-wizard#back">Back</button>
+          <button type="button" class="ant-btn-primary" data-action="enquiry-wizard#next">Continue</button>
+        </div>
+      </fieldset>
+
+      <%# Step 3 %>
+      <fieldset class="public-enquiry__panel" data-enquiry-wizard-target="panel" data-step="3">
+        <legend class="public-enquiry__panel-title">How can we reach you?</legend>
+        <p class="public-enquiry__panel-lede">We will use these details to reply to your request.</p>
+        <div class="public-enquiry__grid">
+          <%= render "public/service_inquiries/field", form: form, method: :company_name, label: "Company or organisation",
+                required: true, autocomplete: "organization" %>
+          <%= render "public/service_inquiries/field", form: form, method: :contact_name, label: "Your name",
+                required: true, autocomplete: "name" %>
+          <%= render "public/service_inquiries/field", form: form, method: :contact_email, label: "Work email", type: :email,
+                required: true %>
+          <%= render "public/service_inquiries/field", form: form, method: :contact_phone, label: "Phone number", type: :tel,
+                hint: "Include the country code, for example +233." %>
+        </div>
+        <div class="public-enquiry__nav" data-enquiry-wizard-target="nav" hidden>
+          <button type="button" class="ant-btn-outline" data-action="enquiry-wizard#back">Back</button>
+          <button type="button" class="ant-btn-primary" data-action="enquiry-wizard#next">Review request</button>
+        </div>
+      </fieldset>
+
+      <%# Step 4 %>
+      <section class="public-enquiry__panel" data-enquiry-wizard-target="panel" data-step="4" aria-labelledby="enquiry-review-heading">
+        <h2 class="public-enquiry__panel-title" id="enquiry-review-heading">Check your request</h2>
+        <p class="public-enquiry__panel-lede">Make sure everything looks right before you send it.</p>
+        <dl class="public-enquiry__review">
+          <% review_rows = [
+               [ "Service", @inquiry.service_choice == ServiceInquiry::NOT_SURE ? "Not sure yet — needs advice" : (@services.find { |s| s.slug == @inquiry.service_choice }&.public_title), "service_choice" ],
+               [ "Location", @inquiry.location, "service_inquiry_location" ],
+               [ "Preferred date", @inquiry.preferred_date&.to_fs(:long), "service_inquiry_preferred_date" ],
+               [ "Project name", @inquiry.project_name, "service_inquiry_project_name" ],
+               [ "Vessel or facility", @inquiry.vessel_name, "service_inquiry_vessel_name" ],
+               [ "What you need", @inquiry.description, "service_inquiry_description" ],
+               [ "Company", @inquiry.company_name, "service_inquiry_company_name" ],
+               [ "Your name", @inquiry.contact_name, "service_inquiry_contact_name" ],
+               [ "Email", @inquiry.contact_email, "service_inquiry_contact_email" ],
+               [ "Phone", @inquiry.contact_phone, "service_inquiry_contact_phone" ]
+             ] %>
+          <% review_rows.each do |label, value, source| %>
+            <div class="public-enquiry__review-row<%= " public-enquiry__review-row--wide" if source == "service_inquiry_description" %>">
+              <dt><%= label %></dt>
+              <dd data-review-for="<%= source %>"><%= value.presence || "Not provided" %></dd>
+            </div>
+          <% end %>
+        </dl>
+        <p class="public-notice public-enquiry__booking-note">No booking is confirmed yet. The ANT Marine team will review your request first.</p>
+        <div class="public-enquiry__nav public-enquiry__nav--final">
+          <button type="button" class="ant-btn-outline" data-enquiry-wizard-target="nav" data-action="enquiry-wizard#back" hidden>Back</button>
+          <button type="submit" class="ant-btn-primary" data-enquiry-wizard-target="submit">Send request</button>
+        </div>
+      </section>
+    <% end %>
+
+    <aside class="public-enquiry__summary" aria-labelledby="enquiry-summary-heading">
+      <h2 id="enquiry-summary-heading" class="public-enquiry__summary-title">Your request</h2>
+      <p class="public-enquiry__summary-text">It only takes a few minutes.</p>
+      <ul class="public-enquiry__summary-list">
+        <% steps.each_with_index do |label, index| %>
+          <% number = index + 1 %>
+          <li data-enquiry-wizard-target="summaryItem" data-step="<%= number %>">
+            <span><%= label %></span>
+            <span class="ant-badge <%= number < @step ? "ant-badge--good" : (number == @step ? "ant-badge--teal" : "ant-badge--muted") %>"
+                  data-role="badge"><%= number < @step ? "Done" : (number == @step ? "Now" : "Next") %></span>
+          </li>
+        <% end %>
+      </ul>
+      <p class="public-notice public-enquiry__summary-notice">You can request a quote without creating an account.</p>
+    </aside>
+  </div>
+</section>
