@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -462,15 +462,61 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_200000) do
     t.datetime "submitted_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "assigned_membership_id"
+    t.bigint "duplicate_of_id"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "review_started_at"
+    t.datetime "qualified_at"
+    t.text "qualification_note"
+    t.string "closure_reason"
+    t.text "closure_note"
+    t.datetime "closed_at"
+    t.index ["assigned_membership_id"], name: "index_service_inquiries_on_assigned_membership_id"
     t.index ["client_organization_id"], name: "index_service_inquiries_on_client_organization_id"
     t.index ["current_status", "created_at"], name: "index_service_inquiries_on_current_status_and_created_at"
+    t.index ["duplicate_of_id"], name: "index_service_inquiries_on_duplicate_of_id"
+    t.index ["organization_id", "assigned_membership_id", "current_status"], name: "index_service_inquiries_on_org_assignee_status"
     t.index ["organization_id"], name: "index_service_inquiries_on_organization_id"
     t.index ["reference_number"], name: "index_service_inquiries_on_reference_number", unique: true
     t.index ["service_id"], name: "index_service_inquiries_on_service_id"
     t.index ["submission_token"], name: "index_service_inquiries_on_submission_token", unique: true
+    t.check_constraint "(current_status::text = ANY (ARRAY['closed'::character varying, 'unqualified'::character varying, 'merged'::character varying]::text[])) = (closure_reason IS NOT NULL AND closed_at IS NOT NULL)", name: "service_inquiries_closed_states_have_reason"
     t.check_constraint "channel::text = ANY (ARRAY['public_form'::character varying, 'contact_form'::character varying, 'client_portal'::character varying, 'staff'::character varying]::text[])", name: "service_inquiries_channel_check"
+    t.check_constraint "char_length(COALESCE(qualification_note, ''::text)) <= 2000 AND char_length(COALESCE(closure_note, ''::text)) <= 2000", name: "service_inquiries_triage_note_length"
     t.check_constraint "char_length(description) <= 4000 AND char_length(company_name::text) <= 160 AND char_length(contact_name::text) <= 120 AND char_length(contact_email::text) <= 254 AND char_length(location::text) <= 200", name: "service_inquiries_length_check"
+    t.check_constraint "closure_reason IS NULL OR (closure_reason::text = ANY (ARRAY['cancelled'::character varying, 'not_proceeding'::character varying, 'other'::character varying, 'outside_scope'::character varying, 'duplicate'::character varying]::text[]))", name: "service_inquiries_closure_reason_check"
+    t.check_constraint "closure_reason::text IS DISTINCT FROM 'other'::text OR closure_note IS NOT NULL", name: "service_inquiries_other_reason_has_note"
+    t.check_constraint "current_status::text <> 'closed'::text OR (closure_reason::text = ANY (ARRAY['cancelled'::character varying, 'not_proceeding'::character varying, 'other'::character varying]::text[]))", name: "service_inquiries_closed_reason_matches"
+    t.check_constraint "current_status::text <> 'merged'::text OR closure_reason::text = 'duplicate'::text AND duplicate_of_id IS NOT NULL AND duplicate_of_id <> id", name: "service_inquiries_merged_has_canonical"
+    t.check_constraint "current_status::text <> 'unqualified'::text OR closure_reason::text = 'outside_scope'::text AND closure_note IS NOT NULL", name: "service_inquiries_unqualified_has_note"
     t.check_constraint "current_status::text = ANY (ARRAY['submitted'::character varying, 'under_review'::character varying, 'needs_clarification'::character varying, 'qualified'::character varying, 'unqualified'::character varying, 'merged'::character varying, 'closed'::character varying]::text[])", name: "service_inquiries_status_check"
+  end
+
+  create_table "service_inquiry_assignments", force: :cascade do |t|
+    t.bigint "service_inquiry_id", null: false
+    t.bigint "previous_membership_id"
+    t.bigint "new_membership_id"
+    t.bigint "actor_membership_id", null: false
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.index ["actor_membership_id"], name: "index_service_inquiry_assignments_on_actor_membership_id"
+    t.index ["new_membership_id"], name: "index_service_inquiry_assignments_on_new_membership_id"
+    t.index ["previous_membership_id"], name: "index_service_inquiry_assignments_on_previous_membership_id"
+    t.index ["service_inquiry_id"], name: "index_service_inquiry_assignments_on_service_inquiry_id"
+    t.check_constraint "previous_membership_id IS DISTINCT FROM new_membership_id", name: "service_inquiry_assignments_change_check"
+    t.check_constraint "reason IS NULL OR char_length(reason) <= 500", name: "service_inquiry_assignments_reason_length"
+  end
+
+  create_table "service_inquiry_notes", force: :cascade do |t|
+    t.bigint "service_inquiry_id", null: false
+    t.bigint "author_membership_id", null: false
+    t.bigint "corrects_note_id"
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.index ["author_membership_id"], name: "index_service_inquiry_notes_on_author_membership_id"
+    t.index ["corrects_note_id"], name: "index_service_inquiry_notes_on_corrects_note_id", unique: true
+    t.index ["service_inquiry_id"], name: "index_service_inquiry_notes_on_service_inquiry_id"
+    t.check_constraint "char_length(btrim(body)) > 0 AND char_length(body) <= 4000", name: "service_inquiry_notes_body_check"
   end
 
   create_table "services", force: :cascade do |t|
@@ -660,9 +706,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_200000) do
   add_foreign_key "quotes", "service_inquiries"
   add_foreign_key "quotes", "services"
   add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "service_inquiries", "memberships", column: "assigned_membership_id"
   add_foreign_key "service_inquiries", "organizations"
   add_foreign_key "service_inquiries", "organizations", column: "client_organization_id"
+  add_foreign_key "service_inquiries", "service_inquiries", column: "duplicate_of_id"
   add_foreign_key "service_inquiries", "services"
+  add_foreign_key "service_inquiry_assignments", "memberships", column: "actor_membership_id"
+  add_foreign_key "service_inquiry_assignments", "memberships", column: "new_membership_id"
+  add_foreign_key "service_inquiry_assignments", "memberships", column: "previous_membership_id"
+  add_foreign_key "service_inquiry_assignments", "service_inquiries"
+  add_foreign_key "service_inquiry_notes", "memberships", column: "author_membership_id"
+  add_foreign_key "service_inquiry_notes", "service_inquiries"
+  add_foreign_key "service_inquiry_notes", "service_inquiry_notes", column: "corrects_note_id"
   add_foreign_key "services", "memberships", column: "approved_by_membership_id"
   add_foreign_key "services", "memberships", column: "created_by_membership_id"
   add_foreign_key "services", "memberships", column: "published_by_membership_id"

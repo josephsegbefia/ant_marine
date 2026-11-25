@@ -17,6 +17,7 @@ class Intake::ConcurrencyTest < ActiveSupport::TestCase
     QuoteRevision.where(quote_id: quote_ids).delete_all
     Quote.where(id: quote_ids).delete_all
     AuditEvent.where(subject_type: "ServiceInquiry", subject_id: @inquiry_ids).delete_all
+    ServiceInquiryAssignment.where(service_inquiry_id: @inquiry_ids).delete_all
     ServiceInquiry.where(id: @inquiry_ids).delete_all
   end
 
@@ -51,6 +52,35 @@ class Intake::ConcurrencyTest < ActiveSupport::TestCase
     assert_equal 1, results.count(&:created)
     assert_equal 1, results.map { |r| r.quote.id }.uniq.size
     assert_equal 1, Quote.where(service_inquiry_id: inquiry.id).count
+  end
+
+  test "two people acting on the same version of an enquiry: one succeeds, the other is told to refresh" do
+    inquiry = Intake::InquirySubmission.submit!(attributes: enquiry_attributes, service_choice: "not_sure",
+                                                submission_token: SecureRandom.urlsafe_base64(24)).inquiry
+    @inquiry_ids = [ inquiry.id ]
+    version = inquiry.lock_version
+    targets = [ memberships(:ops_manager_membership), memberships(:staff_membership) ]
+
+    outcomes = run_concurrently(2) do |index|
+      Intake::InquiryAssignment.assign!(inquiry: ServiceInquiry.find(inquiry.id), membership: memberships(:dual_staff),
+                                        assignee_id: targets[index].id, reason: nil, expected_lock_version: version)
+      :assigned
+    rescue Intake::InquiryTransition::StaleVersion
+      :stale
+    end
+
+    assert_equal %i[assigned stale], outcomes.sort
+    assert_equal 1, ServiceInquiryAssignment.where(service_inquiry_id: inquiry.id).count
+
+    results = run_concurrently(2) do |index|
+      Intake::InquiryTransition.apply!(inquiry: ServiceInquiry.find(inquiry.id), action: index.zero? ? :start_review : :close,
+                                       membership: memberships(:dual_staff), expected_lock_version: version + 1,
+                                       attributes: { closure_reason: "cancelled" })
+      :changed
+    rescue Intake::InquiryTransition::StaleVersion
+      :stale
+    end
+    assert_equal %i[changed stale], results.sort
   end
 
   private

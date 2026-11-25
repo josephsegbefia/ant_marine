@@ -30,7 +30,9 @@ module Staff
     end
 
     test "staff without enquiry permission cannot list or open enquiries" do
-      sign_in_as(memberships(:staff_membership).user)
+      membership = memberships(:staff_membership)
+      deny_permission!(membership, "inquiries.view_assigned")
+      sign_in_as(membership.user)
 
       get staff_service_inquiries_path
       assert_redirected_to root_path
@@ -121,7 +123,7 @@ module Staff
     end
 
     test "closed enquiries cannot be converted" do
-      @inquiry.update_columns(current_status: "closed")
+      @inquiry.update_columns(current_status: "closed", closure_reason: "cancelled", closed_at: Time.current)
       sign_in_as(memberships(:dual_staff).user)
 
       assert_no_difference -> { Quote.count } do

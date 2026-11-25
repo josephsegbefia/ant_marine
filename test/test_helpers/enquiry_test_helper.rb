@@ -33,6 +33,24 @@ module EnquiryTestHelper
     ).inquiry.tap { |inquiry| raise "Enquiry not saved: #{inquiry.errors.full_messages}" unless inquiry.persisted? }
   end
 
+  def create_staff_member!(role_key: "staff.surveyor", organization: organizations(:ant_marine), status: "active",
+                           user_status: "active", name: "Kofi Surveyor")
+    user = User.create!(email: "member-#{SecureRandom.hex(4)}@ant.example", password: "Secure-password-123",
+                        full_name: name, status: user_status)
+    Membership.create!(user: user, organization: organization, role_key: role_key, status: status, accepted_at: Time.current)
+  end
+
+  def triage!(inquiry, action, membership: memberships(:dual_staff), **attributes)
+    Intake::InquiryTransition.apply!(inquiry: inquiry, action: action, membership: membership,
+                                     expected_lock_version: ServiceInquiry.find(inquiry.id).lock_version,
+                                     attributes: attributes)
+  end
+
+  def assign_enquiry!(inquiry, assignee, membership: memberships(:dual_staff), reason: nil)
+    Intake::InquiryAssignment.assign!(inquiry: inquiry, membership: membership, assignee_id: assignee&.id,
+                                      reason: reason, expected_lock_version: ServiceInquiry.find(inquiry.id).lock_version)
+  end
+
   def reset_enquiry_rate_limit!
     Rails.application.config.x.public_enquiry_rate_limit_store&.clear
   end
