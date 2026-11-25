@@ -5,13 +5,18 @@
 # need inquiries.qualify. Services re-check these rules inside their transactions.
 class ServiceInquiryPolicy < ApplicationPolicy
   def index?
-    staff? && (view_all? || allowed?("inquiries.view_assigned"))
+    (staff? && (view_all? || allowed?("inquiries.view_assigned"))) || client_org_viewer?
   end
 
   def show?
+    return client_show? if client_org_viewer?
     return false unless staff? && record.organization_id == membership.organization_id
 
     view_all? || (assigned_to_me? && allowed?("inquiries.view_assigned"))
+  end
+
+  def onboard_client?
+    triage? && record.current_status == "qualified"
   end
 
   def triage?
@@ -32,14 +37,20 @@ class ServiceInquiryPolicy < ApplicationPolicy
 
   class Scope < Scope
     def resolve
-      return scope.none unless membership&.status == "active" && membership.staff_domain?
+      return scope.none unless membership&.status == "active"
 
-      permissions = Authorization::EffectivePermissions.new(membership)
-      in_org = scope.where(organization_id: membership.organization_id)
-      return in_org if permissions.allowed?("inquiries.view_all")
-      return in_org.where(assigned_membership_id: membership.id) if permissions.allowed?("inquiries.view_assigned")
+      if membership.staff_domain?
+        permissions = Authorization::EffectivePermissions.new(membership)
+        in_org = scope.where(organization_id: membership.organization_id)
+        return in_org if permissions.allowed?("inquiries.view_all")
+        return in_org.where(assigned_membership_id: membership.id) if permissions.allowed?("inquiries.view_assigned")
 
-      scope.none
+        scope.none
+      elsif membership.client_domain? && Authorization::EffectivePermissions.allowed?(membership: membership, permission_key: "inquiries.view_org")
+        scope.where(client_organization_id: membership.organization_id)
+      else
+        scope.none
+      end
     end
   end
 
@@ -47,6 +58,14 @@ class ServiceInquiryPolicy < ApplicationPolicy
 
     def staff?
       membership&.status == "active" && membership.staff_domain?
+    end
+
+    def client_org_viewer?
+      membership&.status == "active" && membership.client_domain? && allowed?("inquiries.view_org")
+    end
+
+    def client_show?
+      client_org_viewer? && record.client_organization_id == membership.organization_id
     end
 
     def view_all?

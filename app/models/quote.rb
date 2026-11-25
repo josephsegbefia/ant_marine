@@ -18,6 +18,7 @@ class Quote < ApplicationRecord
 
   has_many :quote_revisions, dependent: :restrict_with_exception
   has_many :quote_deliveries, dependent: :restrict_with_exception
+  has_many :quote_portal_releases, dependent: :restrict_with_exception
 
   validates :reference_number, presence: true, uniqueness: { scope: :organization_id }
   validates :status, inclusion: { in: STATUSES }

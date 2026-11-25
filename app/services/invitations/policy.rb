@@ -146,11 +146,14 @@ module Invitations
       end
 
       def client_targets_for_inviter(organization:)
-        return [] unless @inviter_membership.organization_id == organization.id
+        return [] unless organization.client?
 
-        if staff_issuer? && @inviter_membership.organization.ant_marine?
+        # Staff issuers invite into client organisations they do not belong to.
+        if @inviter_membership.staff_domain? && @inviter_membership.organization.ant_marine? && staff_issuer?
           CLIENT_INVITE_TARGETS
-        elsif client_issuer?
+        elsif @inviter_membership.client_domain? &&
+              @inviter_membership.organization_id == organization.id &&
+              client_issuer?
           CLIENT_INVITE_TARGETS
         else
           []

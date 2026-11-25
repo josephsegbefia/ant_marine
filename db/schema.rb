@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -192,8 +192,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_230000) do
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "reference_number"
     t.index ["kind", "status"], name: "index_organizations_on_kind_and_status"
     t.index ["kind"], name: "index_organizations_unique_active_ant_marine", unique: true, where: "(((kind)::text = 'ant_marine'::text) AND (archived_at IS NULL))"
+    t.index ["reference_number"], name: "index_organizations_on_reference_number", unique: true, where: "(reference_number IS NOT NULL)"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.check_constraint "kind::text = ANY (ARRAY['ant_marine'::character varying, 'client'::character varying]::text[])", name: "organizations_kind_check"
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "organizations_status_check"
@@ -353,6 +355,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_230000) do
     t.index ["quote_revision_id"], name: "index_quote_line_items_on_quote_revision_id"
     t.check_constraint "quantity > 0::numeric", name: "quote_line_items_quantity_positive"
     t.check_constraint "unit_price_cents >= 0 AND line_total_cents >= 0", name: "quote_line_items_amounts_non_negative"
+  end
+
+  create_table "quote_portal_releases", force: :cascade do |t|
+    t.bigint "quote_id", null: false
+    t.bigint "quote_revision_id", null: false
+    t.bigint "client_organization_id", null: false
+    t.bigint "released_by_membership_id", null: false
+    t.string "mode", default: "simulated", null: false
+    t.datetime "released_at", null: false
+    t.datetime "revoked_at"
+    t.bigint "revoked_by_membership_id"
+    t.string "label"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_organization_id", "released_at"], name: "index_quote_portal_releases_on_org_and_released_at"
+    t.index ["client_organization_id"], name: "index_quote_portal_releases_on_client_organization_id"
+    t.index ["quote_id"], name: "index_quote_portal_releases_on_quote_id"
+    t.index ["quote_revision_id", "client_organization_id"], name: "index_quote_portal_releases_unique_revision_org", unique: true
+    t.index ["quote_revision_id"], name: "index_quote_portal_releases_on_quote_revision_id"
+    t.index ["released_by_membership_id"], name: "index_quote_portal_releases_on_released_by_membership_id"
+    t.index ["revoked_by_membership_id"], name: "index_quote_portal_releases_on_revoked_by_membership_id"
+    t.check_constraint "mode::text = 'simulated'::text", name: "quote_portal_releases_mode_check"
   end
 
   create_table "quote_revisions", force: :cascade do |t|
@@ -747,6 +771,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_230000) do
   add_foreign_key "quote_deliveries", "quote_revisions"
   add_foreign_key "quote_deliveries", "quotes"
   add_foreign_key "quote_line_items", "quote_revisions"
+  add_foreign_key "quote_portal_releases", "memberships", column: "released_by_membership_id"
+  add_foreign_key "quote_portal_releases", "memberships", column: "revoked_by_membership_id"
+  add_foreign_key "quote_portal_releases", "organizations", column: "client_organization_id"
+  add_foreign_key "quote_portal_releases", "quote_revisions"
+  add_foreign_key "quote_portal_releases", "quotes"
   add_foreign_key "quote_revisions", "memberships", column: "prepared_by_membership_id"
   add_foreign_key "quote_revisions", "memberships", column: "submitted_by_membership_id"
   add_foreign_key "quote_revisions", "quote_revisions", column: "predecessor_revision_id"
