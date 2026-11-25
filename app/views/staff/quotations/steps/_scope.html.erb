@@ -1,22 +1,39 @@
-<fieldset class="space-y-4" <%= "disabled" unless editable %>>
-  <legend class="sr-only">Services and scope</legend>
-  <div>
-    <label class="ant-field__label" for="quote_service_id">Related public service (optional)</label>
+<%# locals: quote, revision, services, editable %>
+<fieldset class="mt-4 space-y-4" <%= "disabled" unless editable %>>
+  <legend class="sr-only">Scope of work</legend>
+
+  <div class="ant-field ant-field--portal">
+    <label class="ant-field__label" for="quote_service_id">Related service (optional)</label>
     <select name="quote[service_id]" id="quote_service_id" class="ant-control w-full">
       <option value="">None selected</option>
       <% services.each do |service| %>
         <option value="<%= service.id %>" <%= "selected" if quote.service_id == service.id %>><%= service.title %></option>
       <% end %>
     </select>
+    <% quote.errors[:service_id].each do |message| %>
+      <p class="ant-field__error"><%= message %></p>
+    <% end %>
   </div>
-  <div>
+
+  <div class="ant-field ant-field--portal">
     <label class="ant-field__label" for="quote_revision_title">Quotation title</label>
-    <input class="ant-control w-full" id="quote_revision_title" name="quote_revision[title]" value="<%= revision.title %>" required>
+    <input class="ant-control w-full" id="quote_revision_title" name="quote_revision[title]" value="<%= revision.title %>" maxlength="200"
+           placeholder="For example: Hull inspection for MV Example">
+    <% revision.errors[:title].each do |message| %>
+      <p class="ant-field__error"><%= message %></p>
+    <% end %>
   </div>
-  <% { scope_description: "Scope description", deliverables: "Deliverables", exclusions: "Exclusions", additional_requirements: "Additional agreed requirements" }.each do |field, label| %>
-    <div>
+
+  <% {
+       scope_description: [ "Scope of work", "Describe the work ANT Marine will carry out." ],
+       deliverables: [ "Deliverables", "What the client will receive, for example a report or certificate." ],
+       exclusions: [ "Exclusions", "What is not included. Write \"None\" if nothing is excluded." ],
+       additional_requirements: [ "Client responsibilities (optional)", "Access, permits or information the client must provide." ]
+     }.each do |field, (label, hint)| %>
+    <div class="ant-field ant-field--portal">
       <label class="ant-field__label" for="quote_revision_<%= field %>"><%= label %></label>
       <textarea class="ant-control w-full" rows="4" id="quote_revision_<%= field %>" name="quote_revision[<%= field %>]"><%= revision.public_send(field) %></textarea>
+      <p class="ant-field__hint"><%= hint %></p>
     </div>
   <% end %>
 </fieldset>

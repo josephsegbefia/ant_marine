@@ -2,18 +2,34 @@
 
 module Commercial
   class QuoteBuilder
+    ATTEMPTS = 3
+
     def self.create!(organization:, membership:)
-      Quote.transaction do
-        quote = Quote.create!(
-          organization: organization,
-          reference_number: QuoteReference.generate!(organization: organization),
-          created_by_membership: membership,
-          updated_by_membership: membership,
-          prospective_client: {}
-        )
-        revision = quote.quote_revisions.create!(version_number: 1, title: "New quotation")
-        quote.update!(current_revision: revision)
-        quote
+      attempts = 0
+      begin
+        attempts += 1
+        Quote.transaction(requires_new: true) do
+          quote = Quote.create!(
+            organization: organization,
+            reference_number: QuoteReference.generate!(organization: organization),
+            created_by_membership: membership,
+            updated_by_membership: membership,
+            prospective_client: {}
+          )
+          revision = quote.quote_revisions.create!(version_number: 1, title: "")
+          quote.update!(current_revision: revision)
+          AuditEvent.record!(
+            event_type: "quote.created",
+            organization: organization,
+            actor_membership: membership,
+            subject: quote,
+            metadata: { reference_number: quote.reference_number }
+          )
+          quote
+        end
+      rescue ActiveRecord::RecordNotUnique
+        retry if attempts < ATTEMPTS
+        raise
       end
     end
   end

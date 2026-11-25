@@ -1,11 +1,96 @@
-<div class="space-y-4">
-  <h2 class="text-lg font-extrabold text-[#173244]">Quotation review</h2>
-  <p class="text-sm text-[#5f7d8c]">Check recipient details, scope and pricing before you submit for internal review.</p>
-  <dl class="staff-review-dl space-y-2 text-sm text-[#466270]">
-    <div><dt class="font-bold">Client</dt><dd><%= quote.client_label %></dd></div>
-    <div><dt class="font-bold">Title</dt><dd><%= revision.title %></dd></div>
-    <div><dt class="font-bold">Total</dt><dd><%= format_quote_money(revision.total_cents, revision.currency) %></dd></div>
-    <div><dt class="font-bold">Valid until</dt><dd><%= revision.valid_until || "Not set" %></dd></div>
-    <div><dt class="font-bold">Status</dt><dd><%= quote_status_label(quote.status) %></dd></div>
-  </dl>
+<%# locals: quote, revision, readiness %>
+<% recipient_frozen = revision.version_frozen? && revision.recipient_lines.present? %>
+<% recipient = recipient_frozen ? revision.recipient_lines.to_h.stringify_keys : { "company_name" => quote.client_label, "contact_name" => quote.prospective_value("contact_name"), "email" => quote.prospective_value("email"), "phone" => quote.prospective_value("phone"), "address" => quote.prospective_value("address") } %>
+<% items = revision.line_items.reject(&:new_record?) %>
+
+<div class="mt-4 space-y-6">
+  <p class="text-sm text-[#5f7d8c]" data-quote-editor-target="reviewNote">
+    <%= quote.editable? ? "This shows the last saved details. Save your changes to see them here." : "This is the version on record." %>
+  </p>
+
+  <% if quote.editable? || quote.status == "pending_review" %>
+    <% if readiness.ready? %>
+      <div class="staff-quote-notice staff-quote-notice--good" role="status">
+        <p class="font-semibold">Everything needed for review is in place.</p>
+      </div>
+    <% else %>
+      <div class="staff-quote-notice staff-quote-notice--warn" role="status" id="quote-readiness">
+        <p class="font-semibold">Before this quotation can be submitted or approved:</p>
+        <ul class="mt-2 space-y-1 text-sm">
+          <% readiness.issues.each do |issue| %>
+            <li class="flex flex-wrap items-baseline gap-x-2">
+              <span><%= issue.message %></span>
+              <button type="button" class="staff-quote-link" data-step="<%= issue.step %>" data-action="quote-editor#jumpToStep">
+                Go to <%= StaffQuotationsHelper::EDITOR_STEPS.to_h[issue.step] %>
+              </button>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  <% end %>
+
+  <section class="staff-quote-review__section">
+    <h3 class="staff-quote-review__heading">Client</h3>
+    <dl class="staff-quote-review__list">
+      <div><dt>Company</dt><dd><%= recipient["company_name"].presence || "Not set" %></dd></div>
+      <div><dt>Contact</dt><dd><%= recipient["contact_name"].presence || "Not set" %></dd></div>
+      <div><dt>Email</dt><dd><%= recipient["email"].presence || "Not set" %></dd></div>
+      <% if recipient["phone"].present? %><div><dt>Phone</dt><dd><%= recipient["phone"] %></dd></div><% end %>
+      <% if recipient["address"].present? %><div><dt>Address</dt><dd><%= simple_format(recipient["address"]) %></dd></div><% end %>
+    </dl>
+  </section>
+
+  <section class="staff-quote-review__section">
+    <h3 class="staff-quote-review__heading">Scope</h3>
+    <dl class="staff-quote-review__list">
+      <div><dt>Title</dt><dd><%= revision.title.presence || "Not set" %></dd></div>
+      <div><dt>Related service</dt><dd><%= (recipient_frozen ? recipient["service_title"] : quote.service&.title).presence || "None" %></dd></div>
+      <% { scope_description: "Scope of work", deliverables: "Deliverables", exclusions: "Exclusions", additional_requirements: "Client responsibilities" }.each do |field, label| %>
+        <div><dt><%= label %></dt><dd><%= revision.public_send(field).present? ? simple_format(revision.public_send(field)) : "Not set" %></dd></div>
+      <% end %>
+    </dl>
+  </section>
+
+  <section class="staff-quote-review__section">
+    <h3 class="staff-quote-review__heading">Pricing (<%= revision.currency %>)</h3>
+    <% if items.any? %>
+      <div class="staff-quote-review__table-wrap">
+        <table class="staff-quote-review__table">
+          <thead>
+            <tr><th scope="col">Description</th><th scope="col">Qty</th><th scope="col">Unit</th><th scope="col">Unit price</th><th scope="col">Line total</th></tr>
+          </thead>
+          <tbody>
+            <% items.each do |item| %>
+              <tr>
+                <td><%= item.description.presence || "No description" %></td>
+                <td><%= item.quantity_input %></td>
+                <td><%= item.unit %></td>
+                <td><%= format_quote_money(item.unit_price_cents, revision.currency) %></td>
+                <td><%= format_quote_money(item.line_total_cents, revision.currency) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot>
+            <tr><th scope="row" colspan="4">Total</th><td><%= format_quote_money(revision.total_cents, revision.currency) %></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-sm text-[#5f7d8c]">No pricing lines yet.</p>
+    <% end %>
+  </section>
+
+  <section class="staff-quote-review__section">
+    <h3 class="staff-quote-review__heading">Validity and terms</h3>
+    <dl class="staff-quote-review__list">
+      <div><dt>Valid until</dt><dd><%= revision.valid_until ? l(revision.valid_until, format: :long) : "Not set" %></dd></div>
+      <% { payment_terms: "Payment terms", commercial_exclusions: "Commercial exclusions", additional_conditions: "Additional conditions" }.each do |field, label| %>
+        <div><dt><%= label %></dt><dd><%= revision.public_send(field).present? ? simple_format(revision.public_send(field)) : "Not set" %></dd></div>
+      <% end %>
+      <% if revision.internal_notes.present? %>
+        <div><dt>Internal notes (staff only)</dt><dd><%= simple_format(revision.internal_notes) %></dd></div>
+      <% end %>
+    </dl>
+  </section>
 </div>

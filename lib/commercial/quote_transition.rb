@@ -3,13 +3,31 @@
 module Commercial
   class QuoteTransition
     class InvalidTransition < StandardError; end
+    class NotAuthorized < InvalidTransition; end
+
+    class NotReady < InvalidTransition
+      attr_reader :issues
+
+      def initialize(issues)
+        @issues = issues
+        super("This quotation is not ready yet.")
+      end
+    end
 
     TRANSITIONS = {
-      "submit_for_review" => { from: "draft", to: "pending_review", revision: "pending_review" },
-      "return_for_correction" => { from: "pending_review", to: "draft", revision: "draft" },
-      "approve" => { from: "pending_review", to: "approved_for_issuance", revision: "approved", freeze: true },
-      "issue" => { from: "approved_for_issuance", to: "issued", revision: "issued", freeze: true, delivery: "prepared" },
-      "withdraw" => { from: %w[draft pending_review approved_for_issuance issued], to: "withdrawn", revision: nil }
+      "submit_for_review" => { from: Quote::EDITABLE_STATUSES, to: "pending_review", revision: "pending_review", readiness: true },
+      "return_for_correction" => { from: %w[pending_review], to: "returned_for_correction", revision: "draft", reason_required: true },
+      "approve" => { from: %w[pending_review], to: "approved_for_issuance", revision: "approved", freeze: true, readiness: true },
+      "issue" => { from: %w[approved_for_issuance], to: "issued", revision: "issued", gated: true },
+      "withdraw" => { from: %w[draft pending_review returned_for_correction approved_for_issuance issued], to: "withdrawn", revision: nil }
+    }.freeze
+
+    STATUS_MESSAGES = {
+      "pending_review" => "This quotation is already waiting for review.",
+      "approved_for_issuance" => "This quotation has already been approved.",
+      "issued" => "This quotation has already been marked as issued.",
+      "withdrawn" => "This quotation has been withdrawn.",
+      "superseded" => "This quotation has been replaced by a newer version."
     }.freeze
 
     def self.apply!(quote:, action:, membership:, reason: nil)
@@ -20,42 +38,32 @@ module Commercial
       @quote = quote
       @action = action.to_s
       @membership = membership
-      @reason = reason
+      @reason = reason.to_s.strip.presence
     end
 
     def apply!
-      rule = TRANSITIONS.fetch(@action) do
-        raise InvalidTransition, "Unknown quotation action."
-      end
-
-      allowed_from = Array(rule[:from])
-      raise InvalidTransition, "Quotation cannot move from #{@quote.status}." unless allowed_from.include?(@quote.status)
-
-      authorize_action!(rule)
-
-      previous_status = @quote.status
-      revision = @quote.current_revision
+      rule = TRANSITIONS.fetch(@action) { raise InvalidTransition, "Unknown quotation action." }
 
       Quote.transaction do
-        @quote.update!(
-          status: rule[:to],
-          delivery_state: rule[:delivery].presence || @quote.delivery_state,
-          updated_by_membership: @membership,
-          lock_version: @quote.lock_version
-        )
+        @quote.lock!
+        revision = @quote.current_revision
+        revision&.lock!
+        previous_status = @quote.status
 
-        if revision && rule[:revision]
-          attrs = { revision_status: rule[:revision] }
-          if rule[:freeze]
-            attrs[:frozen_at] = Time.current
-            attrs[:recipient_snapshot] = recipient_snapshot(revision)
-          end
-          attrs[:approved_by_membership] = @membership if @action == "approve"
-          attrs[:approved_at] = Time.current if @action == "approve"
-          attrs[:issued_by_membership] = @membership if @action == "issue"
-          attrs[:issued_at] = Time.current if @action == "issue"
-          revision.update!(attrs)
+        unless rule[:from].include?(previous_status)
+          raise InvalidTransition, STATUS_MESSAGES.fetch(previous_status, "This quotation cannot do that in its current state.")
         end
+        raise InvalidTransition, QuoteIssuance::UNAVAILABLE_MESSAGE if rule[:gated] && !QuoteIssuance.available?
+        raise NotAuthorized, "You do not have permission to do that." unless authorized?
+        raise InvalidTransition, "Explain what needs to be corrected." if rule[:reason_required] && @reason.nil?
+
+        if rule[:readiness]
+          issues = QuoteReadiness.check(@quote)
+          raise NotReady, issues if issues.any?
+        end
+
+        @quote.update!(status: rule[:to], updated_by_membership: @membership)
+        revision.update!(revision_attributes(rule, revision)) if revision && rule[:revision]
 
         AuditEvent.record!(
           event_type: "quote.#{@action}",
@@ -67,6 +75,8 @@ module Commercial
             previous_status: previous_status,
             new_status: @quote.status,
             version_number: revision&.version_number,
+            total_cents: revision&.total_cents,
+            currency: revision&.currency,
             reason: @reason
           }.compact
         )
@@ -77,34 +87,40 @@ module Commercial
 
     private
 
-      def authorize_action!(rule)
-        case @action
-        when "submit_for_review", "return_for_correction"
-          raise InvalidTransition, "Not authorized." unless allowed?("quotes.create")
-        when "approve"
-          raise InvalidTransition, "Not authorized." unless allowed?("quotes.approve")
-        when "issue"
-          raise InvalidTransition, "Not authorized." unless allowed?("quotes.send")
-        when "withdraw"
-          raise InvalidTransition, "Not authorized." unless allowed?("quotes.withdraw")
-        end
+      def authorized?
+        return false if @membership.nil?
+
+        QuotePolicy.new(@membership, @quote).public_send(:"#{@action}?")
       end
 
-      def allowed?(key)
-        Authorization::EffectivePermissions.allowed?(membership: @membership, permission_key: key)
+      def revision_attributes(rule, revision)
+        attrs = { revision_status: rule[:revision] }
+        if rule[:freeze]
+          now = Time.current
+          attrs[:frozen_at] = now
+          attrs[:recipient_snapshot] = recipient_snapshot(revision)
+          attrs[:approved_by_membership] = @membership
+          attrs[:approved_at] = now
+        end
+        if @action == "issue"
+          attrs[:issued_by_membership] = @membership
+          attrs[:issued_at] = Time.current
+        end
+        attrs
       end
 
       def recipient_snapshot(revision)
         {
           company_name: @quote.client_label,
-          contact_name: @quote.prospective_client["contact_name"],
-          email: @quote.prospective_client["email"],
-          phone: @quote.prospective_client["phone"],
-          address: @quote.prospective_client["address"]
-        }.compact.merge(
+          client_organization_id: @quote.client_organization_id,
+          contact_name: @quote.prospective_value("contact_name").presence,
+          email: @quote.prospective_value("email").presence,
+          phone: @quote.prospective_value("phone").presence,
+          address: @quote.prospective_value("address").presence,
+          service_title: @quote.service&.title,
           title: revision.title,
           currency: revision.currency
-        )
+        }.compact
       end
   end
 end

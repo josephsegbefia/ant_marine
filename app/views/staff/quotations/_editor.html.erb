@@ -1,62 +1,124 @@
 <%# locals: quote, revision, editor_step %>
 <% editor_step = local_assigns[:editor_step] || 1 %>
 <% editable = quote.editable? %>
-<% steps = ["Client", "Scope", "Pricing", "Terms", "Review"] %>
+<% save_errors = Array(@save_errors) %>
+<% saved_quote = @saved_quote || quote %>
+<% saved_revision = saved_quote.current_revision %>
 
-<div class="staff-editor-head">
-  <div class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <p class="public-eyebrow"><%= quote.reference_number %></p>
-      <h1 class="staff-editor-head__title" id="staff-quotation-editor-heading">Prepare quotation</h1>
-      <p class="staff-editor-head__lede">Guide the client details, scope, pricing and terms. Save drafts as you go.</p>
+<div
+  class="staff-quote-editor"
+  data-controller="quote-editor"
+  data-quote-editor-step-value="<%= editor_step %>"
+  data-quote-editor-editable-value="<%= editable %>"
+>
+  <div class="staff-editor-head">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="public-eyebrow"><%= quote.reference_number %> · Version <%= revision.version_number %></p>
+        <h1 class="staff-editor-head__title" id="staff-quotation-editor-heading">
+          <%= editable ? "Prepare quotation" : "Quotation" %>
+        </h1>
+        <p class="staff-editor-head__lede"><%= quote_editor_guidance(quote) %></p>
+      </div>
+      <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
     </div>
-    <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
+  </div>
+
+  <% if @correction_request %>
+    <div class="portal-card staff-quote-notice staff-quote-notice--warn mt-4" role="status">
+      <p class="font-semibold text-[#102c43]">Corrections requested</p>
+      <p class="mt-1 text-sm text-[#466270]"><%= @correction_request.metadata["reason"] %></p>
+      <p class="mt-1 text-xs text-[#5f7d8c]">
+        Requested <%= l(@correction_request.occurred_at, format: :long) %>
+      </p>
+    </div>
+  <% end %>
+
+  <%= form_with url: staff_quotation_path(quote),
+        method: :patch,
+        id: "quote-editor-form",
+        class: "staff-editor",
+        data: {
+          controller: "form-submit",
+          form_submit_loading_message_value: "Saving…",
+          action: "turbo:submit-start->form-submit#busy turbo:submit-end->form-submit#idle turbo:submit-end->quote-editor#clearDirty submit->quote-editor#beforeSubmit"
+        } do %>
+    <input type="hidden" name="editor_step" value="<%= editor_step %>" data-quote-editor-target="stepField">
+    <input type="hidden" name="quote[lock_version]" value="<%= quote.lock_version %>">
+
+    <div class="staff-editor-stepper staff-editor-stepper--steps-5" role="tablist" aria-label="Quotation steps">
+      <% StaffQuotationsHelper::EDITOR_STEPS.each do |step_number, label| %>
+        <button
+          type="button"
+          role="tab"
+          class="staff-editor-step__tab <%= "staff-editor-step__tab--current" if step_number == editor_step %>"
+          aria-selected="<%= step_number == editor_step %>"
+          aria-controls="quote-step-panel-<%= step_number %>"
+          id="quote-step-tab-<%= step_number %>"
+          data-step="<%= step_number %>"
+          data-quote-editor-target="tab"
+          data-action="quote-editor#jumpToStep"
+        >
+          <span class="staff-editor-step__number" aria-hidden="true"><%= step_number %></span>
+          <span><%= label %></span>
+        </button>
+      <% end %>
+    </div>
+
+    <% if save_errors.any? %>
+      <div class="portal-card staff-quote-notice staff-quote-notice--error mt-4" role="alert" tabindex="-1" id="quote-save-errors">
+        <p class="font-semibold">Nothing was saved. Please fix the following:</p>
+        <ul class="mt-2 list-disc pl-5 text-sm">
+          <% save_errors.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="staff-editor-layout mt-4">
+      <div class="staff-editor-layout__main">
+        <% panel_titles = { 1 => "Who is this quotation for?", 2 => "What work is being quoted?", 3 => "Pricing", 4 => "Validity and terms", 5 => "Review the quotation" } %>
+        <% panel_titles.each do |step_number, title| %>
+          <section
+            id="quote-step-panel-<%= step_number %>"
+            role="tabpanel"
+            aria-labelledby="quote-step-tab-<%= step_number %>"
+            class="staff-editor-panel portal-card"
+            data-step="<%= step_number %>"
+            data-quote-editor-target="panel"
+            <%= "hidden" unless step_number == editor_step %>
+          >
+            <h2 id="quote-step-heading-<%= step_number %>" class="text-lg font-semibold text-[#102c43]" tabindex="-1"><%= title %></h2>
+            <% case step_number %>
+            <% when 1 %>
+              <%= render "staff/quotations/steps/client", quote: quote, client_organizations: @client_organizations, editable: editable %>
+            <% when 2 %>
+              <%= render "staff/quotations/steps/scope", quote: quote, revision: revision, services: @services, editable: editable %>
+            <% when 3 %>
+              <%= render "staff/quotations/steps/pricing", revision: revision, editable: editable %>
+            <% when 4 %>
+              <%= render "staff/quotations/steps/terms", revision: revision, editable: editable %>
+            <% when 5 %>
+              <%= render "staff/quotations/steps/review", quote: saved_quote, revision: saved_revision, readiness: @readiness %>
+            <% end %>
+          </section>
+        <% end %>
+
+        <%= render "staff/quotations/editor_footer", quote: quote, editor_step: editor_step, editable: editable %>
+      </div>
+
+      <aside class="staff-editor-layout__aside" aria-label="Quotation summary">
+        <%= render "staff/quotations/summary", quote: saved_quote, revision: saved_revision, readiness: @readiness %>
+      </aside>
+    </div>
+  <% end %>
+
+  <div class="staff-editor-workflow-below mt-4 max-w-3xl" data-quote-editor-target="workflow" <%= "hidden" unless editor_step == 5 %>>
+    <%= render "staff/quotations/workflow", quote: saved_quote, revision: saved_revision, readiness: @readiness %>
+  </div>
+
+  <div class="staff-editor-return">
+    <%= link_to "Return to quotations", staff_quotations_path, class: "staff-editor-footer__return-link" %>
   </div>
 </div>
-
-<%= form_with url: staff_quotation_path(quote), method: :patch, class: "staff-editor", data: { controller: "form-submit" } do %>
-  <input type="hidden" name="editor_step" value="<%= editor_step %>">
-  <input type="hidden" name="quote[lock_version]" value="<%= quote.lock_version %>">
-
-  <nav class="staff-editor-stepper" aria-label="Quotation steps">
-    <% steps.each_with_index do |label, index| %>
-      <% step_number = index + 1 %>
-      <%= link_to label,
-            edit_staff_quotation_path(quote, editor_step: step_number),
-            class: "staff-editor-step__tab #{"staff-editor-step__tab--current" if step_number == editor_step}" %>
-    <% end %>
-  </nav>
-
-  <div class="portal-card staff-editor-card mt-4">
-    <% case editor_step %>
-    <% when 1 %>
-      <%= render "staff/quotations/steps/client", quote: quote, client_organizations: @client_organizations, editable: editable %>
-    <% when 2 %>
-      <%= render "staff/quotations/steps/scope", quote: quote, revision: revision, services: @services, editable: editable %>
-    <% when 3 %>
-      <%= render "staff/quotations/steps/pricing", revision: revision, editable: editable %>
-    <% when 4 %>
-      <%= render "staff/quotations/steps/terms", revision: revision, editable: editable %>
-    <% when 5 %>
-      <%= render "staff/quotations/steps/review", quote: quote, revision: revision %>
-    <% end %>
-  </div>
-
-  <footer class="staff-editor-footer mt-4 flex flex-wrap gap-2">
-    <%= ant_back_link label: "Back to quotations", path: staff_quotations_path %>
-    <% if editable %>
-      <button type="submit" name="commit" value="save" class="ant-btn-outline ant-btn-primary--compact">Save draft</button>
-      <button type="submit" name="commit" value="save_continue" class="ant-btn-outline ant-btn-primary--compact">Save and continue</button>
-      <% if editor_step < 5 %>
-        <button type="submit" name="commit" value="review" class="ant-btn-primary ant-btn-primary--compact">Review quotation</button>
-      <% end %>
-    <% end %>
-    <% if editor_step == 5 %>
-      <%= link_to "Download PDF", pdf_staff_quotation_path(quote), class: "ant-btn-outline ant-btn-primary--compact", target: "_blank", rel: "noopener" %>
-    <% end %>
-  </footer>
-<% end %>
-
-<% if editor_step == 5 %>
-  <%= render "staff/quotations/workflow", quote: quote, revision: revision %>
-<% end %>

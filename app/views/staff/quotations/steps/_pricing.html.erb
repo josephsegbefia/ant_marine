@@ -1,27 +1,70 @@
-<fieldset class="space-y-4" <%= "disabled" unless editable %>>
-  <legend class="sr-only">Pricing</legend>
+<%# locals: revision, editable %>
+<% items = revision.line_items.to_a %>
+<div
+  class="mt-4 space-y-4"
+  data-controller="quote-pricing"
+  data-quote-pricing-currency-value="<%= revision.currency %>"
+>
+  <fieldset class="space-y-4" <%= "disabled" unless editable %>>
+    <legend class="sr-only">Pricing</legend>
 
-  <div>
-    <label class="ant-field__label" for="quote_revision_currency">Currency</label>
-    <select name="quote_revision[currency]" id="quote_revision_currency" class="ant-control">
-      <% Quote::SUPPORTED_CURRENCIES.each do |code| %>
-        <option value="<%= code %>" <%= "selected" if revision.currency == code %>><%= code %></option>
+    <div class="ant-field ant-field--portal max-w-xs">
+      <label class="ant-field__label" for="quote_revision_currency">Currency</label>
+      <select name="quote_revision[currency]" id="quote_revision_currency" class="ant-control w-full"
+              data-quote-pricing-target="currency" data-action="change->quote-pricing#recalculate">
+        <% Quote::SUPPORTED_CURRENCIES.each do |code| %>
+          <option value="<%= code %>" <%= "selected" if revision.currency == code %>><%= code %></option>
+        <% end %>
+      </select>
+      <% revision.errors[:currency].each do |message| %>
+        <p class="ant-field__error"><%= message %></p>
       <% end %>
-    </select>
-  </div>
+    </div>
 
-  <p class="ant-field__label">Line items</p>
-  <div class="space-y-3">
-    <% items = revision.line_items.to_a %>
-    <% items = [revision.line_items.build] if items.empty? %>
-    <% items.each do |item| %>
-      <%= render "staff/quotations/line_item_fields", item: item %>
-    <% end %>
+    <p class="text-sm text-[#5f7d8c]">
+      Enter ordinary amounts, for example <strong>1,250.00</strong>. Line totals are quantity × unit price.
+      Taxes are not added until tax rules are agreed.
+    </p>
+
+    <ol class="staff-quote-lines" data-quote-pricing-target="list" aria-label="Pricing lines">
+      <% items.each_with_index do |item, index| %>
+        <%= render "staff/quotations/line_item_fields", item: item, key: index, editable: editable %>
+      <% end %>
+    </ol>
+
+    <p class="staff-quote-lines__empty" data-quote-pricing-target="empty" <%= "hidden" if items.reject(&:marked_for_destruction?).any? %>>
+      No pricing lines yet.<%= " Add a line for each part of the work." if editable %>
+    </p>
+
     <% if editable %>
-      <%= render "staff/quotations/line_item_fields", item: revision.line_items.build(description: "", quantity: 1, unit: "each", unit_price_cents: 0) %>
+      <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="quote-pricing#add">
+        Add pricing line
+      </button>
     <% end %>
+  </fieldset>
+
+  <div class="staff-quote-totals" aria-live="polite">
+    <div class="staff-quote-totals__row">
+      <span>Total</span>
+      <strong data-quote-pricing-target="total"><%= format_quote_money(revision.total_cents, revision.currency) %></strong>
+    </div>
+    <p class="staff-quote-totals__note" data-quote-pricing-target="totalNote">
+      <% if editable %>
+        Saved total. It updates as you type and is confirmed when you save.
+      <% elsif revision.version_frozen? %>
+        Approved total. This version is locked.
+      <% else %>
+        Saved total. Pricing is read-only while the quotation is being reviewed.
+      <% end %>
+    </p>
   </div>
 
-  <p class="text-sm font-bold text-[#173244]">Total: <%= format_quote_money(revision.total_cents, revision.currency) %></p>
-  <p class="text-xs text-[#5f7d8c]">Totals are calculated on the server. Taxes are not applied until commercial tax rules are approved.</p>
-</fieldset>
+  <% if editable %>
+    <template data-quote-pricing-target="template">
+      <%= render "staff/quotations/line_item_fields",
+            item: QuoteLineItem.new(quantity: 1, unit: "each"),
+            key: "NEW_LINE_KEY",
+            editable: true %>
+    </template>
+  <% end %>
+</div>

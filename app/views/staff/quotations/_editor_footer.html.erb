@@ -1,0 +1,61 @@
+<%# locals: quote, editor_step, editable %>
+<% step_names = StaffQuotationsHelper::EDITOR_STEPS.map(&:last) %>
+
+<footer class="staff-editor-footer" aria-label="Editor actions">
+  <div class="staff-editor-footer__meta">
+    <p class="staff-editor-footer__step">
+      <span data-quote-editor-target="footerStepLabel">Step <%= editor_step %> of 5</span>
+      ·
+      <span data-quote-editor-target="footerStepName"><%= step_names[editor_step - 1] %></span>
+      <span class="staff-editor-footer__status-pill"><%= quote_status_label(quote.status) %></span>
+    </p>
+    <p class="staff-editor-footer__status-detail" data-quote-editor-target="dirtyNote">
+      <%= editable ? "Changes are saved only when you choose Save draft or Save and continue." : "This quotation is read-only." %>
+    </p>
+  </div>
+
+  <div class="staff-editor-footer__actions">
+    <button
+      type="button"
+      class="ant-btn-outline ant-btn-outline--compact staff-editor-footer__back"
+      data-quote-editor-target="backButton"
+      data-action="quote-editor#goBack"
+      <%= "hidden" if editor_step == 1 %>
+    >Back</button>
+
+    <% if editable %>
+      <button
+        type="submit"
+        name="commit"
+        value="save"
+        class="ant-btn-outline ant-btn-outline--compact"
+        data-form-submit-target="submit"
+      >Save draft</button>
+
+      <button
+        type="submit"
+        name="commit"
+        value="save_continue"
+        class="ant-btn-primary ant-btn-primary--compact"
+        data-quote-editor-target="saveContinueButton"
+        data-form-submit-target="submit"
+        <%= "hidden" if editor_step >= 5 %>
+      >Save and continue</button>
+    <% else %>
+      <button
+        type="button"
+        class="ant-btn-primary ant-btn-primary--compact"
+        data-quote-editor-target="nextButton"
+        data-action="quote-editor#goNext"
+        <%= "hidden" if editor_step >= 5 %>
+      >Next</button>
+    <% end %>
+
+    <%= link_to "Download PDF",
+          pdf_staff_quotation_path(quote),
+          class: "ant-btn-outline ant-btn-outline--compact",
+          target: "_blank",
+          rel: "noopener",
+          data: { turbo: false } %>
+  </div>
+</footer>

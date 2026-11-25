@@ -44,7 +44,7 @@ Rails.application.routes.draw do
       end
     end
     resources :client_invitations, only: %i[new create]
-    resources :quotations do
+    resources :quotations, except: :destroy do
       member do
         post :submit_for_review
         post :return_for_correction

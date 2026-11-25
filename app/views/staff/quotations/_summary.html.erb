@@ -1,0 +1,19 @@
+<%# locals: quote, revision, readiness %>
+<div class="portal-card staff-quote-summary">
+  <p class="staff-editor-preview__label">Quotation summary</p>
+  <dl class="staff-quote-summary__list">
+    <div><dt>Reference</dt><dd><%= quote.reference_number %></dd></div>
+    <div><dt>Version</dt><dd><%= revision.version_number %></dd></div>
+    <div><dt>Status</dt><dd><%= quote_status_label(quote.status) %></dd></div>
+    <div><dt>Client</dt><dd><%= quote.client_label %></dd></div>
+    <div><dt>Saved total</dt><dd><%= format_quote_money(revision.total_cents, revision.currency) %></dd></div>
+    <div><dt>Valid until</dt><dd><%= revision.valid_until ? l(revision.valid_until, format: :long) : "Not set" %></dd></div>
+    <div><dt>Client delivery</dt><dd><%= quote_delivery_summary(quote) %></dd></div>
+  </dl>
+  <p class="staff-quote-summary__next">
+    <span class="font-semibold text-[#102c43]">Next:</span> <%= quote.next_action_label %>
+  </p>
+  <% if quote.editable? && !readiness.ready? %>
+    <p class="mt-2 text-xs text-[#5f7d8c]"><%= pluralize(readiness.issues.size, "item") %> to complete before review.</p>
+  <% end %>
+</div>

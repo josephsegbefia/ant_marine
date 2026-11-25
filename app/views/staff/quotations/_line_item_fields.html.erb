@@ -1,27 +1,67 @@
-<%# locals: item, index: optional %>
-<div class="staff-quote-line grid gap-2 border border-[#e2eaed] rounded-xl p-3 sm:grid-cols-12">
-  <input type="hidden" name="quote_revision[line_items_attributes][][id]" value="<%= item.id %>">
-  <p class="text-[10px] font-bold uppercase text-[#8197a1] sm:col-span-12">Line item</p>
-  <div class="sm:col-span-12">
-    <label class="ant-field__label">Description</label>
-    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][description]" value="<%= item.description %>" required>
+<%# locals: item, key, editable %>
+<% prefix = "quote_revision[line_items_attributes][#{key}]" %>
+<% dom = "quote_line_#{key}" %>
+<% removed = item.marked_for_destruction? %>
+<li
+  class="staff-quote-line"
+  data-quote-pricing-target="row"
+  data-persisted="<%= item.persisted? %>"
+  <%= "hidden data-removed=true" if removed %>
+>
+  <% if item.persisted? %>
+    <input type="hidden" name="<%= prefix %>[id]" value="<%= item.id %>">
+  <% end %>
+  <input type="hidden" name="<%= prefix %>[position]" value="<%= item.position %>" data-quote-pricing-target="position">
+  <input type="hidden" name="<%= prefix %>[_destroy]" value="<%= removed ? 1 : 0 %>" data-quote-pricing-target="destroy">
+
+  <div class="staff-quote-line__head">
+    <p class="staff-quote-line__label" data-quote-pricing-target="number">Pricing line</p>
+    <% if editable %>
+      <div class="staff-quote-line__tools">
+        <button type="button" class="staff-quote-line__tool" data-action="quote-pricing#moveUp" aria-label="Move line up">↑</button>
+        <button type="button" class="staff-quote-line__tool" data-action="quote-pricing#moveDown" aria-label="Move line down">↓</button>
+        <button type="button" class="staff-quote-line__tool staff-quote-line__tool--remove" data-action="quote-pricing#remove">Remove</button>
+      </div>
+    <% end %>
   </div>
-  <div class="sm:col-span-3">
-    <label class="ant-field__label">Quantity</label>
-    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][quantity]" value="<%= item.quantity || 1 %>" inputmode="decimal">
+
+  <div class="staff-quote-line__grid">
+    <div class="staff-quote-line__description">
+      <label class="ant-field__label" for="<%= dom %>_description">Description</label>
+      <input class="ant-control w-full" id="<%= dom %>_description" name="<%= prefix %>[description]"
+             value="<%= item.description %>" maxlength="500" placeholder="For example: Underwater hull inspection">
+    </div>
+    <div>
+      <label class="ant-field__label" for="<%= dom %>_quantity">Quantity</label>
+      <input class="ant-control w-full" id="<%= dom %>_quantity" name="<%= prefix %>[quantity]" value="<%= item.quantity_input %>"
+             inputmode="decimal" autocomplete="off" data-quote-pricing-target="quantity" data-action="input->quote-pricing#recalculate">
+    </div>
+    <div>
+      <label class="ant-field__label" for="<%= dom %>_unit">Unit</label>
+      <input class="ant-control w-full" id="<%= dom %>_unit" name="<%= prefix %>[unit]" value="<%= item.unit.presence || "each" %>" maxlength="30">
+    </div>
+    <div>
+      <label class="ant-field__label" for="<%= dom %>_unit_price">Unit price</label>
+      <div class="staff-quote-line__money">
+        <span class="staff-quote-line__currency" data-quote-pricing-target="currencyLabel" aria-hidden="true"><%= item.currency %></span>
+        <input class="ant-control w-full" id="<%= dom %>_unit_price" name="<%= prefix %>[unit_price]" value="<%= item.unit_price %>"
+               inputmode="decimal" autocomplete="off" placeholder="0.00"
+               data-quote-pricing-target="price" data-action="input->quote-pricing#recalculate">
+      </div>
+    </div>
+    <div class="staff-quote-line__total">
+      <span class="ant-field__label">Line total</span>
+      <output data-quote-pricing-target="lineTotal" for="<%= dom %>_quantity <%= dom %>_unit_price">
+        <%= format_quote_money(item.line_total_cents, item.currency) %>
+      </output>
+    </div>
   </div>
-  <div class="sm:col-span-3">
-    <label class="ant-field__label">Unit</label>
-    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][unit]" value="<%= item.unit.presence || "each" %>">
-  </div>
-  <div class="sm:col-span-3">
-    <label class="ant-field__label">Unit price (cents)</label>
-    <input class="ant-control w-full" name="quote_revision[line_items_attributes][][unit_price_cents]" value="<%= item.unit_price_cents %>" inputmode="numeric">
-  </div>
-  <div class="sm:col-span-3 flex items-end">
-    <label class="flex items-center gap-2 text-xs text-[#5f7d8c]">
-      <input type="checkbox" name="quote_revision[line_items_attributes][][_destroy]" value="1">
-      Remove
-    </label>
-  </div>
-</div>
+
+  <% if item.errors.any? %>
+    <ul class="staff-quote-line__errors" role="alert">
+      <% item.errors.map(&:message).uniq.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+</li>

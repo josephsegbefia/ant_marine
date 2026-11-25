@@ -26,23 +26,25 @@ class QuotePolicy < ApplicationPolicy
   end
 
   def submit_for_review?
-    manage_draft? && record.status == "draft"
+    manage_draft?
   end
 
   def return_for_correction?
-    allowed?("quotes.approve") && record.status == "pending_review"
+    review?
   end
 
   def approve?
-    allowed?("quotes.approve") && record.status == "pending_review"
+    review?
   end
 
   def issue?
-    allowed?("quotes.send") && record.status == "approved_for_issuance"
+    Commercial::QuoteIssuance.available? && view? && allowed?("quotes.send") &&
+      record.status == "approved_for_issuance"
   end
 
   def withdraw?
-    allowed?("quotes.withdraw") && record.status.in?(%w[draft pending_review approved_for_issuance issued])
+    view? && allowed?("quotes.withdraw") &&
+      record.status.in?(%w[draft pending_review returned_for_correction approved_for_issuance issued])
   end
 
   def pdf?
@@ -66,5 +68,9 @@ class QuotePolicy < ApplicationPolicy
 
     def manage_draft?
       allowed?("quotes.create") && view? && record.editable?
+    end
+
+    def review?
+      view? && allowed?("quotes.approve") && record.status == "pending_review"
     end
 end

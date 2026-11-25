@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_143000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -311,6 +311,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_143000) do
     t.datetime "updated_at", null: false
     t.index ["quote_revision_id", "position"], name: "index_quote_line_items_on_quote_revision_id_and_position"
     t.index ["quote_revision_id"], name: "index_quote_line_items_on_quote_revision_id"
+    t.check_constraint "quantity > 0::numeric", name: "quote_line_items_quantity_positive"
+    t.check_constraint "unit_price_cents >= 0 AND line_total_cents >= 0", name: "quote_line_items_amounts_non_negative"
   end
 
   create_table "quote_revisions", force: :cascade do |t|
@@ -340,6 +342,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_143000) do
     t.datetime "updated_at", null: false
     t.index ["quote_id", "version_number"], name: "index_quote_revisions_on_quote_id_and_version_number", unique: true
     t.index ["quote_id"], name: "index_quote_revisions_on_quote_id"
+    t.check_constraint "(revision_status::text <> ALL (ARRAY['approved'::character varying, 'issued'::character varying]::text[])) OR frozen_at IS NOT NULL", name: "quote_revisions_approved_are_frozen"
+    t.check_constraint "currency::text = ANY (ARRAY['GHS'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying]::text[])", name: "quote_revisions_currency_check"
+    t.check_constraint "revision_status::text = ANY (ARRAY['draft'::character varying, 'pending_review'::character varying, 'approved'::character varying, 'issued'::character varying, 'superseded'::character varying]::text[])", name: "quote_revisions_status_check"
+    t.check_constraint "subtotal_cents >= 0 AND total_cents >= 0", name: "quote_revisions_totals_non_negative"
   end
 
   create_table "quotes", force: :cascade do |t|
@@ -362,6 +368,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_143000) do
     t.index ["organization_id"], name: "index_quotes_on_organization_id"
     t.index ["service_id"], name: "index_quotes_on_service_id"
     t.index ["status"], name: "index_quotes_on_status"
+    t.check_constraint "delivery_state::text = ANY (ARRAY['not_prepared'::character varying, 'prepared'::character varying, 'delivery_pending'::character varying, 'delivery_attempted'::character varying, 'delivered'::character varying, 'delivery_failed'::character varying]::text[])", name: "quotes_delivery_state_check"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'pending_review'::character varying, 'returned_for_correction'::character varying, 'approved_for_issuance'::character varying, 'issued'::character varying, 'withdrawn'::character varying, 'superseded'::character varying]::text[])", name: "quotes_status_check"
   end
 
   create_table "role_permissions", force: :cascade do |t|

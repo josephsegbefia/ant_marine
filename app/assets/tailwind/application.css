@@ -2311,6 +2311,10 @@
     @apply xl:grid-cols-3;
   }
 
+  .staff-editor-stepper--steps-5 {
+    @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5;
+  }
+
   .staff-editor-step__tab {
     @apply flex items-center gap-2 rounded-lg border border-[#dbe5e8] bg-white px-3 py-2 text-left text-sm font-semibold text-[#5f7d8c] transition-colors;
   }
@@ -2345,6 +2349,172 @@
 
   .staff-editor-panel {
     @apply space-y-2;
+  }
+
+  .staff-quote-notice {
+    @apply rounded-xl border px-4 py-3 text-sm;
+  }
+
+  .staff-quote-notice--warn {
+    @apply border-amber-200 bg-amber-50 text-[#5c4413];
+  }
+
+  .staff-quote-notice--error {
+    @apply border-red-200 bg-red-50 text-red-900;
+  }
+
+  .staff-quote-notice--good {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-900;
+  }
+
+  .staff-quote-link {
+    @apply text-sm font-semibold text-[#25877f] underline underline-offset-2 hover:text-[#1d6c66];
+  }
+
+  .staff-quote-lines {
+    @apply space-y-3;
+  }
+
+  .staff-quote-lines__empty {
+    @apply rounded-xl border border-dashed border-[#cddbe0] px-4 py-6 text-center text-sm text-[#5f7d8c];
+  }
+
+  .staff-quote-line {
+    @apply rounded-xl border border-[#e2eaed] bg-white p-3 sm:p-4;
+  }
+
+  .staff-quote-line__head {
+    @apply mb-3 flex flex-wrap items-center justify-between gap-2;
+  }
+
+  .staff-quote-line__label {
+    @apply text-xs font-bold uppercase tracking-wide text-[#5f7d8c];
+  }
+
+  .staff-quote-line__tools {
+    @apply flex items-center gap-1;
+  }
+
+  .staff-quote-line__tool {
+    @apply inline-flex min-h-9 min-w-9 items-center justify-center rounded-lg border border-[#dbe6e9] px-2 text-sm font-semibold text-[#173244] hover:bg-[#f2f7f8] focus-visible:outline-2 focus-visible:outline-[#25877f];
+  }
+
+  .staff-quote-line__tool--remove {
+    @apply text-red-800 hover:bg-red-50;
+  }
+
+  .staff-quote-line__grid {
+    @apply grid grid-cols-2 gap-3 md:grid-cols-[6rem_7rem_minmax(0,1fr)_minmax(8rem,10rem)] md:items-end;
+  }
+
+  .staff-quote-line__description {
+    @apply col-span-full;
+  }
+
+  .staff-quote-line__money {
+    @apply flex items-stretch;
+  }
+
+  .staff-quote-line__currency {
+    @apply inline-flex items-center rounded-l-lg border border-r-0 border-[#cfdde2] bg-[#f2f7f8] px-2 text-xs font-semibold text-[#466270];
+  }
+
+  .staff-quote-line__money .ant-control {
+    @apply rounded-l-none text-right tabular-nums;
+  }
+
+  .staff-quote-line__total {
+    @apply flex flex-col gap-1 text-right text-sm font-semibold tabular-nums text-[#102c43] md:pb-2;
+  }
+
+  .staff-quote-line__errors {
+    @apply mt-3 list-disc space-y-1 pl-5 text-sm text-red-800;
+  }
+
+  .staff-quote-totals {
+    @apply rounded-xl bg-[#f2f7f8] px-4 py-3;
+  }
+
+  .staff-quote-totals__row {
+    @apply flex items-baseline justify-between gap-4 text-base text-[#102c43] tabular-nums;
+  }
+
+  .staff-quote-totals__note {
+    @apply mt-1 text-xs text-[#5f7d8c];
+  }
+
+  .staff-quote-review__section {
+    @apply border-t border-[#e2eaed] pt-4;
+  }
+
+  .staff-quote-review__heading {
+    @apply text-sm font-bold uppercase tracking-wide text-[#466270];
+  }
+
+  .staff-quote-review__list {
+    @apply mt-3 grid gap-3 text-sm;
+  }
+
+  .staff-quote-review__list > div {
+    @apply grid gap-1 sm:grid-cols-[11rem_minmax(0,1fr)];
+  }
+
+  .staff-quote-review__list dt {
+    @apply font-semibold text-[#102c43];
+  }
+
+  .staff-quote-review__list dd {
+    @apply text-[#466270] [&_p+p]:mt-2;
+  }
+
+  .staff-quote-review__table-wrap {
+    @apply mt-3 overflow-x-auto;
+  }
+
+  .staff-quote-review__table {
+    @apply w-full min-w-[32rem] text-left text-sm tabular-nums;
+  }
+
+  .staff-quote-review__table th,
+  .staff-quote-review__table td {
+    @apply border-b border-[#e2eaed] px-2 py-2 align-top;
+  }
+
+  .staff-quote-review__table thead th {
+    @apply text-xs font-semibold uppercase text-[#5f7d8c];
+  }
+
+  .staff-quote-review__table td:nth-child(n + 2),
+  .staff-quote-review__table tfoot th {
+    @apply text-right;
+  }
+
+  .staff-quote-review__table tfoot {
+    @apply font-bold text-[#102c43];
+  }
+
+  .staff-quote-summary__list {
+    @apply mt-3 grid gap-2 text-sm;
+  }
+
+  .staff-quote-summary__list > div {
+    @apply grid grid-cols-[7rem_minmax(0,1fr)] gap-2;
+  }
+
+  .staff-quote-summary__list dt {
+    @apply text-[#5f7d8c];
+  }
+
+  .staff-quote-summary__list dd {
+    @apply font-medium text-[#102c43];
+  }
+
+  .staff-quote-summary__next {
+    @apply mt-4 border-t border-[#e2eaed] pt-3 text-sm text-[#466270];
+  }
+
+  .staff-quote-history {
+    @apply mt-2 space-y-2 text-sm;
   }
 
   .staff-editor-footer {

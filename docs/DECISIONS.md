@@ -30,6 +30,7 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 **P2.5B exit prep (2026-11-22):** P2-OD-040–042 **APPROVED** by product owner for Phase 3 foundation; see [`P2_5B_PHASE_2_EXIT_DECISIONS.md`](architecture/P2_5B_PHASE_2_EXIT_DECISIONS.md). Phase 2 full exit still pending Phase 1 formal sign-off and ADR-010 implementation.
 
 | ADR-F4-02A-001 | Phase 4 sequencing | Staff quotation management ships in **F4-02A** per PO roadmap; master spec **F4-02** anonymous intake and **F4-03** full commercial client workflow remain scheduled—not deleted from spec | **APPROVED** 2026-11-24 | PO F4-02A authorisation; documented in `docs/architecture/F4_02A_QUOTATIONS.md` |
+| ADR-F4-02A-002 | Quotation workflow hardening | Drafts may be incomplete; submit and approve require a complete quotation (client contact, scope, deliverables, exclusions, priced lines, future validity date, payment terms). Only `draft` and `returned_for_correction` are editable; `pending_review` is read-only; approved/issued versions are frozen in model guards and DB check constraints. Approve/return require `quotes.approve`, enforced inside `Commercial::QuoteTransition`. Issuing is disabled (`Commercial::QuoteIssuance.available? == false`) until a delivery channel is approved. No tax, deposit or legal terms are added automatically | **Implemented — PO review** 2026-11-25 | F4-02A-H1 brief; `docs/architecture/F4_02A_QUOTATIONS.md` |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

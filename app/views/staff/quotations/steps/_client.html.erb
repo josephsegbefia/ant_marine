@@ -1,20 +1,47 @@
-<% pc = quote.prospective_client %>
-<fieldset class="space-y-4" <%= "disabled" unless editable %>>
+<%# locals: quote, client_organizations, editable %>
+<fieldset class="mt-4 space-y-4" <%= "disabled" unless editable %>>
   <legend class="sr-only">Client information</legend>
-  <div>
+  <p class="text-sm text-[#5f7d8c]">Choose an existing client, or enter the details of a prospective client. A contact name and email are needed before review.</p>
+
+  <div class="ant-field ant-field--portal">
     <label class="ant-field__label" for="quote_client_organization_id">Existing client organisation</label>
     <select name="quote[client_organization_id]" id="quote_client_organization_id" class="ant-control w-full">
-      <option value="">Not linked yet</option>
+      <option value="">Not an existing client</option>
       <% client_organizations.each do |org| %>
         <option value="<%= org.id %>" <%= "selected" if quote.client_organization_id == org.id %>><%= org.name %></option>
       <% end %>
     </select>
-    <p class="ant-field__hint">Link a client organisation when they are already on the portal. Otherwise capture prospective details below.</p>
+    <% quote.errors[:client_organization_id].each do |message| %>
+      <p class="ant-field__error"><%= message %></p>
+    <% end %>
   </div>
-  <% %i[company_name contact_name email phone address].each do |field| %>
-    <div>
-      <label class="ant-field__label" for="quote_prospective_client_<%= field %>"><%= field.to_s.humanize %></label>
-      <input class="ant-control w-full" id="quote_prospective_client_<%= field %>" name="quote[prospective_client][<%= field %>]" value="<%= pc[field.to_s] %>" <%= "required" if field == :company_name && quote.client_organization_id.blank? %>>
+
+  <div class="ant-field ant-field--portal">
+    <label class="ant-field__label" for="quote_prospective_client_company_name">Company name (if not an existing client)</label>
+    <input class="ant-control w-full" id="quote_prospective_client_company_name" name="quote[prospective_client][company_name]"
+           value="<%= quote.prospective_value("company_name") %>" maxlength="200" autocomplete="organization">
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="ant-field ant-field--portal">
+      <label class="ant-field__label" for="quote_prospective_client_contact_name">Contact name</label>
+      <input class="ant-control w-full" id="quote_prospective_client_contact_name" name="quote[prospective_client][contact_name]"
+             value="<%= quote.prospective_value("contact_name") %>" maxlength="200" autocomplete="name">
     </div>
-  <% end %>
+    <div class="ant-field ant-field--portal">
+      <label class="ant-field__label" for="quote_prospective_client_email">Contact email</label>
+      <input type="email" class="ant-control w-full" id="quote_prospective_client_email" name="quote[prospective_client][email]"
+             value="<%= quote.prospective_value("email") %>" maxlength="200" autocomplete="email">
+    </div>
+    <div class="ant-field ant-field--portal">
+      <label class="ant-field__label" for="quote_prospective_client_phone">Phone (optional)</label>
+      <input type="tel" class="ant-control w-full" id="quote_prospective_client_phone" name="quote[prospective_client][phone]"
+             value="<%= quote.prospective_value("phone") %>" maxlength="50" autocomplete="tel">
+    </div>
+  </div>
+
+  <div class="ant-field ant-field--portal">
+    <label class="ant-field__label" for="quote_prospective_client_address">Address (optional)</label>
+    <textarea class="ant-control w-full" rows="2" id="quote_prospective_client_address" name="quote[prospective_client][address]" maxlength="500"><%= quote.prospective_value("address") %></textarea>
+  </div>
 </fieldset>

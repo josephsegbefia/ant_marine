@@ -1,13 +1,23 @@
-<fieldset class="space-y-4" <%= "disabled" unless editable %>>
-  <legend class="sr-only">Terms and validity</legend>
-  <div>
+<%# locals: revision, editable %>
+<fieldset class="mt-4 space-y-4" <%= "disabled" unless editable %>>
+  <legend class="sr-only">Validity and terms</legend>
+  <p class="text-sm text-[#5f7d8c]">Enter only terms that have been agreed for this quotation. Taxes, deposits and standard legal terms are not added automatically.</p>
+
+  <div class="ant-field ant-field--portal">
     <label class="ant-field__label" for="quote_revision_valid_until">Valid until</label>
     <input type="date" class="ant-control" id="quote_revision_valid_until" name="quote_revision[valid_until]" value="<%= revision.valid_until %>">
   </div>
-  <% { payment_terms: "Payment terms", commercial_exclusions: "Commercial exclusions", additional_conditions: "Additional conditions", internal_notes: "Internal notes (not shown on PDF)" }.each do |field, label| %>
-    <div>
+
+  <% {
+       payment_terms: [ "Payment terms", "For example when invoices are due. Required before review." ],
+       commercial_exclusions: [ "Commercial exclusions (optional)", "Costs the client will pay separately, if any." ],
+       additional_conditions: [ "Additional conditions (optional)", "Any other agreed conditions." ],
+       internal_notes: [ "Internal notes (optional)", "Only visible to ANT Marine staff. Never shown on the PDF." ]
+     }.each do |field, (label, hint)| %>
+    <div class="ant-field ant-field--portal">
       <label class="ant-field__label" for="quote_revision_<%= field %>"><%= label %></label>
       <textarea class="ant-control w-full" rows="3" id="quote_revision_<%= field %>" name="quote_revision[<%= field %>]"><%= revision.public_send(field) %></textarea>
+      <p class="ant-field__hint"><%= hint %></p>
     </div>
   <% end %>
 </fieldset>
