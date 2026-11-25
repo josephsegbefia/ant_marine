@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_25_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_25_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -507,6 +507,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_210000) do
     t.check_constraint "reason IS NULL OR char_length(reason) <= 500", name: "service_inquiry_assignments_reason_length"
   end
 
+  create_table "service_inquiry_clarifications", force: :cascade do |t|
+    t.bigint "service_inquiry_id", null: false
+    t.bigint "created_by_membership_id", null: false
+    t.string "subject", null: false
+    t.text "questions", null: false
+    t.text "prepared_message"
+    t.string "status", default: "prepared", null: false
+    t.string "contact_channel"
+    t.datetime "contacted_at"
+    t.bigint "contacted_by_membership_id"
+    t.text "response_text"
+    t.string "response_source"
+    t.datetime "response_received_at"
+    t.bigint "response_recorded_by_membership_id"
+    t.datetime "withdrawn_at"
+    t.bigint "withdrawn_by_membership_id"
+    t.integer "lock_version", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contacted_by_membership_id"], name: "idx_on_contacted_by_membership_id_60558e5d9f"
+    t.index ["created_by_membership_id"], name: "idx_on_created_by_membership_id_5421d8492b"
+    t.index ["response_recorded_by_membership_id"], name: "idx_on_response_recorded_by_membership_id_e5ec9fb48e"
+    t.index ["service_inquiry_id"], name: "index_service_inquiry_clarifications_on_service_inquiry_id"
+    t.index ["withdrawn_by_membership_id"], name: "idx_on_withdrawn_by_membership_id_03eb4e1b68"
+    t.check_constraint "char_length(subject::text) <= 160 AND char_length(questions) <= 2000 AND char_length(COALESCE(prepared_message, ''::text)) <= 4000 AND char_length(COALESCE(response_text, ''::text)) <= 4000", name: "service_inquiry_clarifications_length_check"
+    t.check_constraint "contact_channel IS NULL OR (contact_channel::text = ANY (ARRAY['phone'::character varying, 'email_outside_system'::character varying, 'in_person'::character varying, 'other'::character varying]::text[]))", name: "service_inquiry_clarifications_channel_check"
+    t.check_constraint "response_source IS NULL OR (response_source::text = ANY (ARRAY['phone'::character varying, 'email'::character varying, 'in_person'::character varying, 'other'::character varying]::text[]))", name: "service_inquiry_clarifications_source_check"
+    t.check_constraint "status::text <> 'answered'::text OR response_text IS NOT NULL AND response_source IS NOT NULL AND response_received_at IS NOT NULL AND response_recorded_by_membership_id IS NOT NULL", name: "service_inquiry_clarifications_answer_recorded"
+    t.check_constraint "status::text <> 'contacted_outside_system'::text OR contact_channel IS NOT NULL AND contacted_at IS NOT NULL AND contacted_by_membership_id IS NOT NULL", name: "service_inquiry_clarifications_contact_recorded"
+    t.check_constraint "status::text <> 'withdrawn'::text OR withdrawn_at IS NOT NULL AND withdrawn_by_membership_id IS NOT NULL", name: "service_inquiry_clarifications_withdrawal_recorded"
+    t.check_constraint "status::text = ANY (ARRAY['prepared'::character varying, 'contacted_outside_system'::character varying, 'answered'::character varying, 'withdrawn'::character varying]::text[])", name: "service_inquiry_clarifications_status_check"
+  end
+
   create_table "service_inquiry_notes", force: :cascade do |t|
     t.bigint "service_inquiry_id", null: false
     t.bigint "author_membership_id", null: false
@@ -715,6 +748,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_25_210000) do
   add_foreign_key "service_inquiry_assignments", "memberships", column: "new_membership_id"
   add_foreign_key "service_inquiry_assignments", "memberships", column: "previous_membership_id"
   add_foreign_key "service_inquiry_assignments", "service_inquiries"
+  add_foreign_key "service_inquiry_clarifications", "memberships", column: "contacted_by_membership_id"
+  add_foreign_key "service_inquiry_clarifications", "memberships", column: "created_by_membership_id"
+  add_foreign_key "service_inquiry_clarifications", "memberships", column: "response_recorded_by_membership_id"
+  add_foreign_key "service_inquiry_clarifications", "memberships", column: "withdrawn_by_membership_id"
+  add_foreign_key "service_inquiry_clarifications", "service_inquiries"
   add_foreign_key "service_inquiry_notes", "memberships", column: "author_membership_id"
   add_foreign_key "service_inquiry_notes", "service_inquiries"
   add_foreign_key "service_inquiry_notes", "service_inquiry_notes", column: "corrects_note_id"

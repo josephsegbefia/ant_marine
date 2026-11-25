@@ -44,6 +44,8 @@ class ServiceInquiry < ApplicationRecord
   has_many :assignments, -> { order(:created_at, :id) }, class_name: "ServiceInquiryAssignment",
                                                           dependent: :restrict_with_exception
   has_many :notes, -> { order(:created_at, :id) }, class_name: "ServiceInquiryNote", dependent: :restrict_with_exception
+  has_many :clarifications, -> { order(:created_at, :id) }, class_name: "ServiceInquiryClarification",
+                                                             dependent: :restrict_with_exception
   has_many :duplicates, class_name: "ServiceInquiry", foreign_key: :duplicate_of_id,
                         inverse_of: :duplicate_of, dependent: :restrict_with_exception
 
