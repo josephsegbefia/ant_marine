@@ -8,13 +8,15 @@ class Commercial::QuoteRevisionConcurrencyTest < ActiveSupport::TestCase
   teardown do
     next unless @quote_id
 
-    revision_ids = QuoteRevision.where(quote_id: @quote_id).pluck(:id)
-    AuditEvent.where(subject_type: "Quote", subject_id: @quote_id).delete_all
-    Quote.where(id: @quote_id).update_all(current_revision_id: nil)
-    QuoteLineItem.where(quote_revision_id: revision_ids).delete_all
-    QuoteRevision.where(id: revision_ids).update_all(superseded_by_revision_id: nil)
-    QuoteRevision.where(id: revision_ids).order(version_number: :desc).each(&:delete)
-    Quote.where(id: @quote_id).delete_all
+    with_history_protection_disabled do
+      revision_ids = QuoteRevision.where(quote_id: @quote_id).pluck(:id)
+      AuditEvent.where(subject_type: "Quote", subject_id: @quote_id).delete_all
+      Quote.where(id: @quote_id).update_all(current_revision_id: nil)
+      QuoteLineItem.where(quote_revision_id: revision_ids).delete_all
+      QuoteRevision.where(id: revision_ids).update_all(superseded_by_revision_id: nil)
+      QuoteRevision.where(id: revision_ids).order(version_number: :desc).each(&:delete)
+      Quote.where(id: @quote_id).delete_all
+    end
   end
 
   test "two people creating a new version at the same moment produce exactly one" do

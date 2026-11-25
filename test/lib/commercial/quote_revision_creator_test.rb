@@ -49,7 +49,9 @@ class Commercial::QuoteRevisionCreatorTest < ActiveSupport::TestCase
 
   test "expired validity is not carried into the new version" do
     quote = approve_quote!(create_ready_quote)
-    quote.current_revision.update_columns(valid_until: Date.current - 1)
+    with_history_protection_disabled do
+      quote.current_revision.update_columns(valid_until: Date.current - 1)
+    end
     assert_nil create_revision!(quote.reload).valid_until
   end
 

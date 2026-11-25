@@ -468,8 +468,9 @@ class Staff::QuotationsTest < ActionDispatch::IntegrationTest
   end
 
   test "refreshing GET new does not duplicate drafts" do
-    2.times { get new_staff_quotation_path }
-    assert_equal 0, Quote.count
+    assert_no_difference("Quote.count") do
+      2.times { get new_staff_quotation_path }
+    end
   end
 
   test "general staff cannot open editor" do

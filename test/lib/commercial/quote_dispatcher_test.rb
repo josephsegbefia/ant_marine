@@ -112,21 +112,29 @@ class Commercial::QuoteDispatcherTest < ActiveSupport::TestCase
   end
 
   test "expired versions and missing or invalid recipients are refused" do
-    @quote.current_revision.update_columns(valid_until: Date.current - 1)
+    with_history_protection_disabled do
+      @quote.current_revision.update_columns(valid_until: Date.current - 1)
+    end
     assert_match(/expired/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare! }.message)
 
     other = approve_quote!(create_ready_quote)
-    other.current_revision.update_columns(recipient_snapshot: other.current_revision.recipient_snapshot.merge("email" => "not-an-email"))
+    with_history_protection_disabled do
+      other.current_revision.update_columns(recipient_snapshot: other.current_revision.recipient_snapshot.merge("email" => "not-an-email"))
+    end
     assert_match(/not valid/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(other) }.message)
 
     third = approve_quote!(create_ready_quote)
-    third.current_revision.update_columns(recipient_snapshot: third.current_revision.recipient_snapshot.except("email"))
+    with_history_protection_disabled do
+      third.current_revision.update_columns(recipient_snapshot: third.current_revision.recipient_snapshot.except("email"))
+    end
     assert_match(/no recipient email/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(third) }.message)
   end
 
   test "archived client organisations are not valid recipients" do
     client = organizations(:acme_client)
-    @quote.current_revision.update_columns(recipient_snapshot: @quote.current_revision.recipient_snapshot.merge("client_organization_id" => client.id))
+    with_history_protection_disabled do
+      @quote.current_revision.update_columns(recipient_snapshot: @quote.current_revision.recipient_snapshot.merge("client_organization_id" => client.id))
+    end
     client.update_columns(status: "archived")
     assert_match(/no longer active/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare! }.message)
   end

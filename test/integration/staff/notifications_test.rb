@@ -51,7 +51,7 @@ module Staff
       sign_in_as(surveyor.user)
       post open_staff_notification_path(notification)
       assert_redirected_to staff_notifications_path
-      assert_equal "You no longer have access to that enquiry.", flash[:alert]
+      assert_equal "You no longer have access to that item.", flash[:alert]
     end
 
     test "clients and anonymous visitors cannot reach notifications" do

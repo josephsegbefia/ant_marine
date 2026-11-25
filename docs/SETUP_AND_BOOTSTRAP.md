@@ -101,6 +101,8 @@ mise exec -- bin/rails zeitwerk:check
 mise exec -- bin/rails server
 ```
 
+**Schema format (F4-04B):** the primary database uses `config.active_record.schema_format = :sql`. Schema dumps live in `db/structure.sql` (includes history-protection functions and triggers). Do not reintroduce a conflicting `db/schema.rb` as the source of truth. Fresh environments load via `db:prepare` / `db:schema:load`. After restore from backup, verify triggers exist (`pg_trigger` names matching `%history_protect%`). Production least-privilege runtime DB roles remain a deployment gate — local triggers alone are not sufficient against a table-owning role.
+
 To verify the browser, open `http://localhost:3000`. It should show the generated Rails page or explicitly planned temporary root route. Stop with `Ctrl+C`. No production access is involved.
 
 ## 6. Agent configuration and development quality

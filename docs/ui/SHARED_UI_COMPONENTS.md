@@ -255,15 +255,22 @@ data: {
 - **Timeline:** `ol.ant-timeline` > `li.ant-timeline__item--{kind}` with `__title`, `__detail`, `__meta` ("Name · 25 Nov 19:32"; "Website" for public submissions). Fed by `Intake::InquiryTimeline` entries only — never raw audit data.
 - **Notification list:** `/staff/notifications`, unread items emphasised, "Mark all as read", opening an item marks it read; sidebar item shows the unread count in its accessible name ("Notifications, 1 unread").
 
+## Commercial decisions (F4-04B)
+
+- **Client quotation detail / decide:** extends F4-04A show with Accept / Request changes / Decline (permission-gated), confirmation page (`client/quotations/decide`), decision history, unmistakable simulated banners; exact PDF download retained.
+- **Staff decisions panel:** `staff/quotations/_decisions.html.erb` — decision status, actor, timestamp, reason, project-setup guidance (no Create project control).
+- **Contacts:** staff Clients Access tab manages `ClientContact` rows without portal accounts.
+- Live binding acceptance UI remains disabled (`Commercial::QuoteDecision.available?` false in production).
+
 ## Client onboarding & portal (F4-04A)
 
 - **Staff Clients:** `/staff/clients` reuses enquiry list panel + `ant_pagination`, summary stats, and client detail tabs via `ant_section_tabs` (Overview / Contacts & access / Service requests / Quotations / Activity). Side panels use `shared/ui/side_panel_head`.
 - **Onboarding:** `/staff/enquiries/:id/onboard` — guided form (organisation, representative, portal role, confirmation); roles from `Invitations::Policy` + `client_portal_role_options`.
 - **Client shell:** nav Overview / Service requests / Quotations / Account only (future modules omitted). Helpers: `ClientPortalHelper` (`client_can_view_requests?`, `client_can_view_quotations?`, `client_request_status_label`, `client_money`).
-- **Quotations:** simulated offers show a warn notice; PDF download only; no Accept/Decline controls.
+- **Quotations:** simulated offers show a warn notice; PDF download; F4-04B adds simulated Accept / Request changes / Decline for authorised representatives.
 - **Pagination:** staff clients and client request/quotation lists use `ant_pagination` with `path_for` lambdas (same contract as F4-03).
 
 ## Limitations (continued)
 
 - Client portal keeps the existing client shell (not the staff sidebar pattern).
-- Live commercial portal release and accept/decline UI are deferred to F4-04B.
+- Live commercial portal release and binding acceptance remain disabled; see F4-04B.

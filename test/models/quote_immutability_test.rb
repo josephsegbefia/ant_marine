@@ -101,7 +101,10 @@ class QuoteImmutabilityTest < ActiveSupport::TestCase
 
   test "database rejects approved revisions without a freeze timestamp" do
     assert_raises(ActiveRecord::StatementInvalid) do
-      QuoteRevision.where(id: @revision.id).update_all(frozen_at: nil)
+      Quote.transaction(requires_new: true) do
+        QuoteRevision.where(id: @revision.id).update_all(frozen_at: nil)
+      end
     end
+    assert_not_nil @revision.reload.frozen_at
   end
 end
