@@ -30,7 +30,16 @@
           <div><dt>Scope note</dt><dd class="whitespace-pre-line"><%= @inquiry.qualification_note %></dd></div>
         <% end %>
         <% if @inquiry.client_organization %>
-          <div><dt>Client</dt><dd><%= @inquiry.client_organization.name %></dd></div>
+          <div>
+            <dt>Client</dt>
+            <dd>
+              <% if policy(@inquiry.client_organization).show? %>
+                <%= link_to @inquiry.client_organization.name, staff_client_path(@inquiry.client_organization), class: "staff-quote-link" %>
+              <% else %>
+                <%= @inquiry.client_organization.name %>
+              <% end %>
+            </dd>
+          </div>
         <% end %>
         <div><dt>Received</dt><dd><%= l(@inquiry.submitted_at, format: :short) %></dd></div>
         <% if @inquiry.review_started_at %>
@@ -78,8 +87,18 @@
             icon: "check" %>
       <div class="staff-quote-side-panel__body">
         <div class="staff-enquiry-actions">
+          <% if @inquiry_policy.onboard_client? %>
+            <%= link_to "Set up client access", onboard_staff_service_inquiry_path(@inquiry), class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
+          <% end %>
           <%= render "staff/service_inquiries/actions" %>
         </div>
+      </div>
+    </section>
+  <% elsif @inquiry_policy.onboard_client? %>
+    <section class="staff-quote-side-panel" aria-labelledby="enquiry-onboard-heading">
+      <%= render "shared/ui/side_panel_head", title: "Client access", heading_id: "enquiry-onboard-heading", icon: "users" %>
+      <div class="staff-quote-side-panel__body">
+        <%= link_to "Set up client access", onboard_staff_service_inquiry_path(@inquiry), class: "ant-btn-primary ant-btn-primary--compact w-full justify-center" %>
       </div>
     </section>
   <% end %>

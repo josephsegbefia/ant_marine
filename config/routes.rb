@@ -47,11 +47,20 @@ Rails.application.routes.draw do
       end
     end
     resources :client_invitations, only: %i[new create]
+    resources :clients, only: %i[index show new create edit update] do
+      member do
+        post :suspend_membership
+        post :revoke_membership
+      end
+      resources :portal_releases, only: %i[create], controller: "client_portal_releases"
+    end
     resources :service_inquiries, path: "enquiries", only: %i[index show] do
       member do
         post :prepare_quotation
         post :transition
         post :assign
+        get :onboard
+        post :onboard, action: :create_onboarding
       end
       resources :notes, only: :create, controller: "service_inquiry_notes" do
         member { post :correct }
@@ -126,6 +135,13 @@ Rails.application.routes.draw do
 
   namespace :client do
     root to: "home#show"
+    resources :requests, only: %i[index show], controller: "requests"
+    resources :quotations, only: %i[index show] do
+      member do
+        get :pdf
+      end
+    end
+    resource :account, only: %i[show], controller: "accounts"
     resources :invitations, only: %i[index create destroy] do
       member do
         post :resend

@@ -1,0 +1,43 @@
+<% content_for :staff_nav, :clients %>
+<%= ant_page_header title: "Edit #{@client.name}", description: "Update organisation profile fields. Access and invitations are managed separately." %>
+
+<section class="staff-quote-side-panel mt-6 max-w-2xl">
+  <%= render "shared/ui/side_panel_head", title: "Organisation details", heading_id: "edit-client-heading", icon: "brief" %>
+  <div class="staff-quote-side-panel__body">
+    <%= form_with model: @client, url: staff_client_path(@client), scope: :organization, method: :patch, local: true, class: "space-y-4" do |f| %>
+      <%= ant_field f, :name, label: "Organisation name", required: true, context: :portal %>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_trading_name">Trading name</label>
+        <input type="text" name="organization[trading_name]" id="organization_trading_name" value="<%= @client.trading_name %>" class="ant-control w-full">
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_primary_contact_name">Main contact name</label>
+        <input type="text" name="organization[primary_contact_name]" id="organization_primary_contact_name" value="<%= @client.primary_contact_name %>" class="ant-control w-full">
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_primary_contact_email">Main contact email</label>
+        <input type="email" name="organization[primary_contact_email]" id="organization_primary_contact_email" value="<%= @client.primary_contact_email %>" class="ant-control w-full">
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_business_email">Business email</label>
+        <input type="email" name="organization[business_email]" id="organization_business_email" value="<%= @client.business_email %>" class="ant-control w-full">
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_business_phone">Business phone</label>
+        <input type="text" name="organization[business_phone]" id="organization_business_phone" value="<%= @client.business_phone %>" class="ant-control w-full">
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_address">Business address</label>
+        <textarea name="organization[address]" id="organization_address" rows="2" class="ant-control w-full"><%= @client.address %></textarea>
+      </div>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="organization_country">Country</label>
+        <input type="text" name="organization[country]" id="organization_country" value="<%= @client.country %>" class="ant-control w-full">
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <%= f.submit "Save changes", class: "ant-btn-primary ant-btn-primary--compact" %>
+        <%= ant_back_link label: "Cancel", path: staff_client_path(@client) %>
+      </div>
+    <% end %>
+  </div>
+</section>

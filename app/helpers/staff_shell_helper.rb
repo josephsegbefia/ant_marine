@@ -40,6 +40,12 @@ module StaffShellHelper
     ServiceInquiryPolicy.new(Current.membership, ServiceInquiry).index?
   end
 
+  def staff_can_manage_clients?
+    return false unless Current.membership&.staff_domain?
+
+    OrganizationPolicy.new(Current.membership, Organization).index?
+  end
+
   def staff_unread_notification_count
     return 0 unless Current.membership&.staff_domain?
 

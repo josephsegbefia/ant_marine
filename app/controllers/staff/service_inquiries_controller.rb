@@ -14,7 +14,7 @@ module Staff
       "reopen" => "Enquiry reopened and returned to review."
     }.freeze
 
-    before_action :set_inquiry, only: %i[show prepare_quotation transition assign]
+    before_action :set_inquiry, only: %i[show prepare_quotation transition assign onboard create_onboarding]
 
     def index
       authorize ServiceInquiry
@@ -100,6 +100,42 @@ module Staff
       redirect_to staff_service_inquiry_path(@inquiry), alert: e.message
     end
 
+    def onboard
+      authorize @inquiry, :onboard_client?
+      prepare_onboarding_form
+      assign_staff_breadcrumb(
+        crumbs: [
+          { label: "Enquiries", path: staff_service_inquiries_path },
+          { label: @inquiry.reference_number, path: staff_service_inquiry_path(@inquiry) }
+        ],
+        current: "Set up client access"
+      )
+    end
+
+    def create_onboarding
+      authorize @inquiry, :onboard_client?
+      result = Clients::OnboardFromEnquiry.call(
+        actor_membership: Current.membership,
+        inquiry: @inquiry,
+        params: onboarding_params.merge(
+          "organization_name" => onboarding_params[:organization_name].presence || @inquiry.company_name,
+          "contact_name" => onboarding_params[:contact_name].presence || @inquiry.contact_name,
+          "contact_email" => onboarding_params[:contact_email].presence || @inquiry.contact_email,
+          "contact_phone" => onboarding_params[:contact_phone].presence || @inquiry.contact_phone
+        )
+      )
+      notice = "Client access prepared for #{result.organization.name}."
+      notice += " Development invitation link: #{invitation_url(token: result.raw_token)}" if Rails.env.local?
+      redirect_to staff_client_path(result.organization), notice: notice
+    rescue Clients::OnboardFromEnquiry::Denied
+      redirect_to staff_service_inquiry_path(@inquiry), alert: "You are not allowed to set up client access."
+    rescue Clients::OnboardFromEnquiry::InvalidState, Clients::OnboardFromEnquiry::Error,
+           Clients::CreateOrganization::Error, Invitations::Policy::Denied => e
+      flash.now[:alert] = e.message
+      prepare_onboarding_form
+      render :onboard, status: :unprocessable_entity
+    end
+
     private
 
       def set_inquiry
@@ -172,6 +208,39 @@ module Staff
         scope = scope.where(submitted_at: @filters[:from].in_time_zone..) if @filters[:from]
         scope = scope.where(submitted_at: ..@filters[:to].in_time_zone.end_of_day) if @filters[:to]
         scope
+      end
+
+      def prepare_onboarding_form
+        @client_organizations = Quote.assignable_client_organizations(Current.membership.organization).order(:name)
+        @duplicates = Organization.duplicate_suggestions(
+          name: @inquiry.company_name,
+          email: @inquiry.contact_email
+        )
+        @policy = ::Invitations::Policy.new(inviter_membership: Current.membership)
+        sample_org = @inquiry.client_organization || @client_organizations.first
+        @allowed_roles = if sample_org
+          @policy.allowed_roles_for(organization: sample_org)
+        else
+          ::Invitations::Policy::CLIENT_INVITE_TARGETS
+        end
+        @allowed_roles = ::Invitations::Policy::CLIENT_INVITE_TARGETS if @allowed_roles.blank?
+        @form = {
+          organization_mode: params.dig(:onboarding, :organization_mode).presence || (@inquiry.client_organization_id.present? ? "existing" : "create"),
+          client_organization_id: params.dig(:onboarding, :client_organization_id).presence || @inquiry.client_organization_id,
+          organization_name: params.dig(:onboarding, :organization_name).presence || @inquiry.company_name,
+          contact_name: params.dig(:onboarding, :contact_name).presence || @inquiry.contact_name,
+          contact_email: params.dig(:onboarding, :contact_email).presence || @inquiry.contact_email,
+          contact_phone: params.dig(:onboarding, :contact_phone).presence || @inquiry.contact_phone,
+          role_key: params.dig(:onboarding, :role_key).presence || "client.client_member"
+        }
+      end
+
+      def onboarding_params
+        params.fetch(:onboarding, {}).permit(
+          :organization_mode, :client_organization_id, :organization_name, :trading_name,
+          :contact_name, :contact_email, :contact_phone, :address, :country, :role_key,
+          :confirm_organization, :link_reason
+        )
       end
   end
 end

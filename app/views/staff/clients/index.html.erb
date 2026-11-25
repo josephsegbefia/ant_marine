@@ -1,0 +1,86 @@
+<% content_for :staff_nav, :clients %>
+<%= ant_page_header(
+      title: "Clients",
+      description: "Client organisations, portal access and linked commercial work.",
+      primary_action: (policy(Organization).create? ? { label: "New client organisation", path: new_staff_client_path } : nil)
+    ) %>
+
+<div class="staff-overview-stats mt-6" aria-label="Client organisation summary">
+  <div class="staff-overview-stat">
+    <p class="staff-overview-stat__label">Active organisations</p>
+    <p class="staff-overview-stat__value"><%= @summary[:active] %></p>
+  </div>
+  <div class="staff-overview-stat">
+    <p class="staff-overview-stat__label">Awaiting portal access</p>
+    <p class="staff-overview-stat__value"><%= @summary[:awaiting] %></p>
+  </div>
+  <div class="staff-overview-stat">
+    <p class="staff-overview-stat__label">Pending invitations</p>
+    <p class="staff-overview-stat__value"><%= @summary[:pending_invites] %></p>
+  </div>
+  <div class="staff-overview-stat">
+    <p class="staff-overview-stat__label">With active portal access</p>
+    <p class="staff-overview-stat__value"><%= @summary[:with_portal] %></p>
+  </div>
+</div>
+
+<section class="staff-enquiry-panel mt-6">
+  <%= form_with url: staff_clients_path, method: :get, local: true, class: "staff-enquiry-toolbar" do %>
+    <label class="sr-only" for="client-search">Search clients</label>
+    <input id="client-search" type="search" name="q" value="<%= params[:q] %>" class="ant-control" placeholder="Search by name, reference or email">
+    <%= ant_select_tag "status", [["All statuses", ""], ["Active", "active"], ["Archived", "archived"]],
+                       label: "Status", selected: params[:status], compact: true, include_blank: false %>
+    <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Apply</button>
+  <% end %>
+
+  <% if @clients.any? %>
+    <div class="staff-enquiry-table-wrap">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th>Organisation</th>
+            <th>Reference</th>
+            <th>Primary contact</th>
+            <th>Portal</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @clients.each do |client| %>
+            <tr>
+              <td>
+                <p class="staff-enquiry-row__title"><%= client.name %></p>
+                <% if client.business_email.present? %>
+                  <p class="staff-enquiry-row__sub"><%= client.business_email %></p>
+                <% end %>
+              </td>
+              <td><span class="staff-enquiry-row__ref"><%= client.reference_number.presence || "—" %></span></td>
+              <td><%= client.primary_contact_name.presence || "—" %></td>
+              <td>
+                <%= client.portal_member_count %> active
+                <% if client.pending_invitation_count.positive? %>
+                  · <%= client.pending_invitation_count %> pending
+                <% end %>
+              </td>
+              <td><%= ant_status_badge(label: client_status_label(client), badge_class: client_status_badge_variant(client)) %></td>
+              <td><%= link_to "Open", staff_client_path(client), class: "staff-quote-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="staff-enquiry-panel__footer">
+      <%= ant_pagination(@pagination, label: "clients", path_for: ->(page) { staff_clients_path(request.query_parameters.merge(page: page)) }) %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          icon: :brief,
+          title: "No client organisations yet",
+          description: "Create a client organisation when you are ready to set up portal access for a company.",
+          guidance: "You can also start from a qualified enquiry using Set up client access.",
+          primary_action: (policy(Organization).create? ? { label: "Create organisation", path: new_staff_client_path } : nil),
+          variant: :muted
+        ) %>
+  <% end %>
+</section>

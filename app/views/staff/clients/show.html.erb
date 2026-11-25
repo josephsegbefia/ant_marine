@@ -1,0 +1,202 @@
+<% content_for :staff_nav, :clients %>
+<%= ant_page_header(
+      title: @client.name,
+      description: [ @client.reference_number, client_status_label(@client) ].compact.join(" · "),
+      primary_action: (policy(@client).update? ? { label: "Edit details", path: edit_staff_client_path(@client) } : nil)
+    ) %>
+
+<%= ant_section_tabs(tabs: [
+      { label: "Overview", path: staff_client_path(@client, tab: "overview"), active: @tab == "overview" },
+      { label: "Contacts & access", path: staff_client_path(@client, tab: "access"), active: @tab == "access" },
+      { label: "Service requests", path: staff_client_path(@client, tab: "requests"), active: @tab == "requests" },
+      { label: "Quotations", path: staff_client_path(@client, tab: "quotations"), active: @tab == "quotations" },
+      { label: "Activity", path: staff_client_path(@client, tab: "activity"), active: @tab == "activity" }
+    ]) %>
+
+<% case @tab %>
+<% when "access" %>
+  <div class="staff-editor-layout mt-6">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Memberships", heading_id: "client-members-heading", icon: "users" %>
+      <div class="staff-quote-side-panel__body">
+        <% if @memberships.any? %>
+          <ul class="staff-quote-versions__list">
+            <% @memberships.each do |membership| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= membership.user.full_name.presence || membership.user.email %></p>
+                  <%= ant_status_badge(label: membership_access_label(membership), badge_class: membership.status == "active" ? "ant-badge--good" : "ant-badge--muted") %>
+                </div>
+                <p class="staff-enquiry-row__sub"><%= membership.user.email %> · <%= RoleLabels.label(membership.role_key) %></p>
+                <% if policy(@client).manage_access? && membership.status.in?(%w[active suspended]) %>
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <% if membership.status == "active" %>
+                      <%= button_to "Suspend access", suspend_membership_staff_client_path(@client, membership_id: membership.id), method: :post, class: "ant-btn-outline ant-btn-outline--compact", form: { data: { turbo_confirm: "Suspend portal access for this person?" } } %>
+                    <% end %>
+                    <%= button_to "Revoke access", revoke_membership_staff_client_path(@client, membership_id: membership.id), method: :post, class: "ant-btn-outline ant-btn-outline--compact", form: { data: { turbo_confirm: "Revoke portal access? Commercial records are kept." } } %>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede">No memberships yet.</p>
+        <% end %>
+      </div>
+    </section>
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Invitations", heading_id: "client-invites-heading", icon: "mail" %>
+      <div class="staff-quote-side-panel__body">
+        <% if policy(@client).invite? %>
+          <p class="mb-4"><%= link_to "Invite a contact", new_staff_client_invitation_path(organization_id: @client.id), class: "ant-btn-primary ant-btn-primary--compact" %></p>
+        <% end %>
+        <% if @invitations.any? %>
+          <ul class="staff-quote-versions__list">
+            <% @invitations.each do |invitation| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= invitation.email %></p>
+                  <%= ant_status_badge(label: invitation_access_label(invitation), badge_class: "ant-badge--muted") %>
+                </div>
+                <p class="staff-enquiry-row__sub"><%= RoleLabels.label(invitation.role_key) %> · <%= l(invitation.created_at, format: :short) %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede">No invitations yet.</p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+<% when "requests" %>
+  <section class="staff-quote-side-panel mt-6">
+    <%= render "shared/ui/side_panel_head", title: "Linked service requests", heading_id: "client-requests-heading", icon: "clipboard" %>
+    <div class="staff-quote-side-panel__body">
+      <% if @inquiries.any? %>
+        <ul class="staff-quote-versions__list">
+          <% @inquiries.each do |inquiry| %>
+            <li class="staff-quote-versions__item">
+              <div class="staff-quote-versions__head">
+                <p class="staff-enquiry-clarification__title"><%= link_to inquiry.reference_number, staff_service_inquiry_path(inquiry), class: "staff-quote-link" %></p>
+                <%= ant_status_badge(label: client_facing_enquiry_status(inquiry.current_status), badge_class: "ant-badge--muted") %>
+              </div>
+              <p class="staff-enquiry-row__sub"><%= inquiry.requested_service_label %> · <%= l(inquiry.submitted_at, format: :short) %></p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="staff-quote-versions__lede">No enquiries are linked to this organisation yet. Link happens explicitly during qualification or client access setup.</p>
+      <% end %>
+    </div>
+  </section>
+
+<% when "quotations" %>
+  <div class="mt-6 space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Linked quotations", heading_id: "client-quotes-heading", icon: "file" %>
+      <div class="staff-quote-side-panel__body">
+        <% if @quotes.any? %>
+          <ul class="staff-quote-versions__list">
+            <% @quotes.each do |quote| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= link_to quote.reference_number, edit_staff_quotation_path(quote), class: "staff-quote-link" %></p>
+                  <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
+                </div>
+                <p class="staff-enquiry-row__sub"><%= quote.display_title %> · <%= quote_delivery_summary(quote) %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede">No quotations are linked to this organisation.</p>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Portal releases (simulated)", heading_id: "client-releases-heading", icon: "globe" %>
+      <div class="staff-quote-side-panel__body">
+        <p class="staff-quote-versions__lede">Simulated releases let authorised QA users see an exact quotation version in the client portal. They are not genuine commercial offers. Live release is disabled.</p>
+        <% if @releases.any? %>
+          <ul class="staff-quote-versions__list mt-4">
+            <% @releases.each do |release| %>
+              <li class="staff-quote-versions__item<%= " is-current" if release.active? %>">
+                <p class="staff-enquiry-clarification__title"><%= release.quote.reference_number %> · version <%= release.quote_revision.version_number %></p>
+                <p class="staff-enquiry-row__sub"><%= release.label %> · <%= release.active? ? "Visible" : "Revoked" %> · <%= l(release.released_at, format: :short) %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+        <% if policy(QuotePortalRelease).create? && @quotes.any? %>
+          <% releasable = @quotes.select { |q| q.current_revision&.version_frozen? } %>
+          <% if releasable.any? %>
+            <%= form_with url: staff_client_portal_releases_path(@client), method: :post, local: true, class: "mt-4 space-y-3" do %>
+              <%= ant_select_tag "quote_id", releasable.map { |q| [ "#{q.reference_number} v#{q.current_revision.version_number} — #{q.display_title}", q.id ] },
+                                 label: "Quotation (current frozen version)", include_blank: "Choose quotation", compact: true %>
+              <p class="staff-quote-summary__hint">Releases the quotation’s current approved or issued version as a simulated portal offer.</p>
+              <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Release simulated portal offer</button>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+<% when "activity" %>
+  <section class="staff-quote-side-panel mt-6">
+    <%= render "shared/ui/side_panel_head", title: "Activity", heading_id: "client-activity-heading", icon: "clock" %>
+    <div class="staff-quote-side-panel__body">
+      <% if @activity.any? %>
+        <ol class="staff-quote-history">
+          <% @activity.each do |event| %>
+            <li>
+              <span class="font-medium text-[#173244]"><%= event.event_type.tr(".", " ").humanize %></span>
+              <span class="text-[#8799a3]">· <%= l(event.occurred_at, format: :short) %></span>
+            </li>
+          <% end %>
+        </ol>
+      <% else %>
+        <p class="staff-quote-versions__lede">No recorded activity yet.</p>
+      <% end %>
+    </div>
+  </section>
+
+<% else %>
+  <div class="staff-editor-layout mt-6">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head",
+            title: "Organisation profile",
+            heading_id: "client-overview-heading",
+            icon: "brief",
+            badge_label: client_status_label(@client),
+            badge_class: client_status_badge_variant(@client) %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-quote-summary__list">
+          <div><dt>Reference</dt><dd class="staff-quote-summary__ref"><%= @client.reference_number.presence || "—" %></dd></div>
+          <div><dt>Main contact</dt><dd><%= @client.primary_contact_name.presence || "—" %></dd></div>
+          <div><dt>Email</dt><dd><%= @client.primary_contact_email.presence || @client.business_email.presence || "—" %></dd></div>
+          <div><dt>Phone</dt><dd><%= @client.business_phone.presence || @client.primary_contact_phone.presence || "—" %></dd></div>
+          <div><dt>Address</dt><dd><%= @client.address.presence || "—" %></dd></div>
+          <div><dt>Country</dt><dd><%= @client.country.presence || "—" %></dd></div>
+        </dl>
+      </div>
+    </section>
+    <aside class="space-y-4">
+      <section class="staff-quote-side-panel">
+        <%= render "shared/ui/side_panel_head", title: "Portal access", heading_id: "client-portal-summary-heading", icon: "users" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-summary__next-value"><%= @client.portal_member_count %> active members</p>
+          <p class="staff-quote-summary__hint"><%= @client.pending_invitation_count %> pending invitations</p>
+          <p class="mt-3"><%= link_to "Manage access", staff_client_path(@client, tab: "access"), class: "staff-quote-link" %></p>
+        </div>
+      </section>
+      <section class="staff-quote-side-panel">
+        <%= render "shared/ui/side_panel_head", title: "Commercial links", heading_id: "client-commercial-heading", icon: "layers" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-versions__lede"><%= @inquiries.size %> linked requests · <%= @quotes.size %> linked quotations · <%= @releases.count(&:active?) %> active portal releases</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+<% end %>

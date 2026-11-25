@@ -32,6 +32,14 @@
     <% end %>
   <% end %>
 
+  <% if staff_can_manage_clients? %>
+    <%= link_to staff_clients_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:clients)}" do %>
+      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <span>Clients</span>
+    <% end %>
+  <% end %>
+
   <% if staff_can_manage_quotations? %>
     <%= link_to staff_quotations_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:quotations)}" do %>

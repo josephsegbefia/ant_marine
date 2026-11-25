@@ -1,0 +1,35 @@
+<% content_for :staff_nav, :clients %>
+<%= ant_page_header title: "New client organisation", description: "Create a client company record. This does not create a user account or send an invitation." %>
+
+<section class="staff-quote-side-panel mt-6 max-w-2xl" aria-labelledby="new-client-heading">
+  <%= render "shared/ui/side_panel_head", title: "Organisation details", heading_id: "new-client-heading", icon: "brief" %>
+  <div class="staff-quote-side-panel__body">
+    <%= form_with model: @client, url: staff_clients_path, scope: :organization, local: true, class: "space-y-4" do |f| %>
+      <%= ant_field f, :name, label: "Organisation name", required: true, context: :portal %>
+      <%= ant_field f, :trading_name, label: "Trading name (optional)", context: :portal %>
+      <%= ant_field f, :primary_contact_name, label: "Main contact name", context: :portal %>
+      <%= ant_field f, :primary_contact_email, type: :email, label: "Main contact email", context: :portal %>
+      <%= ant_field f, :primary_contact_phone, label: "Main contact phone", context: :portal %>
+      <%= ant_field f, :business_email, type: :email, label: "Business email", context: :portal %>
+      <%= ant_field f, :business_phone, label: "Business phone", context: :portal %>
+      <%= ant_field f, :address, type: :textarea, label: "Business address", context: :portal, html_options: { rows: 2 } %>
+      <%= ant_field f, :country, label: "Country", context: :portal %>
+      <%= ant_field f, :website, label: "Website (optional)", context: :portal %>
+      <% if @duplicates.any? %>
+        <div class="staff-quote-notice staff-quote-notice--warn" role="status">
+          <p class="font-semibold">Possible matching organisations</p>
+          <ul class="mt-2 list-disc pl-5 text-sm">
+            <% @duplicates.each do |dup| %>
+              <li><%= link_to dup.name, staff_client_path(dup), class: "staff-quote-link" %></li>
+            <% end %>
+          </ul>
+          <p class="mt-2 text-sm">Suggestions only — organisations are never merged automatically.</p>
+        </div>
+      <% end %>
+      <div class="flex flex-wrap gap-3">
+        <%= f.submit "Create organisation", class: "ant-btn-primary ant-btn-primary--compact" %>
+        <%= ant_back_link label: "Cancel", path: staff_clients_path %>
+      </div>
+    <% end %>
+  </div>
+</section>
