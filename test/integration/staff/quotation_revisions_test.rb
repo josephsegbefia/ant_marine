@@ -36,6 +36,15 @@ class Staff::QuotationRevisionsTest < ActionDispatch::IntegrationTest
     assert_select "#quote-readiness", count: 0
   end
 
+  test "a new unsent version names the earlier sent version as the client's offer" do
+    mark_issued!(@quote)
+    create_revision!(@quote)
+
+    get edit_staff_quotation_path(@quote, editor_step: 5)
+    assert_response :success
+    assert_select ".staff-quote-summary", text: /Version 1 was sent earlier and is still the client’s offer/
+  end
+
   test "creating a version without a reason or with a stale page does nothing" do
     assert_no_difference -> { QuoteRevision.count } do
       post create_revision_staff_quotation_path(@quote), params: reviewer_form_params(@quote).merge(revision_reason: "")

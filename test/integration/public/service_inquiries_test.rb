@@ -13,6 +13,7 @@ module Public
 
       assert_response :success
       assert_select "h1", text: "Request a quote"
+      assert_select ".public-header__link--active", count: 0
       assert_select ".public-enquiry__step", count: 4
       assert_select "input[name='service_inquiry[service_choice]'][value=?]", services(:marine_surveys_published).slug
       assert_select "input[name='service_inquiry[service_choice]'][value=?]", "not_sure"

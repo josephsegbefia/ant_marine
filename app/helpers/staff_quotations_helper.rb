@@ -43,9 +43,13 @@ module StaffQuotationsHelper
   def quote_delivery_summary(quote)
     delivery = quote.quote_deliveries.where(quote_revision_id: quote.current_revision_id).recent_first.first
     return delivery.status_label if delivery
-    return "Approved — not sent" if quote.status == "approved_for_issuance"
 
-    "Not sent to the client."
+    current = quote.status == "approved_for_issuance" ? "Approved — not sent" : "Not sent to the client."
+    outstanding = quote.quote_revisions.where(revision_status: "issued").where.not(id: quote.current_revision_id)
+                       .order(version_number: :desc).first
+    return current unless outstanding
+
+    "#{current.delete_suffix('.')}. Version #{outstanding.version_number} was sent earlier and is still the client’s offer."
   end
 
   def quote_editor_guidance(quote)
