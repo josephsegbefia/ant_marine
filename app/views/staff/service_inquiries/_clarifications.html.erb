@@ -1,0 +1,107 @@
+<% can_manage = @inquiry_policy.triage? %>
+<section class="portal-card" id="enquiry-clarifications" aria-labelledby="enquiry-clarifications-heading">
+  <div class="staff-enquiry-section-head">
+    <h2 id="enquiry-clarifications-heading">Questions for the client</h2>
+    <% if can_manage && @inquiry.open? %>
+      <%= ant_dialog(id: "dialog-clarification", title: "Ask the client for more information", trigger_label: "Ask a question",
+                     description: "Write down what you need to know. This system does not send it — contact the client by phone or from your own email, then record that you did.") do %>
+        <%= form_with url: staff_service_inquiry_clarifications_path(@inquiry), method: :post, local: true, class: "staff-enquiry-form" do %>
+          <label class="ant-field__label" for="clarification_subject">Subject</label>
+          <input type="text" name="subject" id="clarification_subject" required maxlength="160" class="ant-control w-full">
+          <label class="ant-field__label mt-3" for="clarification_questions">What do you need to know?</label>
+          <textarea name="questions" id="clarification_questions" rows="4" required maxlength="2000" class="ant-control w-full"></textarea>
+          <label class="ant-field__label mt-3" for="clarification_message">Message to use when you contact them (optional)</label>
+          <textarea name="prepared_message" id="clarification_message" rows="4" maxlength="4000" class="ant-control w-full"></textarea>
+          <div class="ant-dialog__actions">
+            <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
+            <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Save request</button>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @clarifications.any? %>
+    <ol class="staff-enquiry-clarifications">
+      <% @clarifications.each do |clarification| %>
+        <li class="staff-enquiry-clarification">
+          <div class="staff-enquiry-clarification__head">
+            <p class="font-semibold text-[#102c43]"><%= clarification.subject %></p>
+            <%= ant_status_badge(label: clarification.status_label, badge_class: clarification.badge_variant) %>
+          </div>
+          <p class="staff-enquiry-row__sub">Prepared by <%= enquiry_member_name(clarification.created_by_membership) %> · <%= l(clarification.created_at, format: :short) %></p>
+          <div class="staff-enquiry-clarification__body whitespace-pre-line"><%= clarification.questions %></div>
+          <% if clarification.prepared_message.present? %>
+            <details class="mt-2">
+              <summary class="cursor-pointer text-sm font-semibold text-[#25877f]">Prepared message (not sent by this system)</summary>
+              <div class="staff-enquiry-clarification__body whitespace-pre-line"><%= clarification.prepared_message %></div>
+            </details>
+          <% end %>
+          <% if clarification.contacted_at %>
+            <p class="staff-enquiry-row__sub mt-2">
+              <%= enquiry_member_name(clarification.contacted_by_membership) %> contacted the client by
+              <%= ServiceInquiryClarification::CONTACT_CHANNELS[clarification.contact_channel].downcase %> · <%= l(clarification.contacted_at, format: :short) %>
+            </p>
+          <% end %>
+          <% if clarification.status == "answered" %>
+            <div class="staff-enquiry-answer">
+              <p class="text-xs font-semibold uppercase tracking-wide text-[#5f7d8c]">Client’s answer</p>
+              <div class="whitespace-pre-line"><%= clarification.response_text %></div>
+              <p class="staff-enquiry-row__sub mt-1">
+                Received by <%= ServiceInquiryClarification::RESPONSE_SOURCES[clarification.response_source].downcase %> on <%= l(clarification.response_received_at.to_date, format: :long) %>
+                · recorded by <%= enquiry_member_name(clarification.response_recorded_by_membership) %>
+              </p>
+            </div>
+          <% end %>
+
+          <% if can_manage && clarification.awaiting_answer? %>
+            <div class="staff-enquiry-clarification__actions">
+              <% if clarification.status == "prepared" && @inquiry.open? %>
+                <%= ant_dialog(id: "dialog-contact-#{clarification.id}", title: "Record that you contacted the client",
+                               trigger_label: "Record contact",
+                               description: "Only record this after you have actually asked the client. The enquiry will show as awaiting information.") do %>
+                  <%= form_with url: record_contact_staff_service_inquiry_clarification_path(@inquiry, clarification), method: :post, local: true, class: "staff-enquiry-form" do %>
+                    <fieldset>
+                      <legend class="ant-field__label">How did you contact them?</legend>
+                      <% ServiceInquiryClarification::CONTACT_CHANNELS.each do |value, label| %>
+                        <label class="staff-enquiry-choice"><input type="radio" name="channel" value="<%= value %>" required> <%= label %></label>
+                      <% end %>
+                    </fieldset>
+                    <div class="ant-dialog__actions">
+                      <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
+                      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Record contact</button>
+                    </div>
+                  <% end %>
+                <% end %>
+              <% end %>
+              <%= ant_dialog(id: "dialog-answer-#{clarification.id}", title: "Record the client’s answer", trigger_label: "Record answer",
+                             description: "Copy or summarise what the client told you.") do %>
+                <%= form_with url: record_response_staff_service_inquiry_clarification_path(@inquiry, clarification), method: :post, local: true, class: "staff-enquiry-form" do %>
+                  <label class="ant-field__label" for="response_text_<%= clarification.id %>">Answer</label>
+                  <textarea name="response_text" id="response_text_<%= clarification.id %>" rows="4" required maxlength="4000" class="ant-control w-full"></textarea>
+                  <fieldset class="mt-3">
+                    <legend class="ant-field__label">How was it received?</legend>
+                    <% ServiceInquiryClarification::RESPONSE_SOURCES.each do |value, label| %>
+                      <label class="staff-enquiry-choice"><input type="radio" name="source" value="<%= value %>" required> <%= label %></label>
+                    <% end %>
+                  </fieldset>
+                  <label class="ant-field__label mt-3" for="received_on_<%= clarification.id %>">Date received</label>
+                  <input type="date" name="received_on" id="received_on_<%= clarification.id %>" value="<%= Date.current.iso8601 %>" max="<%= Date.current.iso8601 %>" class="ant-control w-full">
+                  <div class="ant-dialog__actions">
+                    <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
+                    <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Record answer</button>
+                  </div>
+                <% end %>
+              <% end %>
+              <%= button_to "Withdraw", withdraw_staff_service_inquiry_clarification_path(@inquiry, clarification), method: :post,
+                    class: "ant-btn-outline ant-btn-outline--compact",
+                    form: { data: { turbo_confirm: "Withdraw this request for information?" } } %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="staff-enquiry-note">No questions have been prepared for this enquiry.</p>
+  <% end %>
+</section>

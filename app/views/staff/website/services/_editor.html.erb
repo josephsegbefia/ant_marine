@@ -81,7 +81,7 @@
         <p class="text-sm text-[#5f7d8c] mt-1">Give this service a clear name and a short introduction for visitors.</p>
         <div class="mt-4 space-y-4">
           <%= ant_field f, :title, label: "Service title", required: true, context: :portal, hint: "Use plain language — e.g. “Marine surveys”.", html_options: { data: { staff_service_editor_target: "titleField", action: "input->staff-service-editor#titleInput" } } %>
-          <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences for service cards and search results.", html_options: { rows: 3 } %>
+          <%= ant_field f, :summary, type: :textarea, label: "Short description", required: true, context: :portal, hint: "One or two sentences of plain text for service cards and search results. Formatting marks such as ** are shown exactly as typed.", html_options: { rows: 3 } %>
           <%= ant_icon_picker f, :icon_key, label: "Card icon", hint: "Shown on public service cards. Pick the option that best matches this service." %>
           <div class="rounded-lg border border-[#e2eaeb] bg-[#f6fafb] px-4 py-3 text-sm text-[#5f7d8c]">
             <p class="font-semibold text-[#102c43]">Page address</p>

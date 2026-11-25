@@ -1,0 +1,75 @@
+<aside class="staff-enquiry-workspace__aside" aria-label="Status and next steps">
+  <section class="portal-card" aria-labelledby="enquiry-status-heading">
+    <h2 id="enquiry-status-heading">Status</h2>
+    <div class="mt-3">
+      <%= ant_status_badge(label: @inquiry.status_label, badge_class: enquiry_status_badge_variant(@inquiry.current_status)) %>
+    </div>
+    <dl class="staff-quote-summary__list">
+      <% if @inquiry.closure_reason %>
+        <div><dt>Reason</dt><dd><%= @inquiry.closure_reason_label %></dd></div>
+        <% if @inquiry.closure_note.present? %>
+          <div><dt>Explanation</dt><dd class="whitespace-pre-line"><%= @inquiry.closure_note %></dd></div>
+        <% end %>
+      <% end %>
+      <% if @inquiry.duplicate_of %>
+        <div>
+          <dt>Duplicate of</dt>
+          <dd>
+            <% if policy(@inquiry.duplicate_of).show? %>
+              <%= link_to @inquiry.duplicate_of.reference_number, staff_service_inquiry_path(@inquiry.duplicate_of), class: "staff-quote-link" %>
+            <% else %>
+              <%= @inquiry.duplicate_of.reference_number %>
+            <% end %>
+          </dd>
+        </div>
+      <% end %>
+      <% if @inquiry.current_status == "qualified" && @inquiry.qualification_note.present? %>
+        <div><dt>Scope note</dt><dd class="whitespace-pre-line"><%= @inquiry.qualification_note %></dd></div>
+      <% end %>
+      <% if @inquiry.client_organization %>
+        <div><dt>Client</dt><dd><%= @inquiry.client_organization.name %></dd></div>
+      <% end %>
+      <div><dt>Received</dt><dd><%= l(@inquiry.submitted_at, format: :short) %></dd></div>
+      <% if @inquiry.review_started_at %>
+        <div><dt>Review started</dt><dd><%= l(@inquiry.review_started_at, format: :short) %></dd></div>
+      <% end %>
+      <% if @inquiry.qualified_at && @inquiry.current_status == "qualified" %>
+        <div><dt>Ready to quote</dt><dd><%= l(@inquiry.qualified_at, format: :short) %></dd></div>
+      <% end %>
+      <% if @inquiry.closed_at %>
+        <div><dt>Closed</dt><dd><%= l(@inquiry.closed_at, format: :short) %></dd></div>
+      <% end %>
+    </dl>
+  </section>
+
+  <section class="portal-card" aria-labelledby="enquiry-owner-heading">
+    <h2 id="enquiry-owner-heading">Responsible</h2>
+    <p class="staff-enquiry-owner"><%= enquiry_assignee_name(@inquiry.assigned_membership) %></p>
+    <% if @inquiry_policy.assign? && @inquiry.open? %>
+      <%= form_with url: assign_staff_service_inquiry_path(@inquiry), method: :post, local: true, class: "staff-enquiry-form" do %>
+        <input type="hidden" name="expected_lock_version" value="<%= @inquiry.lock_version %>">
+        <label class="ant-field__label" for="assignee_id">Change responsible person</label>
+        <select name="assignee_id" id="assignee_id" class="ant-control w-full">
+          <option value="">Nobody (unassigned)</option>
+          <% @assignees.each do |member| %>
+            <option value="<%= member.id %>" <%= "selected" if member.id == @inquiry.assigned_membership_id %>><%= Intake::InquiryAssignment.display_name(member) %></option>
+          <% end %>
+        </select>
+        <label class="ant-field__label mt-3" for="assign_reason">Reason<% if @inquiry.assigned_membership %> (required when changing)<% else %> (optional)<% end %></label>
+        <textarea name="reason" id="assign_reason" rows="2" maxlength="500" class="ant-control w-full"></textarea>
+        <button type="submit" class="ant-btn-outline ant-btn-outline--compact mt-3 w-full justify-center">Save responsible person</button>
+      <% end %>
+    <% elsif @inquiry_policy.assign? %>
+      <p class="staff-enquiry-note">Reopen this enquiry to change who is responsible.</p>
+    <% end %>
+  </section>
+
+  <% if @actions.any? %>
+    <section class="portal-card" aria-labelledby="enquiry-actions-heading">
+      <h2 id="enquiry-actions-heading">Next steps</h2>
+      <div class="staff-enquiry-actions">
+        <%= render "staff/service_inquiries/actions" %>
+      </div>
+    </section>
+  <% end %>
+</aside>

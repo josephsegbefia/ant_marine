@@ -1,0 +1,25 @@
+<section class="portal-card" aria-labelledby="enquiry-duplicates-heading">
+  <h2 id="enquiry-duplicates-heading">Related requests</h2>
+  <% if @duplicate_candidates.any? %>
+    <p class="staff-enquiry-note">Recent enquiries from the same email address or company. They may be repeats — check before marking one as a duplicate.</p>
+    <ul class="staff-enquiry-related">
+      <% @duplicate_candidates.each do |candidate| %>
+        <li>
+          <%= link_to candidate.reference_number, staff_service_inquiry_path(candidate), class: "staff-quote-link font-semibold" %>
+          <span class="staff-enquiry-row__sub"><%= candidate.company_name %> · <%= candidate.requested_service_label %> · <%= l(candidate.submitted_at.to_date, format: :short) %> · <%= candidate.status_label %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+  <% if @duplicates.any? %>
+    <p class="staff-enquiry-note">These enquiries were marked as duplicates of this one. Their original details are kept.</p>
+    <ul class="staff-enquiry-related">
+      <% @duplicates.each do |duplicate| %>
+        <li>
+          <%= link_to duplicate.reference_number, staff_service_inquiry_path(duplicate), class: "staff-quote-link font-semibold" %>
+          <span class="staff-enquiry-row__sub"><%= duplicate.contact_name %> · <%= l(duplicate.submitted_at.to_date, format: :short) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

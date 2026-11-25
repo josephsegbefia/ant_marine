@@ -115,6 +115,12 @@ module AntUiHelper
     render partial: "shared/ui/pagination", locals: { pagination: pagination, label: label, path_for: path_for }
   end
 
+  def ant_dialog(id:, title:, trigger_label:, trigger_class: nil, description: nil, &block)
+    render layout: "shared/ui/dialog",
+           locals: { id: id, title: title, trigger_label: trigger_label, trigger_class: trigger_class, description: description },
+           &block
+  end
+
   def ant_status_badge(label:, badge_class: "ant-badge--muted")
     render partial: "shared/ui/status_badge", locals: { label: label, badge_class: badge_class }
   end

@@ -2,49 +2,149 @@
 
 <%= ant_page_header(
       title: "Enquiries",
-      description: "Requests sent through the public website. Open a request to review it and prepare a quotation where appropriate."
+      description: "Review new requests, decide who looks after them and keep every enquiry moving."
     ) %>
 
-<section class="staff-website-hub mt-6">
-  <%= form_with url: staff_service_inquiries_path, method: :get, class: "staff-filter-bar mb-4 flex flex-wrap gap-3 items-end", local: true do %>
-    <div class="flex-1 min-w-[12rem]">
+<section class="staff-enquiry-stats mt-6" aria-label="Enquiry summary">
+  <% stats = [
+       { key: :new, label: "New", caption: "Need a first review", path: staff_service_inquiries_path(status: "submitted") },
+       ({ key: :mine, label: "Assigned to me", caption: "Open and yours", path: staff_service_inquiries_path(view: "mine") } if @team_view),
+       ({ key: :unassigned, label: "Unassigned", caption: "Open, nobody responsible", path: staff_service_inquiries_path(view: "unassigned") } if @team_view),
+       { key: :awaiting, label: "Awaiting information", caption: "Waiting on the client", path: staff_service_inquiries_path(view: "awaiting") },
+       { key: :ready, label: "Ready to quote", caption: "Scope confirmed", path: staff_service_inquiries_path(status: "qualified") }
+     ].compact %>
+  <% stats.each do |stat| %>
+    <%= link_to stat[:path], class: "staff-enquiry-stat", aria: { label: "#{stat[:label]}: #{@counts[stat[:key]]}. #{stat[:caption]}" } do %>
+      <span class="staff-enquiry-stat__label"><%= stat[:label] %></span>
+      <span class="staff-enquiry-stat__value"><%= @counts[stat[:key]] %></span>
+      <span class="staff-enquiry-stat__caption"><%= stat[:caption] %></span>
+    <% end %>
+  <% end %>
+</section>
+
+<section class="staff-enquiry-inbox mt-6" aria-labelledby="enquiry-list-heading">
+  <h2 id="enquiry-list-heading" class="sr-only">Enquiry list</h2>
+  <%= ant_section_tabs(
+        aria_label: "Enquiry views",
+        tabs: [
+          { label: "All enquiries", path: staff_service_inquiries_path, active: @view == "all" },
+          ({ label: "Assigned to me", path: staff_service_inquiries_path(view: "mine"), active: @view == "mine" } if @team_view),
+          ({ label: "Unassigned", path: staff_service_inquiries_path(view: "unassigned"), active: @view == "unassigned" } if @team_view),
+          { label: "Awaiting information", path: staff_service_inquiries_path(view: "awaiting"), active: @view == "awaiting" },
+          { label: "Closed", path: staff_service_inquiries_path(view: "closed"), active: @view == "closed" }
+        ].compact
+      ) %>
+
+  <%= form_with url: staff_service_inquiries_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+    <% if @view != "all" %><input type="hidden" name="view" value="<%= @view %>"><% end %>
+    <div class="ant-filter-toolbar__field ant-filter-toolbar__field--grow">
       <label class="ant-field__label" for="q">Search</label>
-      <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, company or contact">
+      <input id="q" name="q" type="search" value="<%= @filters[:q] %>" class="ant-control w-full" placeholder="Reference, company, contact or email">
     </div>
-    <div>
+    <div class="ant-filter-toolbar__field">
       <label class="ant-field__label" for="status">Status</label>
-      <select name="status" id="status" class="ant-control">
-        <option value="all" <%= "selected" if params[:status].blank? || params[:status] == "all" %>>All statuses</option>
+      <select name="status" id="status" class="ant-control w-full">
+        <option value="">All statuses</option>
         <% ServiceInquiry::STATUSES.each do |status| %>
-          <option value="<%= status %>" <%= "selected" if params[:status] == status %>><%= ServiceInquiry.status_label(status) %></option>
+          <option value="<%= status %>" <%= "selected" if @filters[:status] == status %>><%= ServiceInquiry.status_label(status) %></option>
         <% end %>
       </select>
     </div>
-    <button type="submit" class="ant-btn-outline ant-btn-primary--compact">Apply</button>
-  <% end %>
-
-  <% if @inquiries.any? %>
-    <div class="staff-content-list">
-      <% @inquiries.each do |inquiry| %>
-        <%= ant_content_record(
-              title: inquiry.company_name,
-              description: "#{inquiry.reference_number} · #{inquiry.requested_service_label}",
-              meta: "Received #{l(inquiry.submitted_at, format: :short)} · #{inquiry.contact_name}",
-              guidance: enquiry_quote_progress(inquiry),
-              icon: "mail",
-              status_label: ServiceInquiry.status_label(inquiry.current_status),
-              status_badge_class: enquiry_status_badge_variant(inquiry.current_status),
-              primary_action: { label: "Open", path: staff_service_inquiry_path(inquiry) }
-            ) %>
+    <% if @team_view %>
+      <div class="ant-filter-toolbar__field">
+        <label class="ant-field__label" for="assignee">Responsible</label>
+        <select name="assignee" id="assignee" class="ant-control w-full">
+          <option value="">Anyone</option>
+          <option value="unassigned" <%= "selected" if @filters[:assignee] == "unassigned" %>>Unassigned</option>
+          <% @assignees.each do |member| %>
+            <option value="<%= member.id %>" <%= "selected" if @filters[:assignee] == member.id.to_s %>><%= Intake::InquiryAssignment.display_name(member) %></option>
+          <% end %>
+        </select>
+      </div>
+    <% end %>
+    <div class="ant-filter-toolbar__field">
+      <label class="ant-field__label" for="from">Received from</label>
+      <input id="from" name="from" type="date" value="<%= @filters[:from]&.iso8601 %>" class="ant-control w-full">
+    </div>
+    <div class="ant-filter-toolbar__field">
+      <label class="ant-field__label" for="to">Received to</label>
+      <input id="to" name="to" type="date" value="<%= @filters[:to]&.iso8601 %>" class="ant-control w-full">
+    </div>
+    <div class="ant-filter-toolbar__actions">
+      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+      <% if enquiry_filters_active?(@filters) %>
+        <%= link_to "Clear", staff_service_inquiries_path(view: (@view unless @view == "all")), class: "ant-btn-outline ant-btn-outline--compact" %>
       <% end %>
     </div>
+  <% end %>
+
+  <% if @pagination.records.any? %>
+    <div class="staff-enquiry-table-wrap">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th scope="col">Request</th>
+            <th scope="col">Company</th>
+            <th scope="col">Service</th>
+            <th scope="col">Received</th>
+            <th scope="col">Responsible</th>
+            <th scope="col">Status</th>
+            <th scope="col"><span class="sr-only">Action</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @pagination.records.each do |inquiry| %>
+            <tr class="staff-enquiry-row">
+              <td class="staff-enquiry-row__ref"><%= inquiry.reference_number %></td>
+              <td>
+                <span class="staff-enquiry-row__company"><%= inquiry.company_name %></span>
+                <span class="staff-enquiry-row__sub"><%= inquiry.contact_name %></span>
+              </td>
+              <td><%= inquiry.requested_service_label %></td>
+              <td class="whitespace-nowrap"><%= l(inquiry.submitted_at.to_date, format: :short) %></td>
+              <td><%= enquiry_assignee_name(inquiry.assigned_membership) %></td>
+              <td>
+                <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
+                <span class="staff-enquiry-row__sub staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></span>
+              </td>
+              <td class="text-right">
+                <%= link_to staff_service_inquiry_path(inquiry), class: "staff-enquiry-row__open" do %>
+                  Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="staff-enquiry-cards" aria-label="Enquiries">
+      <% @pagination.records.each do |inquiry| %>
+        <li class="staff-enquiry-card">
+          <div class="staff-enquiry-card__head">
+            <span class="staff-enquiry-row__ref"><%= inquiry.reference_number %></span>
+            <%= ant_status_badge(label: inquiry.status_label, badge_class: enquiry_status_badge_variant(inquiry.current_status)) %>
+          </div>
+          <p class="staff-enquiry-row__company"><%= inquiry.company_name %></p>
+          <p class="staff-enquiry-row__sub"><%= inquiry.requested_service_label %> · Received <%= l(inquiry.submitted_at.to_date, format: :short) %></p>
+          <p class="staff-enquiry-row__sub">Responsible: <%= enquiry_assignee_name(inquiry.assigned_membership) %></p>
+          <p class="staff-enquiry-row__sub staff-enquiry-row__quote"><%= enquiry_quote_progress(inquiry) %></p>
+          <%= link_to staff_service_inquiry_path(inquiry), class: "ant-btn-outline ant-btn-outline--compact staff-enquiry-card__open" do %>
+            Open<span class="sr-only"> <%= inquiry.reference_number %> from <%= inquiry.company_name %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+
+    <%= ant_pagination(@pagination, label: "enquiries", path_for: ->(page) { enquiry_index_path_with(page: page) }) %>
   <% else %>
+    <% title, description = enquiry_empty_state_copy(@view, enquiry_filters_active?(@filters)) %>
     <%= ant_empty_state(
           icon: :mail,
-          title: params[:q].present? || params[:status].present? ? "No enquiries match these filters" : "No enquiries yet",
-          description: "Requests sent through the website’s “Request a quote” form will appear here.",
-          variant: :default,
-          size: :spacious
+          title: title,
+          description: description,
+          size: :spacious,
+          primary_action: (enquiry_filters_active?(@filters) ? { label: "Clear filters", path: staff_service_inquiries_path(view: (@view unless @view == "all")) } : nil)
         ) %>
   <% end %>
 </section>

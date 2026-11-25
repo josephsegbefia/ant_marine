@@ -6,5 +6,6 @@
 Rails.application.config.filter_parameters += [
   :passw, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :cvv, :cvc,
   :phone, :contact_name, :company_name, :company_website, :vessel_name, :project_name, :location,
-  :description, :preferred_date, :form_stamp
+  :description, :preferred_date, :form_stamp,
+  :body, :note, :subject, :reason, :questions, :prepared_message, :response_text, :duplicate_reference, /\Aq\z/
 ]

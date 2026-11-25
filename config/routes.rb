@@ -50,6 +50,18 @@ Rails.application.routes.draw do
     resources :service_inquiries, path: "enquiries", only: %i[index show] do
       member do
         post :prepare_quotation
+        post :transition
+        post :assign
+      end
+      resources :notes, only: :create, controller: "service_inquiry_notes" do
+        member { post :correct }
+      end
+      resources :clarifications, only: :create, controller: "service_inquiry_clarifications" do
+        member do
+          post :record_contact
+          post :record_response
+          post :withdraw
+        end
       end
     end
     resources :notifications, only: :index do

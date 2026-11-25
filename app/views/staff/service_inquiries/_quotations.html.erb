@@ -1,0 +1,35 @@
+<section class="portal-card" id="enquiry-quotations" aria-labelledby="enquiry-quote-heading">
+  <h2 id="enquiry-quote-heading">Quotation</h2>
+  <% if @quotes.any? %>
+    <ul class="staff-enquiry-related">
+      <% @quotes.each do |quote| %>
+        <li>
+          <span class="font-semibold text-[#102c43]"><%= quote.reference_number %></span>
+          <%= ant_status_badge(label: quote_status_label(quote.status), badge_class: quote_status_badge_variant(quote.status)) %>
+          <span class="staff-enquiry-row__sub"><%= enquiry_quote_stage(quote).upcase_first %> · started <%= l(quote.created_at.to_date, format: :short) %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @open_quote %>
+    <% if policy(@open_quote).show? %>
+      <%= link_to "Open quotation", edit_staff_quotation_path(@open_quote), class: "ant-btn-primary ant-btn-primary--compact mt-4" %>
+    <% end %>
+  <% elsif @inquiry_policy.prepare_quotation? %>
+    <p class="staff-enquiry-note">
+      Start a draft quotation with the client’s details and request filled in. You will still need to write the scope, pricing and terms.
+    </p>
+    <% unless @inquiry.current_status == "qualified" %>
+      <p class="staff-quote-notice staff-quote-notice--warn mt-3">We recommend marking the enquiry ready to quote first, so the team knows the scope has been checked.</p>
+    <% end %>
+    <%= button_to "Prepare quotation", prepare_quotation_staff_service_inquiry_path(@inquiry),
+          method: :post,
+          class: "ant-btn-primary ant-btn-primary--compact mt-4",
+          form: { data: { turbo_confirm: "Start a draft quotation for #{@inquiry.company_name}?" } } %>
+  <% elsif @inquiry.open? %>
+    <p class="staff-enquiry-note">Preparing quotations needs quotation permission.</p>
+  <% elsif @quotes.none? %>
+    <p class="staff-enquiry-note">No quotation was prepared. Reopen the enquiry to start one.</p>
+  <% end %>
+</section>

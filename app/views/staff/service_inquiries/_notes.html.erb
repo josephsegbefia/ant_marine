@@ -1,0 +1,42 @@
+<section class="portal-card" id="enquiry-notes" aria-labelledby="enquiry-notes-heading">
+  <h2 id="enquiry-notes-heading">Internal notes</h2>
+  <p class="staff-enquiry-note">Only the ANT Marine team can see these. They never appear on quotations or anything the client sees. Notes cannot be edited — add a correction instead.</p>
+
+  <% if @notes.any? %>
+    <ol class="staff-enquiry-notes">
+      <% @notes.each do |note| %>
+        <li class="staff-enquiry-note-item<%= " is-corrected" if note.correction %>" id="note-<%= note.id %>">
+          <p class="staff-enquiry-row__sub">
+            <span class="font-semibold text-[#102c43]"><%= enquiry_member_name(note.author_membership) %></span>
+            · <%= l(note.created_at, format: :short) %>
+            <% if note.corrects_note_id %> · correction of an <a class="staff-quote-link" href="#note-<%= note.corrects_note_id %>">earlier note</a><% end %>
+            <% if note.correction %> · <span class="font-semibold">corrected below</span><% end %>
+          </p>
+          <div class="whitespace-pre-line text-sm text-[#102c43]"><%= note.body %></div>
+          <% if @inquiry_policy.note? && !note.correction && (note.author_membership_id == Current.membership.id || @inquiry_policy.triage?) %>
+            <%= ant_dialog(id: "dialog-correct-#{note.id}", title: "Correct this note", trigger_label: "Correct",
+                           trigger_class: "staff-enquiry-link-button",
+                           description: "The original note stays visible. Your correction is added below it.") do %>
+              <%= form_with url: correct_staff_service_inquiry_note_path(@inquiry, note), method: :post, local: true, class: "staff-enquiry-form" do %>
+                <label class="ant-field__label" for="correction_<%= note.id %>">Corrected note</label>
+                <textarea name="body" id="correction_<%= note.id %>" rows="4" required maxlength="4000" class="ant-control w-full"><%= note.body %></textarea>
+                <div class="ant-dialog__actions">
+                  <button type="button" class="ant-btn-outline ant-btn-outline--compact" data-action="ant-dialog#close">Cancel</button>
+                  <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Save correction</button>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+
+  <% if @inquiry_policy.note? %>
+    <%= form_with url: staff_service_inquiry_notes_path(@inquiry), method: :post, local: true, class: "staff-enquiry-form mt-4" do %>
+      <label class="ant-field__label" for="note_body">Add a note for the team</label>
+      <textarea name="body" id="note_body" rows="3" required maxlength="4000" class="ant-control w-full"></textarea>
+      <button type="submit" class="ant-btn-outline ant-btn-outline--compact mt-3">Save note</button>
+    <% end %>
+  <% end %>
+</section>

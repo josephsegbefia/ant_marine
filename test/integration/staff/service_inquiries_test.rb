@@ -18,8 +18,9 @@ module Staff
       get staff_service_inquiries_path
       assert_response :success
       assert_select ".staff-nav-button", text: /Enquiries/
-      assert_select ".ant-content-record__title", text: "Harbour Logistics Ltd"
-      assert_select ".ant-content-record__guidance", text: "Not quoted yet"
+      assert_select ".staff-enquiry-table .staff-enquiry-row__company", text: "Harbour Logistics Ltd"
+      assert_select ".staff-enquiry-table .staff-enquiry-row__quote", text: "Not quoted yet"
+      assert_select ".staff-enquiry-cards .staff-enquiry-row__company", text: "Harbour Logistics Ltd"
 
       get staff_service_inquiry_path(@inquiry)
       assert_response :success

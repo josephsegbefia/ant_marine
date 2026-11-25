@@ -1,0 +1,20 @@
+<%# locals: id, title, trigger_label, trigger_class, description (optional), block content is the form %>
+<div class="ant-dialog-host" data-controller="ant-dialog">
+  <button type="button" class="<%= local_assigns[:trigger_class] || "ant-btn-outline ant-btn-outline--compact" %>"
+          aria-haspopup="dialog" aria-controls="<%= id %>" data-action="ant-dialog#open">
+    <%= trigger_label %>
+  </button>
+  <dialog id="<%= id %>" class="ant-dialog" aria-labelledby="<%= id %>-title"
+          data-ant-dialog-target="dialog" data-action="click->ant-dialog#backdrop close->ant-dialog#restoreFocus">
+    <div class="ant-dialog__panel">
+      <div class="ant-dialog__head">
+        <h2 id="<%= id %>-title" class="ant-dialog__title"><%= title %></h2>
+        <button type="button" class="ant-dialog__close" data-action="ant-dialog#close" aria-label="Close">×</button>
+      </div>
+      <% if local_assigns[:description].present? %>
+        <p class="ant-dialog__description"><%= description %></p>
+      <% end %>
+      <%= yield %>
+    </div>
+  </dialog>
+</div>
