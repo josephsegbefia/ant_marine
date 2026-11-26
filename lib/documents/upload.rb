@@ -34,6 +34,7 @@ module Documents
 
     def call(project:, filename:, io:, title:, category:, classification:, visibility_intent:,
              description:, document:, upload_request:)
+      raise Denied, "Document uploads are not available in production yet." unless self.class.available?
       raise Denied, "Document uploads are not available in production for simulated projects." if unavailable?(project)
       raise InvalidState, "Choose a recognised document category." unless Document::CATEGORIES.key?(category.to_s)
       raise InvalidState, "Choose a valid classification." unless Document::CLASSIFICATIONS.include?(classification.to_s)
@@ -150,7 +151,9 @@ module Documents
           )
           version = create_version!(document: document, asset: asset)
           # Upload alone does not satisfy the request — only marks it submitted.
-          upload_request.update!(status: "submitted") if membership.client_domain? && upload_request.status == "requested"
+          if membership.client_domain? && upload_request.status.in?(%w[requested changes_required])
+            upload_request.update!(status: "submitted")
+          end
         end
 
         enqueue_scan_and_audit(document, version)

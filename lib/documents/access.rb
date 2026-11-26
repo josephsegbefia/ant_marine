@@ -70,10 +70,15 @@ module Documents
         false
       elsif membership.client_domain?
         return false unless client_project_visible?(membership, project)
-        return true if document.visibility_intent.in?(%w[client_submitted for_client_release])
-        return true if document.active_release? && document.active_release.client_organization_id == membership.organization_id
 
-        false
+        # ADR-F4-06-003: visibility_intent alone is not permission.
+        if document.visibility_intent == "client_submitted" &&
+           document.client_organization_id == membership.organization_id
+          return true
+        end
+
+        release = document.document_releases.active.find_by(client_organization_id: membership.organization_id)
+        release.present?
       else
         false
       end
@@ -81,6 +86,7 @@ module Documents
 
     def can_upload?(membership, project)
       return false unless membership&.status == "active" && project.is_a?(Project)
+      return false unless Documents::Upload.available?
       return false if project.simulated? && Rails.env.production?
       return false unless upload_catalogue_allowed?(membership)
 
@@ -96,7 +102,7 @@ module Documents
     end
 
     def can_request_upload?(membership, project)
-      return false unless can_upload?(membership, project) || staff_delivery_ops?(membership, project)
+      return false unless Documents::Upload.available?
       return false unless membership.staff_domain?
       return false unless effective(membership).allowed?("documents.request_upload")
 

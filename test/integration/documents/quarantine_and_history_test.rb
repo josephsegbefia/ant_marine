@@ -27,7 +27,7 @@ class Documents::QuarantineAndHistoryTest < ActionDispatch::IntegrationTest
     assert_equal "pending_upload", version.storage_asset.scan_status
 
     get download_staff_project_document_version_path(@project, document, version)
-    assert_response :not_found
+    assert_redirected_to root_path
 
     ActiveRecord::Base.connection.transaction(requires_new: true) do
       assert_raises(ActiveRecord::StatementInvalid) do

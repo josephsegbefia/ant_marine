@@ -71,7 +71,11 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-06-004 | Upload request satisfaction | File upload moves request to `submitted` only; `satisfied` requires authorised release (or explicit staff completion path later) | **Implemented** 2026-11-26 | Same |
 | ADR-F4-06-005 | Preview | F4-06 ships protected download + metadata; no HTML/SVG/script in-app preview | **Implemented** 2026-11-26 | Same |
 | ADR-F4-06-006 | M09 admin rules | Deferred; categories seeded as `Document::CATEGORIES` | **Deferred** 2026-11-26 | Same |
-| ADR-F4-06-007 | Simulation / production | Document upload and client release remain unavailable for simulated projects in production; live document ops blocked until ADR-010 + scanner + key custody gates | **Implemented gates** 2026-11-26 | ADR-010 still OPEN |
+| ADR-F4-06-007 | Simulation / production | Document upload and client release remain unavailable in production (`Documents::Upload.available?` / `Release.available?`); simulated projects also blocked in production | **Implemented gates** 2026-11-26 | ADR-010 still OPEN |
+| ADR-F4-06-H1-001 | Scan digest binding | Clean scans persist `scanned_checksum_sha256`; download/release require match to content digest | **Implemented** 2026-11-26 | F4-06-H1 |
+| ADR-F4-06-H1-002 | Storage asset freeze | Verified/rejected `storage_assets` identity fields immutable via trigger + AR | **Implemented** 2026-11-26 | F4-06-H1 |
+| ADR-F4-06-H1-003 | Scanner allowlist | Only `clamscan`/`clamdscan` or repo `scripts/clamav_*.sh`; shell metacharacters denied; timeout fail-closed | **Implemented** 2026-11-26 | F4-06-H1 |
+| ADR-F4-06-H1-004 | Client notifications | No client in-app notification model in F4-06; clients discover requests/releases via portal lists | **Accepted limitation** 2026-11-26 | F4-06-H1 |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

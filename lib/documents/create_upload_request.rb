@@ -23,6 +23,7 @@ module Documents
     end
 
     def call(project:, title:, document_category:, instructions:, due_on:)
+      raise Denied, "Document uploads are not available in production yet." unless Documents::Upload.available?
       raise Denied, "You are not allowed to request files for this project." unless Documents::Access.can_request_upload?(@membership, project)
       raise InvalidState, "Choose a recognised document category." unless Document::CATEGORIES.key?(document_category.to_s)
       raise InvalidState, "Enter a clear title for the requested file." if title.to_s.strip.blank?

@@ -1,8 +1,9 @@
 # F4-06 — Secure document management
 
-**Checkpoint:** F4-06 (local, not pushed)  
-**Baseline:** `bc0402b` (F4-05-H1)  
-**Status:** Local engineering implementation complete — simulated projects only  
+**Checkpoint:** F4-06 + F4-06-H1 (local, not pushed)  
+**Baseline:** `bc0402b` (F4-05-H1) → F4-06 `1f00cc6` → H1 on top  
+**Status:** Local engineering + security acceptance complete — simulated projects only  
+**H1 evidence:** [`F4_06_H1_ACCEPTANCE.md`](F4_06_H1_ACCEPTANCE.md) 
 
 ## Design Studio mapping
 
@@ -25,11 +26,14 @@
 | Validation | `Storage::ContentValidator` (PDF/PNG/JPEG/plain; `STORAGE_MAX_UPLOAD_BYTES`) |
 | Quarantine | `scan_status`: pending_upload → scanning → available \| rejected |
 | Scanner | `Storage::MalwareScanner` + `ScanStorageAssetJob`; builtin EICAR in test; ClamAV via `STORAGE_SCAN_COMMAND` when configured; production without command → error (not clean) |
-| Downloads | `Documents::SecureDownload` → `Storage::SecureDownload`; `Cache-Control: no-store` |
+| Downloads | `Documents::SecureDownload` → `Storage::SecureDownload`; `Cache-Control: no-store`; scanned digest re-check |
 | Active Storage routes | Disabled (`draw_routes = false`); redirect URLs 404 |
 | Proof endpoints | Technical PoC only; product path is `Documents::Upload` |
+| Asset immutability (H1) | After `available`/`rejected`, identity columns frozen by DB trigger |
+| Scan binding (H1) | `scanned_checksum_sha256` + `scanner_adapter`; available requires match |
+| Scanner command (H1) | Allowlisted `clamscan`/`clamdscan` or `scripts/clamav_*.sh`; timeout; fail-closed |
 
-Sensitive bytes are never stored plaintext in the persistent disk service when using encrypted services. Temporary plaintext may exist only in memory during scan/download; failed/timeout scans remain blocked.
+Sensitive bytes are never stored plaintext in the persistent disk service when using encrypted services. Temporary plaintext may exist only in memory during scan/download; failed/timeout scans remain blocked. Dev/test `builtin_dev` results are **simulated** and must not establish production security verification.
 
 ## Domain model
 

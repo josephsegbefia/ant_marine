@@ -27,10 +27,11 @@ module Documents
       raise Denied, "You are not allowed to review this document." unless Documents::Access.can_review?(@membership, document)
       raise InvalidState, "Choose approve or request changes." unless OUTCOMES.include?(outcome.to_s)
       raise InvalidState, "This version does not belong to the document." unless version.document_id == document.id
-      raise InvalidState, "Security checks must finish successfully before review." unless version.downloadable?
       raise InvalidState, "Submit the document for review first." unless document.workflow_status == "submitted"
 
-      if document.approval_required? && version.uploaded_by_membership_id == @membership.id
+      if document.approval_required? &&
+         (version.uploaded_by_membership_id == @membership.id ||
+          version.uploaded_by_membership&.user_id == @membership.user_id)
         raise Denied, "An independent reviewer must approve this document."
       end
 
@@ -38,13 +39,15 @@ module Documents
         raise InvalidState, "Explain what needs to change."
       end
 
-      review = nil
       Document.transaction do
         locked = Document.lock.find(document.id)
+        locked_version = DocumentVersion.lock.find(version.id)
+        raise InvalidState, "This version does not belong to the document." unless locked_version.document_id == locked.id
         raise InvalidState, "Submit the document for review first." unless locked.workflow_status == "submitted"
+        raise InvalidState, "Security checks must finish successfully before review." unless locked_version.downloadable?
 
         review = DocumentReview.create!(
-          document_version: version,
+          document_version: locked_version,
           reviewer_membership: @membership,
           outcome: outcome.to_s,
           comments: comments.to_s.strip.presence,
@@ -54,14 +57,14 @@ module Documents
         case outcome.to_s
         when "approved"
           locked.update!(workflow_status: "approved")
-          audit = Documents::Audit.review_approved(document: locked, version: version, review: review, actor_membership: @membership)
+          audit = Documents::Audit.review_approved(document: locked, version: locked_version, review: review, actor_membership: @membership)
           Notifications::StaffPublisher.document_approved(document: locked, audit_event: audit, actor: @membership)
         when "changes_requested"
           locked.update!(workflow_status: "changes_requested")
           if locked.upload_request.present?
             locked.upload_request.update!(status: "changes_required")
           end
-          audit = Documents::Audit.review_changes_requested(document: locked, version: version, review: review, actor_membership: @membership)
+          audit = Documents::Audit.review_changes_requested(document: locked, version: locked_version, review: review, actor_membership: @membership)
           Notifications::StaffPublisher.document_changes_requested(document: locked, audit_event: audit, actor: @membership)
         end
 

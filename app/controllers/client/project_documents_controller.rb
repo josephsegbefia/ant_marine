@@ -22,11 +22,10 @@ module Client
     end
 
     def download
-      authorize @document, :show?
       version = downloadable_version
       raise ActiveRecord::RecordNotFound unless version
 
-      authorize @document, :show?
+      authorize version, :download?
       payload = Documents::SecureDownload.call(membership: Current.membership, version: version)
       response.headers["Cache-Control"] = "no-store"
       response.headers["X-Content-Type-Options"] = "nosniff"

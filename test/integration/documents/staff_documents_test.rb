@@ -32,7 +32,7 @@ class Documents::StaffDocumentsTest < ActionDispatch::IntegrationTest
 
     version = document.current_version
     get download_staff_project_document_version_path(@project, document, version)
-    assert_response :not_found
+    assert_redirected_to root_path
 
     perform_enqueued_jobs only: ScanStorageAssetJob
     document.reload

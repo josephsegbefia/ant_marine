@@ -227,6 +227,50 @@ CREATE FUNCTION public.ant_marine_reject(message text) RETURNS void
       $$;
 
 
+--
+-- Name: ant_marine_storage_asset_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_storage_asset_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    IF OLD.scan_status IN ('available', 'rejected') THEN
+      IF NEW.checksum_sha256 IS DISTINCT FROM OLD.checksum_sha256
+         OR NEW.storage_key IS DISTINCT FROM OLD.storage_key
+         OR NEW.byte_size IS DISTINCT FROM OLD.byte_size
+         OR NEW.content_type IS DISTINCT FROM OLD.content_type
+         OR NEW.filename IS DISTINCT FROM OLD.filename
+         OR NEW.active_storage_blob_id IS DISTINCT FROM OLD.active_storage_blob_id
+         OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
+         OR NEW.classification IS DISTINCT FROM OLD.classification
+         OR NEW.encryption_key_version IS DISTINCT FROM OLD.encryption_key_version THEN
+        PERFORM ant_marine_reject('Verified storage asset identity fields are immutable.');
+      END IF;
+    END IF;
+
+    IF OLD.scan_status = 'available'
+       AND NEW.scan_status IS DISTINCT FROM OLD.scan_status THEN
+      PERFORM ant_marine_reject('Available storage assets cannot change scan status.');
+    END IF;
+
+    IF OLD.scan_status = 'rejected'
+       AND NEW.scan_status = 'available' THEN
+      PERFORM ant_marine_reject('Rejected storage assets cannot be marked available.');
+    END IF;
+
+    IF NEW.scan_status = 'available'
+       AND (NEW.scanned_checksum_sha256 IS NULL
+            OR NEW.scanned_checksum_sha256 IS DISTINCT FROM NEW.checksum_sha256) THEN
+      PERFORM ant_marine_reject('Available assets require scanned checksum matching content digest.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -2013,6 +2057,9 @@ CREATE TABLE public.storage_assets (
     rejected_reason character varying,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
+    scanned_checksum_sha256 character varying,
+    scanner_adapter character varying,
+    CONSTRAINT storage_assets_available_requires_scanned_checksum CHECK ((((scan_status)::text <> 'available'::text) OR ((scanned_checksum_sha256 IS NOT NULL) AND ((scanned_checksum_sha256)::text = (checksum_sha256)::text)))),
     CONSTRAINT storage_assets_classification_check CHECK (((classification)::text = ANY ((ARRAY['standard'::character varying, 'confidential'::character varying])::text[]))),
     CONSTRAINT storage_assets_scan_status_check CHECK (((scan_status)::text = ANY ((ARRAY['pending_upload'::character varying, 'scanning'::character varying, 'available'::character varying, 'rejected'::character varying])::text[])))
 );
@@ -4526,6 +4573,13 @@ CREATE TRIGGER quote_revisions_history_protect BEFORE DELETE OR UPDATE ON public
 
 
 --
+-- Name: storage_assets storage_assets_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER storage_assets_protect BEFORE UPDATE ON public.storage_assets FOR EACH ROW EXECUTE FUNCTION public.ant_marine_storage_asset_protect();
+
+
+--
 -- Name: quote_deliveries fk_rails_000eeecdbf; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5724,6 +5778,7 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126195000'),
 ('20261126190000'),
 ('20261126180000'),
 ('20261126150000'),

@@ -27,7 +27,7 @@ module Staff
     end
 
     def download
-      authorize @version, :show?
+      authorize @version, :download?
       payload = Documents::SecureDownload.call(membership: Current.membership, version: @version)
       response.headers["Cache-Control"] = "no-store"
       response.headers["X-Content-Type-Options"] = "nosniff"
