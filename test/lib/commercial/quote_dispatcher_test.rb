@@ -112,31 +112,31 @@ class Commercial::QuoteDispatcherTest < ActiveSupport::TestCase
   end
 
   test "expired versions and missing or invalid recipients are refused" do
-    with_history_protection_disabled do
-      @quote.current_revision.update_columns(valid_until: Date.current - 1)
+    short = create_ready_quote
+    short.current_revision.update!(valid_until: Date.current + 1)
+    approve_quote!(short)
+    travel_to(Date.current + 2.days) do
+      assert_match(/expired/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(short.reload) }.message)
     end
-    assert_match(/expired/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare! }.message)
 
-    other = approve_quote!(create_ready_quote)
-    with_history_protection_disabled do
-      other.current_revision.update_columns(recipient_snapshot: other.current_revision.recipient_snapshot.merge("email" => "not-an-email"))
-    end
-    assert_match(/not valid/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(other) }.message)
+    dispatcher = Commercial::QuoteDispatcher.new(quote: @quote, membership: @sender)
+    # Frozen snapshots cannot be rewritten; recipient rules are verified with revision-like doubles.
+    invalid = dispatcher.send(:recipient_issues, Struct.new(:recipient_lines).new({ "email" => "not-an-email" }))
+    assert invalid.any? { |msg| msg.match?(/not valid/i) }
 
-    third = approve_quote!(create_ready_quote)
-    with_history_protection_disabled do
-      third.current_revision.update_columns(recipient_snapshot: third.current_revision.recipient_snapshot.except("email"))
-    end
-    assert_match(/no recipient email/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(third) }.message)
+    missing = dispatcher.send(:recipient_issues, Struct.new(:recipient_lines).new({ "company_name" => "X" }))
+    assert missing.any? { |msg| msg.match?(/no recipient email/i) }
   end
 
   test "archived client organisations are not valid recipients" do
     client = organizations(:acme_client)
-    with_history_protection_disabled do
-      @quote.current_revision.update_columns(recipient_snapshot: @quote.current_revision.recipient_snapshot.merge("client_organization_id" => client.id))
-    end
+    quote = create_ready_quote
+    quote.update!(client_organization: client)
+    approve_quote!(quote)
     client.update_columns(status: "archived")
-    assert_match(/no longer active/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare! }.message)
+    assert_match(/no longer active/, assert_raises(Commercial::QuoteDispatcher::Refused) { prepare!(quote) }.message)
+  ensure
+    client&.update_columns(status: "active")
   end
 
   test "stale approval references are refused" do

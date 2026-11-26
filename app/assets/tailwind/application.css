@@ -2794,7 +2794,7 @@
   }
 
   .client-app-side__nav {
-    @apply hidden min-h-0 flex-col lg:flex lg:min-h-0 lg:flex-1 lg:static lg:z-auto lg:w-auto lg:shadow-none;
+    @apply hidden min-h-0 flex-col lg:flex lg:min-h-0 lg:flex-1 lg:static lg:z-auto lg:w-auto lg:shadow-none lg:pointer-events-auto;
   }
 
   .client-app-side__nav-scroll {
@@ -2802,11 +2802,23 @@
   }
 
   .client-app-side__nav--open {
-    @apply fixed bottom-0 left-0 top-0 z-40 flex h-dvh max-h-dvh w-[min(272px,88vw)] flex-col overflow-hidden bg-[#164f67] px-3 pb-4 pt-4 shadow-xl;
+    @apply fixed bottom-0 left-0 top-0 z-40 flex h-dvh max-h-dvh w-[min(272px,88vw)] flex-col overflow-hidden bg-[#164f67] px-3 pb-4 pt-4 shadow-xl pointer-events-auto;
   }
 
   .client-shell-backdrop {
     @apply fixed inset-0 z-30 bg-[#0b2533]/45;
+  }
+
+  /* Closed drawer/backdrop must never steal clicks from page content. */
+  .client-shell-backdrop[hidden],
+  .client-app-side__nav:not(.client-app-side__nav--open) {
+    pointer-events: none !important;
+  }
+
+  @media (min-width: 1024px) {
+    .client-app-side__nav:not(.client-app-side__nav--open) {
+      pointer-events: auto !important;
+    }
   }
 
   .client-shell-scroll-lock {

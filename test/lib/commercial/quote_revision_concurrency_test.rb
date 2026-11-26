@@ -8,7 +8,7 @@ class Commercial::QuoteRevisionConcurrencyTest < ActiveSupport::TestCase
   teardown do
     next unless @quote_id
 
-    with_history_protection_disabled do
+    with_history_protection_admin do
       revision_ids = QuoteRevision.where(quote_id: @quote_id).pluck(:id)
       AuditEvent.where(subject_type: "Quote", subject_id: @quote_id).delete_all
       Quote.where(id: @quote_id).update_all(current_revision_id: nil)

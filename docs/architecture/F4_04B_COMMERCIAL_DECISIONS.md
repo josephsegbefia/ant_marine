@@ -1,7 +1,9 @@
 # F4-04B — Commercial decisions, quotation release & database history protection
 
-**Status:** Code complete — simulated decisions only; live commercial acceptance **disabled**  
-**Baseline:** F4-04A at `3e5ce04`  
+**Status:** Code complete (F4-04B + F4-04B-H1) — simulated decisions only; live commercial acceptance **disabled**
+
+**Baseline:** F4-04A at `3e5ce04`; H1 baseline `6b52389`
+
 **Schema format:** `config.active_record.schema_format = :sql` → `db/structure.sql`
 
 ## 1. Purpose
@@ -40,10 +42,11 @@ Completed during F4-04B preflight:
 | Function | Role |
 |---|---|
 | `ant_marine_reject(text)` | Raises integrity violation |
-| `ant_marine_history_bypass_enabled()` | Reads transaction-local GUC `ant_marine.history_bypass` (**test/DBA only**) |
 | `ant_marine_quote_revision_protect()` | Blocks delete / unfreeze / commercial field changes on frozen revisions |
-| `ant_marine_quote_line_item_protect()` | Blocks insert/update/delete when OLD or NEW parent revision is frozen |
+| `ant_marine_quote_line_item_protect()` | Blocks insert/update/delete when OLD or NEW parent revision is frozen; locks parent `FOR UPDATE` |
 | `ant_marine_quote_response_protect()` | Append-only decisions (no UPDATE/DELETE) |
+
+**F4-04B-H1:** `ant_marine_history_bypass_enabled()` and all GUC bypass branches were **removed**. Ordinary roles can `SET` custom GUCs, so a GUC gate was not a privilege boundary.
 
 ### Triggers
 
@@ -64,11 +67,13 @@ Allowed `revision_status` changes only:
 
 Other lifecycle fields used by issuance / delivery / withdrawal services remain outside the commercial-content blocklist where already modelled; commercial content itself cannot change.
 
-### Bypass policy
+### Bypass / admin policy (F4-04B-H1)
 
-- Application code **must never** set `ant_marine.history_bypass`
-- Test helper `with_history_protection_disabled` uses `set_config(..., is_local => true)` inside an explicit transaction (avoids `ALTER TABLE … DISABLE TRIGGER`, which commits and leaks test rows)
-- Bypass is not an unrestricted sticky session flag for ordinary requests
+- **No** application-callable bypass GUC or SECURITY DEFINER escape hatch
+- Test helper `with_history_protection_admin` may `DISABLE TRIGGER` only in `Rails.env.test?` as the table owner (fixture/cleanup). Application connections must never call it
+- Prefer `travel_to` / pre-freeze setup over mutating frozen rows in tests
+- `REVOKE TRUNCATE … FROM PUBLIC` on protected tables; table owners retain TRUNCATE until production uses a non-owner runtime role
+- Disposable verification: `scripts/verify_history_protection_h1.sh`
 
 ## 5. SQL schema migration
 
@@ -141,7 +146,24 @@ Accepted commercial content remains frozen; no silent withdraw/supersede/amount 
 
 ### F4-05 integration contract (prepared, not implemented)
 
-Accepted revision, client organisation, related enquiry, exact scope/deliverables/amount/currency, acceptance evidence, staff permissions for project initiation.
+**Do not implement Project models in F4-04B-H1.**
+
+| Path | Rules |
+|---|---|
+| **LIVE** | Requires a valid **live** acceptance, approved commercial policy, active client organisation, and authorised staff initiation |
+| **SIMULATION** | May later create an **explicitly simulated** project only inside isolated development/test QA organisations. Simulation must **never** establish live operational eligibility |
+
+Both paths must bind:
+
+- Exact accepted quotation revision
+- Recorded decision evidence
+- Client organisation
+- Related enquiry where applicable
+- Immutable commercial scope
+- Agreed currency and amount
+- Explicit staff authorization
+
+**No automatic project creation** from acceptance alone.
 
 ## 10. Simulated restrictions
 

@@ -267,6 +267,7 @@ data: {
 - **Staff Clients:** `/staff/clients` reuses enquiry list panel + `ant_pagination`, summary stats, and client detail tabs via `ant_section_tabs` (Overview / Contacts & access / Service requests / Quotations / Activity). Side panels use `shared/ui/side_panel_head`.
 - **Onboarding:** `/staff/enquiries/:id/onboard` — guided form (organisation, representative, portal role, confirmation); roles from `Invitations::Policy` + `client_portal_role_options`.
 - **Client shell:** nav Overview / Service requests / Quotations / Account only (future modules omitted). Helpers: `ClientPortalHelper` (`client_can_view_requests?`, `client_can_view_quotations?`, `client_request_status_label`, `client_money`).
+- **Client mobile drawer (F4-04B-H1):** closed drawer and backdrop use `pointer-events: none`; Stimulus `client-shell` applies `inert`/`aria-hidden` when closed below `lg`, closes on `turbo:before-visit` / `turbo:before-cache` (not `turbo:load`, which races menu open after navigation), Escape, backdrop click, and sidebar link click. An open drawer must be dismissed before page content receives clicks; a closed drawer must never intercept commercial actions.
 - **Quotations:** simulated offers show a warn notice; PDF download; F4-04B adds simulated Accept / Request changes / Decline for authorised representatives.
 - **Pagination:** staff clients and client request/quotation lists use `ant_pagination` with `path_for` lambdas (same contract as F4-03).
 

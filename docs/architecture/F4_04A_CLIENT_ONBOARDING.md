@@ -101,9 +101,9 @@ PDF: authenticated client, active membership, `quotes.view_org`, active release 
 - No automatic project creation
 - Internal enquiry notes never rendered on client request/quote pages
 
-## 10. Database history protection proposal (for F4-04B — not implemented)
+## 10. Database history protection
 
-See § Database history protection proposal below (ADR-F4-02B-006). F4-04A delivers the proposal only.
+Implemented in **F4-04B** / hardened in **F4-04B-H1** (bypass GUC removed). See `docs/architecture/F4_04B_COMMERCIAL_DECISIONS.md`.
 
 ## 11. Migration / restart
 
@@ -123,20 +123,14 @@ Before enabling acceptance:
 
 ## 13. Outstanding production gates (unchanged)
 
-F4-01 visual acceptance, design sign-off, editorial content, tax/deposit/legal terms, acceptance wording, delivery policy, production email/domain, storage encryption/malware/backups, DB history protection, restricted DB privileges, deployment acceptance.
+F4-01 visual acceptance, design sign-off, editorial content, tax/deposit/legal terms, acceptance wording, delivery policy, production email/domain, storage encryption/malware/backups, **production** restricted DB privileges, deployment acceptance. Local history triggers + H1 bypass removal are in place; production non-owner runtime role remains a deploy gate.
 
-## Database history protection proposal (ADR-F4-02B-006)
+## 14. Invitation activation browser acceptance (closed in F4-04B-H1)
 
-**Goal:** defend approved quotation content against privileged raw SQL and accidental updates, beyond application guards.
+F4-04A left full browser activation as outstanding. F4-04B-H1 exercised actual routes in an isolated QA organisation:
 
-### Recommended approach (combined)
-
-1. **Switch to `structure.sql`** so PostgreSQL triggers and check constraints dump/restore faithfully (`config.active_record.schema_format = :ruby` today cannot express triggers).
-2. **Triggers** on `quote_revisions` / `quote_line_items` (and recipient snapshot columns) blocking UPDATE/DELETE when `version_frozen` / approved/issued; allow only whitelisted metadata transitions (issuance timestamps, supersession flags) via `SET LOCAL` session variables or a dedicated SECURITY DEFINER function called from app services.
-3. **Append-only** future client decision tables (F4-04B) with no UPDATE/DELETE for ordinary roles.
-4. **Least-privilege runtime DB role** for the app: DML on business tables, no DROP/ALTER; migrations run as a separate admin role.
-5. **CI:** restore from `structure.sql` in CI; add a test that connects as the app role and asserts direct SQL UPDATE on a frozen revision fails; keep existing model-level regression tests.
-6. **Rollback limitations:** trigger migrations are reverse-order DROP TRIGGER; restoring older `schema.rb` eras will not recreate triggers — document restore verification.
-7. **Honest limit:** triggers do not stop a superuser or owner role; they raise the cost of accidents and constrain the runtime app role.
-
-**Do not** implement the schema-format switch or production privilege changes in F4-04A.
+- Staff-prepared invitation → open activation link → set password → client portal home
+- Own service requests and simulated quotations visible
+- Consumed invitation replay rejected
+- Expired / revoked / invalid token rejection pages verified
+- No real email; temporary credentials kept outside Git (`tmp/f404b_h1_screens/`)

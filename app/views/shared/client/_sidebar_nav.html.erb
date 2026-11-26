@@ -1,13 +1,15 @@
 <nav class="client-side-nav" aria-label="Client workspace navigation">
   <%= link_to client_root_path,
-        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:home)}" do %>
+        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:home)}",
+        data: { action: "click->client-shell#close" } do %>
     <%= render "shared/staff/nav_icon", name: "home" %>
     <span>Overview</span>
   <% end %>
 
   <% if client_can_view_requests? %>
     <%= link_to client_requests_path,
-          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:requests)}" do %>
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:requests)}",
+          data: { action: "click->client-shell#close" } do %>
       <%= render "shared/staff/nav_icon", name: "clipboard" %>
       <span>Service requests</span>
     <% end %>
@@ -15,7 +17,8 @@
 
   <% if client_can_view_quotations? %>
     <%= link_to client_quotations_path,
-          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:quotations)}" do %>
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:quotations)}",
+          data: { action: "click->client-shell#close" } do %>
       <%= render "shared/staff/nav_icon", name: "file" %>
       <span>Quotations</span>
     <% end %>
@@ -23,14 +26,16 @@
 
   <% if client_can_invite? %>
     <%= link_to client_invitations_path,
-          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:invitations)}" do %>
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:invitations)}",
+          data: { action: "click->client-shell#close" } do %>
       <%= render "shared/staff/nav_icon", name: "mail" %>
       <span>Team invitations</span>
     <% end %>
   <% end %>
 
   <%= link_to client_account_path,
-        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:account)}" do %>
+        class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:account)}",
+        data: { action: "click->client-shell#close" } do %>
     <%= render "shared/staff/nav_icon", name: "users" %>
     <span>Account</span>
   <% end %>

@@ -84,11 +84,14 @@ class Staff::QuotationIssuancesTest < ActionDispatch::IntegrationTest
   end
 
   test "expired version shows the blocker instead of the prepare form" do
-    with_history_protection_disabled do
-      @quote.current_revision.update_columns(valid_until: Date.current - 1)
+    quote = create_ready_quote
+    quote.current_revision.update!(valid_until: Date.current + 1)
+    approve_quote!(quote)
+    travel_to(Date.current + 2.days) do
+      sign_in_as(users(:dual_domain), membership: memberships(:dual_staff))
+      get staff_quotation_issuance_path(quote)
+      assert_select "#issuance-blockers", text: /expired/
+      assert_select "#issuance-prepare", count: 0
     end
-    get staff_quotation_issuance_path(@quote)
-    assert_select "#issuance-blockers", text: /expired/
-    assert_select "#issuance-prepare", count: 0
   end
 end

@@ -86,15 +86,20 @@ module QuoteTestHelper
     )
   end
 
-  # Test/DBA-only: transaction-local GUC bypass. Application code must never call this.
-  # Prefer set_config(..., is_local => true) over DISABLE TRIGGER — DDL would commit and leak rows.
-  # Wrap in an explicit transaction so LOCAL lasts for the whole yield (needed when
-  # use_transactional_tests is false; LOCAL is discarded immediately outside a transaction).
-  def with_history_protection_disabled
-    ActiveRecord::Base.transaction(requires_new: true) do
-      ActiveRecord::Base.connection.execute("SELECT set_config('ant_marine.history_bypass', 'on', true)")
-      yield
-    end
+  # Test-admin only: table-owner DISABLE TRIGGER for non-transactional cleanup.
+  # Application runtime must never call this. Prefer travel_to / pre-freeze setup over mutating frozen rows.
+  def with_history_protection_admin
+    raise "History admin helper is test-only" unless Rails.env.test?
+
+    connection = ActiveRecord::Base.connection
+    connection.execute("ALTER TABLE quote_revisions DISABLE TRIGGER quote_revisions_history_protect")
+    connection.execute("ALTER TABLE quote_line_items DISABLE TRIGGER quote_line_items_history_protect")
+    connection.execute("ALTER TABLE quote_responses DISABLE TRIGGER quote_responses_history_protect")
+    yield
+  ensure
+    connection.execute("ALTER TABLE quote_revisions ENABLE TRIGGER quote_revisions_history_protect")
+    connection.execute("ALTER TABLE quote_line_items ENABLE TRIGGER quote_line_items_history_protect")
+    connection.execute("ALTER TABLE quote_responses ENABLE TRIGGER quote_responses_history_protect")
   end
 end
 
