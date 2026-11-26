@@ -25,6 +25,12 @@ module Staff
         redirect_to staff_service_inquiry_path(subject), status: :see_other
       elsif subject.is_a?(Quote) && QuotePolicy.new(Current.membership, subject).show?
         redirect_to edit_staff_quotation_path(subject), status: :see_other
+      elsif subject.is_a?(Document) && DocumentPolicy.new(Current.membership, subject).show?
+        redirect_to staff_project_document_path(subject.project, subject), status: :see_other
+      elsif subject.is_a?(UploadRequest) && UploadRequestPolicy.new(Current.membership, subject).show?
+        redirect_to staff_project_documents_path(subject.project), status: :see_other
+      elsif subject.is_a?(Project) && ProjectPolicy.new(Current.membership, subject).show?
+        redirect_to staff_project_path(subject), status: :see_other
       else
         redirect_to staff_notifications_path, status: :see_other,
                                               alert: "You no longer have access to that item."

@@ -1,0 +1,34 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_back_link(label: "Files we need", path: client_project_upload_requests_path(@project)) %>
+
+<%= ant_page_header(title: @upload_request.title, description: upload_request_status_label(@upload_request.status)) %>
+
+<% if @upload_request.instructions.present? %>
+  <section class="client-content-card p-5 mt-4">
+    <h2 class="text-sm font-semibold">What we need</h2>
+    <div class="staff-quote-summary__hint mt-2"><%= simple_format(@upload_request.instructions) %></div>
+  </section>
+<% end %>
+
+<% if @upload_request.open? %>
+  <section class="mt-6 max-w-xl">
+    <%= form_with url: submit_client_project_upload_request_path(@project, @upload_request), scope: :upload, multipart: true, local: true, class: "space-y-4" do %>
+      <div>
+        <label class="ant-field__label" for="upload_title">Title (optional)</label>
+        <input id="upload_title" name="upload[title]" class="ant-control w-full" value="<%= @upload_request.title %>">
+      </div>
+      <div>
+        <label class="ant-field__label" for="upload_file">File</label>
+        <input id="upload_file" name="upload[file]" type="file" class="ant-control w-full" required>
+      </div>
+      <div>
+        <label class="ant-field__label" for="upload_description">Notes (optional)</label>
+        <textarea id="upload_description" name="upload[description]" class="ant-control w-full" rows="3"></textarea>
+      </div>
+      <button type="submit" class="ant-btn-primary">Upload file</button>
+    <% end %>
+  </section>
+<% else %>
+  <p class="staff-quote-summary__hint mt-4">This request is no longer open for upload.</p>
+<% end %>

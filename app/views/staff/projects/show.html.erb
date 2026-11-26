@@ -23,7 +23,8 @@
       { label: "Milestones", path: staff_project_path(@project, tab: "milestones"), active: @tab == "milestones" },
       { label: "Tasks", path: staff_project_path(@project, tab: "tasks"), active: @tab == "tasks" },
       { label: "Schedule", path: staff_project_path(@project, tab: "schedule"), active: @tab == "schedule" },
-      { label: "Activity", path: staff_project_path(@project, tab: "activity"), active: @tab == "activity" }
+      { label: "Activity", path: staff_project_path(@project, tab: "activity"), active: @tab == "activity" },
+      { label: "Documents", path: staff_project_documents_path(@project), active: false }
     ]) %>
 
 <section class="mt-6">

@@ -1,0 +1,124 @@
+<% content_for :staff_nav, :projects %>
+
+<%= ant_page_header(
+      title: "Project documents",
+      description: "#{@project.reference_number} · Files for this delivery. Downloads run through security checks first."
+    ) %>
+
+<%= ant_section_tabs(tabs: [
+      { label: "Overview", path: staff_project_path(@project) },
+      { label: "Documents", path: staff_project_documents_path(@project), active: true }
+    ]) %>
+
+<section class="staff-quotations mt-6" aria-labelledby="documents-list-heading">
+  <h2 id="documents-list-heading" class="sr-only">Document list</h2>
+
+  <div class="staff-enquiry-summary mb-4" aria-label="Document counts">
+    <% @summary.each do |key, count| %>
+      <%= link_to staff_project_documents_path(@project, category: params[:category], workflow: (key unless key == :all), visibility: params[:visibility], security: params[:security]),
+            class: "staff-enquiry-summary__card#{" staff-enquiry-summary__card--active" if (key == :all && params[:workflow].blank?) || params[:workflow] == key.to_s}" do %>
+        <span class="staff-enquiry-summary__value"><%= count %></span>
+        <span class="staff-enquiry-summary__label"><%= key.to_s.tr("_", " ").humanize %></span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="flex flex-wrap gap-3 mb-4">
+    <% if policy(Document.new(project: @project)).create? %>
+      <%= link_to "Upload file", new_staff_project_document_path(@project), class: "ant-btn-primary ant-btn-primary--compact" %>
+    <% end %>
+    <% if policy(UploadRequest.new(project: @project)).create? %>
+      <%= ant_dialog(
+            id: "dialog-request-upload",
+            title: "Ask the client for a file",
+            trigger_label: "Request a file",
+            trigger_class: "ant-btn-outline ant-btn-outline--compact"
+          ) do %>
+        <%= form_with url: staff_project_upload_requests_path(@project), method: :post, local: true, class: "space-y-3" do %>
+          <div>
+            <label class="ant-field__label" for="request_title">Title</label>
+            <input id="request_title" name="upload_request[title]" class="ant-control w-full" required>
+          </div>
+          <div>
+            <label class="ant-field__label" for="request_category">Category</label>
+            <%= ant_select_tag "upload_request[document_category]",
+                  Document::CATEGORIES.map { |k, v| [ v, k ] },
+                  label: "Category",
+                  id: "request_category",
+                  required: true %>
+          </div>
+          <div>
+            <label class="ant-field__label" for="request_instructions">Instructions (optional)</label>
+            <textarea id="request_instructions" name="upload_request[instructions]" class="ant-control w-full" rows="3"></textarea>
+          </div>
+          <div>
+            <label class="ant-field__label" for="request_due_on">Due date (optional)</label>
+            <%= ant_date_field "upload_request[due_on]", label: "Due date", id: "request_due_on" %>
+          </div>
+          <button type="submit" class="ant-btn-primary w-full">Send request</button>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= form_with url: staff_project_documents_path(@project), method: :get, class: "ant-filter-toolbar", local: true do %>
+    <p class="ant-field__label w-full">Filter</p>
+    <div class="ant-filter-toolbar__field">
+      <label class="ant-field__label" for="category">Category</label>
+      <%= ant_select_tag "category",
+            Document::CATEGORIES.map { |k, v| [ v, k ] },
+            label: "Category",
+            include_blank: "All categories",
+            selected: params[:category],
+            id: "category",
+            compact: true %>
+    </div>
+    <div class="ant-filter-toolbar__field">
+      <label class="ant-field__label" for="workflow">Workflow</label>
+      <%= ant_select_tag "workflow",
+            Document::WORKFLOW_STATUSES.map { |s| [ document_workflow_label(s), s ] },
+            label: "Workflow",
+            include_blank: "All statuses",
+            selected: params[:workflow],
+            id: "workflow",
+            compact: true %>
+    </div>
+    <div class="ant-filter-toolbar__field">
+      <label class="ant-field__label" for="security">Security</label>
+      <%= ant_select_tag "security",
+            [ [ "Checks pending", "pending" ], [ "Available", "available" ], [ "Rejected", "rejected" ] ],
+            label: "Security",
+            include_blank: "Any",
+            selected: params[:security],
+            id: "security",
+            compact: true %>
+    </div>
+    <div class="ant-filter-toolbar__actions">
+      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+    </div>
+  <% end %>
+
+  <% if @documents.any? %>
+    <ul class="staff-enquiry-panel mt-4 divide-y">
+      <% @documents.each do |document| %>
+        <li class="p-4">
+          <%= ant_content_record(
+                title: document.title,
+                description: "#{document.category_label} · #{document_visibility_label(document.visibility_intent)}",
+                meta: [
+                  ant_status_badge(label: document_workflow_label(document.workflow_status), badge_class: document_workflow_badge_class(document.workflow_status)),
+                  ant_status_badge(label: document_security_label(document.current_version), badge_class: document_security_badge_class(document.current_version))
+                ],
+                primary_action: { label: "Open", path: staff_project_document_path(@project, document) }
+              ) %>
+        </li>
+      <% end %>
+    </ul>
+    <%= ant_pagination(@pagination, path_for: ->(page) { staff_project_documents_path(request.query_parameters.merge(page: page)) }) %>
+  <% else %>
+    <%= ant_empty_state(
+          title: "No documents yet",
+          description: "Upload internal files or request documents from the client when you are ready."
+        ) %>
+  <% end %>
+</section>

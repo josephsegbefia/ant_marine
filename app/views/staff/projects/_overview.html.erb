@@ -82,7 +82,16 @@
         <% else %>
           <p class="staff-quote-summary__hint">No further status changes are available right now.</p>
         <% end %>
-        <p class="staff-quote-summary__hint mt-3">Documents, inspections and invoices arrive in later modules.</p>
+        <% doc_count = policy_scope(Document).where(project_id: @project.id).not_archived.count %>
+        <% if doc_count.positive? %>
+          <p class="staff-quote-summary__hint mt-3"><%= doc_count %> document<%= doc_count == 1 ? "" : "s" %> on file.</p>
+          <%= link_to "Open documents", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
+        <% else %>
+          <p class="staff-quote-summary__hint mt-3">No documents yet.</p>
+          <% if policy(Document.new(project: @project)).create? %>
+            <%= link_to "Upload or request files", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
+          <% end %>
+        <% end %>
       </div>
     </section>
   </aside>

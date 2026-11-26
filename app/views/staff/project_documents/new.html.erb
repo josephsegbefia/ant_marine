@@ -1,0 +1,39 @@
+<% content_for :staff_nav, :projects %>
+
+<%= ant_back_link(label: "Documents", path: staff_project_documents_path(@project)) %>
+
+<%= ant_page_header(title: "Upload file", description: "The file is stored securely and scanned before anyone can download it.") %>
+
+<section class="mt-6 max-w-2xl">
+  <%= form_with url: staff_project_documents_path(@project), scope: :document, multipart: true, local: true, class: "space-y-4" do %>
+    <div>
+      <label class="ant-field__label" for="document_title">Title</label>
+      <input id="document_title" name="document[title]" class="ant-control w-full" required value="<%= @document.title %>">
+    </div>
+    <%= ant_select_tag "document[category]",
+          Document::CATEGORIES.map { |k, v| [ v, k ] },
+          label: "Category",
+          selected: @document.category,
+          id: "document_category",
+          required: true %>
+    <%= ant_select_tag "document[classification]",
+          [ [ "Standard", "standard" ], [ "Confidential", "confidential" ] ],
+          label: "Classification",
+          selected: @document.classification,
+          id: "document_classification" %>
+    <%= ant_select_tag "document[visibility_intent]",
+          [ [ "Internal only", "internal" ], [ "Prepared for client release", "for_client_release" ] ],
+          label: "Visibility",
+          selected: @document.visibility_intent,
+          id: "document_visibility" %>
+    <div>
+      <label class="ant-field__label" for="document_description">Description (optional)</label>
+      <textarea id="document_description" name="document[description]" class="ant-control w-full" rows="3"><%= @document.description %></textarea>
+    </div>
+    <div>
+      <label class="ant-field__label" for="document_file">File</label>
+      <input id="document_file" name="document[file]" type="file" class="ant-control w-full" required>
+    </div>
+    <button type="submit" class="ant-btn-primary">Upload</button>
+  <% end %>
+</section>

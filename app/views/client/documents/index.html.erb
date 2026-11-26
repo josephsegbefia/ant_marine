@@ -1,0 +1,40 @@
+<% content_for :client_nav, :documents %>
+
+<%= ant_page_header(
+      title: "Documents",
+      description: "Files your team has shared with you and outstanding upload requests."
+    ) %>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-2">
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Shared with you</h2>
+    <% if @released_documents.any? %>
+      <ul class="mt-3 space-y-3">
+        <% @released_documents.each do |document| %>
+          <li>
+            <%= link_to document.title, client_project_document_path(document.project, document), class: "font-medium staff-quote-link" %>
+            <p class="staff-quote-summary__hint"><%= document.project.reference_number %> · <%= document.category_label %></p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="staff-quote-summary__hint mt-2">No files have been shared yet.</p>
+    <% end %>
+  </div>
+
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Files we need from you</h2>
+    <% if @open_requests.any? %>
+      <ul class="mt-3 space-y-3">
+        <% @open_requests.each do |request| %>
+          <li>
+            <%= link_to request.title, client_project_upload_request_path(request.project, request), class: "font-medium staff-quote-link" %>
+            <p class="staff-quote-summary__hint"><%= request.project.reference_number %> · <%= upload_request_status_label(request.status) %></p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="staff-quote-summary__hint mt-2">You have no outstanding upload requests.</p>
+    <% end %>
+  </div>
+</section>

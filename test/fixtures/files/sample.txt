@@ -1,0 +1,1 @@
+Sample vessel record for ANT Marine document tests.

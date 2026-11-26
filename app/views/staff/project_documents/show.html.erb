@@ -1,0 +1,124 @@
+<% content_for :staff_nav, :projects %>
+<% version = @document.current_version %>
+
+<%= ant_back_link(label: "Documents", path: staff_project_documents_path(@project)) %>
+
+<%= ant_page_header(title: @document.title, description: @document.category_label) %>
+
+<div class="mt-4 flex flex-wrap gap-2">
+  <%= ant_status_badge(label: document_workflow_label(@document.workflow_status), badge_class: document_workflow_badge_class(@document.workflow_status)) %>
+  <%= ant_status_badge(label: document_visibility_label(@document.visibility_intent)) %>
+  <% if version %>
+    <%= ant_status_badge(label: document_security_label(version), badge_class: document_security_badge_class(version)) %>
+  <% end %>
+</div>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem]">
+  <div class="space-y-6">
+    <% if @document.description.present? %>
+      <div class="staff-enquiry-panel p-5">
+        <h2 class="staff-quote-editor__step-title">Description</h2>
+        <div class="staff-quote-summary__hint mt-2"><%= simple_format(@document.description) %></div>
+      </div>
+    <% end %>
+
+    <div class="staff-enquiry-panel p-5">
+      <h2 class="staff-quote-editor__step-title">Versions</h2>
+      <ul class="mt-3 space-y-4">
+        <% @versions.each do |v| %>
+          <li class="border-t pt-3">
+            <p class="font-medium"><%= v.label %> · <%= v.filename %></p>
+            <p class="staff-quote-summary__hint"><%= document_security_label(v) %> · <%= l(v.created_at, format: :short) %></p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <% if policy(v).download? %>
+                <%= link_to "Download", download_staff_project_document_version_path(@project, @document, v), class: "staff-quote-link" %>
+              <% else %>
+                <span class="staff-quote-summary__hint">Download not available yet</span>
+              <% end %>
+              <% if policy(v).review? && @document.workflow_status == "submitted" && v.id == @document.current_version_id %>
+                <%= ant_dialog(id: "review-#{v.id}", title: "Review this file", trigger_label: "Review", trigger_class: "ant-btn-outline ant-btn-outline--compact") do %>
+                  <%= form_with url: review_staff_project_document_version_path(@project, @document, v), method: :post, local: true, class: "space-y-3" do %>
+                    <%= ant_select_tag "outcome", [ [ "Approve", "approved" ], [ "Request changes", "changes_requested" ] ],
+                          label: "Outcome", id: "outcome_#{v.id}", required: true %>
+                    <div>
+                      <label class="ant-field__label" for="comments_<%= v.id %>">Comments</label>
+                      <textarea id="comments_<%= v.id %>" name="comments" class="ant-control w-full" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="ant-btn-primary w-full">Save review</button>
+                  <% end %>
+                <% end %>
+              <% end %>
+              <% if policy(v).release? && v.downloadable? && @document.workflow_status.in?(%w[approved released]) %>
+                <%= ant_dialog(id: "release-#{v.id}", title: "Share with client", trigger_label: "Release to client", trigger_class: "ant-btn-primary ant-btn-primary--compact") do %>
+                  <%= form_with url: release_staff_project_document_version_path(@project, @document, v), method: :post, local: true, class: "space-y-3" do %>
+                    <p class="staff-quote-summary__hint">The client portal will show this exact version only after you confirm.</p>
+                    <label class="flex gap-2 items-start">
+                      <input type="checkbox" name="confirm" value="1" required>
+                      <span>I confirm this exact version should be shared with the client.</span>
+                    </label>
+                    <button type="submit" class="ant-btn-primary w-full">Share with client</button>
+                  <% end %>
+                <% end %>
+              <% end %>
+            </div>
+            <% v.document_reviews.each do |review| %>
+              <p class="staff-quote-summary__hint mt-2">
+                Review: <%= review.outcome.humanize %><% if review.comments.present? %> — <%= review.comments %><% end %>
+              </p>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <% if policy(@document).upload? %>
+        <h3 class="mt-6 text-sm font-semibold">Upload new version</h3>
+        <%= form_with url: staff_project_document_versions_path(@project, @document), scope: :document_version, multipart: true, local: true, class: "mt-2 space-y-2" do %>
+          <input type="file" name="document_version[file]" class="ant-control w-full" required>
+          <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Upload version</button>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @releases.any? %>
+      <div class="staff-enquiry-panel p-5">
+        <h2 class="staff-quote-editor__step-title">Client releases</h2>
+        <ul class="mt-3 space-y-3">
+          <% @releases.each do |release| %>
+            <li>
+              <p class="font-medium">Version <%= release.document_version.version_number %> · <%= release.active? ? "Active" : "Revoked" %></p>
+              <p class="staff-quote-summary__hint"><%= l(release.released_at, format: :short) %></p>
+              <% if release.active? && policy(release).revoke? %>
+                <%= ant_dialog(id: "revoke-#{release.id}", title: "Withdraw client access", trigger_label: "Revoke", trigger_class: "ant-btn-outline ant-btn-outline--compact") do %>
+                  <%= form_with url: revoke_staff_project_document_release_path(@project, @document, release), method: :post, local: true, class: "space-y-3" do %>
+                    <div>
+                      <label class="ant-field__label" for="reason_<%= release.id %>">Reason</label>
+                      <textarea id="reason_<%= release.id %>" name="reason" class="ant-control w-full" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="ant-btn-primary w-full">Withdraw access</button>
+                  <% end %>
+                <% end %>
+              <% elsif release.revocation_reason.present? %>
+                <p class="staff-quote-summary__hint">Revoked: <%= release.revocation_reason %></p>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Actions", heading_id: "document-actions", icon: "file" %>
+      <div class="staff-quote-side-panel__body space-y-2">
+        <% if policy(@document).submit_for_review? && @document.workflow_status.in?(%w[working_draft changes_requested]) && version&.downloadable? %>
+          <%= button_to "Submit for review",
+                submit_for_review_staff_project_document_path(@project, @document),
+                class: "ant-btn-primary ant-btn-primary--compact w-full",
+                form: { class: "w-full" } %>
+        <% end %>
+        <p class="staff-quote-summary__hint">Clients only see files you release or files they submitted themselves.</p>
+      </div>
+    </section>
+  </aside>
+</section>

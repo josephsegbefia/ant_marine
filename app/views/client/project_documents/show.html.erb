@@ -1,0 +1,18 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_back_link(label: "Project documents", path: client_project_documents_path(@project)) %>
+
+<%= ant_page_header(title: @document.title, description: @document.category_label) %>
+
+<% if @version %>
+  <p class="staff-quote-summary__hint mt-2"><%= document_security_label(@version) %></p>
+  <% if policy(@version).download? %>
+    <p class="mt-4">
+      <%= link_to "Download", download_client_project_document_path(@project, @document), class: "ant-btn-primary ant-btn-primary--compact" %>
+    </p>
+  <% elsif @version.security_status.in?(%w[pending_upload scanning]) %>
+    <div class="ant-notice ant-notice--warn mt-4">
+      <p>Your file was received. Security checks must finish before download is available.</p>
+    </div>
+  <% end %>
+<% end %>

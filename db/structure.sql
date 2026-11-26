@@ -11,6 +11,67 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: ant_marine_document_release_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_document_release_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Document releases cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.document_id IS DISTINCT FROM OLD.document_id
+       OR NEW.document_version_id IS DISTINCT FROM OLD.document_version_id
+       OR NEW.client_organization_id IS DISTINCT FROM OLD.client_organization_id
+       OR NEW.released_by_membership_id IS DISTINCT FROM OLD.released_by_membership_id
+       OR NEW.released_at IS DISTINCT FROM OLD.released_at
+       OR NEW.classification IS DISTINCT FROM OLD.classification
+       OR NEW.release_kind IS DISTINCT FROM OLD.release_kind THEN
+      PERFORM ant_marine_reject('Document release identity fields are immutable.');
+    END IF;
+    IF OLD.revoked_at IS NOT NULL
+       AND (NEW.revoked_at IS DISTINCT FROM OLD.revoked_at
+            OR NEW.revocation_reason IS DISTINCT FROM OLD.revocation_reason) THEN
+      PERFORM ant_marine_reject('Document release revocation cannot be changed after set.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_document_version_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_document_version_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Document versions cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.document_id IS DISTINCT FROM OLD.document_id
+       OR NEW.version_number IS DISTINCT FROM OLD.version_number
+       OR NEW.storage_asset_id IS DISTINCT FROM OLD.storage_asset_id
+       OR NEW.checksum_sha256 IS DISTINCT FROM OLD.checksum_sha256
+       OR NEW.filename IS DISTINCT FROM OLD.filename
+       OR NEW.content_type IS DISTINCT FROM OLD.content_type
+       OR NEW.byte_size IS DISTINCT FROM OLD.byte_size
+       OR NEW.uploaded_by_membership_id IS DISTINCT FROM OLD.uploaded_by_membership_id THEN
+      PERFORM ant_marine_reject('Document version identity fields are immutable.');
+    END IF;
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: ant_marine_project_commercial_protect(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -541,6 +602,206 @@ CREATE SEQUENCE public.client_contacts_id_seq
 --
 
 ALTER SEQUENCE public.client_contacts_id_seq OWNED BY public.client_contacts.id;
+
+
+--
+-- Name: document_access_grants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.document_access_grants (
+    id bigint NOT NULL,
+    document_id bigint,
+    project_id bigint,
+    user_id bigint NOT NULL,
+    granted_by_membership_id bigint NOT NULL,
+    expires_at timestamp(6) without time zone,
+    revoked_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT document_access_grants_target_xor CHECK ((((document_id IS NOT NULL) AND (project_id IS NULL)) OR ((document_id IS NULL) AND (project_id IS NOT NULL))))
+);
+
+
+--
+-- Name: document_access_grants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.document_access_grants_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: document_access_grants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.document_access_grants_id_seq OWNED BY public.document_access_grants.id;
+
+
+--
+-- Name: document_releases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.document_releases (
+    id bigint NOT NULL,
+    document_id bigint NOT NULL,
+    document_version_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    released_by_membership_id bigint NOT NULL,
+    released_at timestamp(6) without time zone NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    revocation_reason text,
+    classification character varying DEFAULT 'standard'::character varying NOT NULL,
+    release_kind character varying DEFAULT 'client_share'::character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT document_releases_classification_check CHECK (((classification)::text = ANY ((ARRAY['standard'::character varying, 'confidential'::character varying])::text[]))),
+    CONSTRAINT document_releases_release_kind_check CHECK (((release_kind)::text = 'client_share'::text))
+);
+
+
+--
+-- Name: document_releases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.document_releases_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: document_releases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.document_releases_id_seq OWNED BY public.document_releases.id;
+
+
+--
+-- Name: document_reviews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.document_reviews (
+    id bigint NOT NULL,
+    document_version_id bigint NOT NULL,
+    reviewer_membership_id bigint NOT NULL,
+    outcome character varying,
+    comments text,
+    decided_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT document_reviews_open_or_decided_check CHECK ((((outcome IS NULL) AND (decided_at IS NULL)) OR ((outcome IS NOT NULL) AND (decided_at IS NOT NULL)))),
+    CONSTRAINT document_reviews_outcome_check CHECK (((outcome IS NULL) OR ((outcome)::text = ANY ((ARRAY['approved'::character varying, 'changes_requested'::character varying])::text[]))))
+);
+
+
+--
+-- Name: document_reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.document_reviews_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: document_reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.document_reviews_id_seq OWNED BY public.document_reviews.id;
+
+
+--
+-- Name: document_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.document_versions (
+    id bigint NOT NULL,
+    document_id bigint NOT NULL,
+    version_number integer NOT NULL,
+    storage_asset_id bigint NOT NULL,
+    filename character varying NOT NULL,
+    content_type character varying NOT NULL,
+    byte_size bigint NOT NULL,
+    checksum_sha256 character varying NOT NULL,
+    uploaded_by_membership_id bigint NOT NULL,
+    created_at timestamp(6) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT document_versions_byte_size_positive CHECK ((byte_size > 0))
+);
+
+
+--
+-- Name: document_versions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.document_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: document_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.document_versions_id_seq OWNED BY public.document_versions.id;
+
+
+--
+-- Name: documents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.documents (
+    id bigint NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    title character varying NOT NULL,
+    category character varying NOT NULL,
+    classification character varying DEFAULT 'standard'::character varying NOT NULL,
+    visibility_intent character varying DEFAULT 'internal'::character varying NOT NULL,
+    workflow_status character varying DEFAULT 'working_draft'::character varying NOT NULL,
+    current_version_id bigint,
+    upload_request_id bigint,
+    created_by_membership_id bigint NOT NULL,
+    description text,
+    archived_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT documents_classification_check CHECK (((classification)::text = ANY ((ARRAY['standard'::character varying, 'confidential'::character varying])::text[]))),
+    CONSTRAINT documents_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200))),
+    CONSTRAINT documents_visibility_intent_check CHECK (((visibility_intent)::text = ANY ((ARRAY['internal'::character varying, 'client_submitted'::character varying, 'for_client_release'::character varying])::text[]))),
+    CONSTRAINT documents_workflow_status_check CHECK (((workflow_status)::text = ANY ((ARRAY['working_draft'::character varying, 'submitted'::character varying, 'changes_requested'::character varying, 'approved'::character varying, 'released'::character varying, 'archived'::character varying])::text[])))
+);
+
+
+--
+-- Name: documents_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.documents_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: documents_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.documents_id_seq OWNED BY public.documents.id;
 
 
 --
@@ -1706,7 +1967,7 @@ CREATE TABLE public.staff_notifications (
     dedupe_key character varying NOT NULL,
     read_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying])::text[]))),
+    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying, 'document_uploaded'::character varying, 'document_review_required'::character varying, 'document_changes_requested'::character varying, 'document_approved'::character varying, 'document_released'::character varying, 'document_release_revoked'::character varying, 'upload_requested'::character varying])::text[]))),
     CONSTRAINT staff_notifications_title_length CHECK ((char_length((title)::text) <= 200))
 );
 
@@ -1877,6 +2138,49 @@ ALTER SEQUENCE public.training_offerings_id_seq OWNED BY public.training_offerin
 
 
 --
+-- Name: upload_requests; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.upload_requests (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    title character varying NOT NULL,
+    instructions text,
+    document_category character varying NOT NULL,
+    due_on date,
+    status character varying DEFAULT 'requested'::character varying NOT NULL,
+    requested_by_membership_id bigint NOT NULL,
+    satisfied_document_id bigint,
+    cancelled_reason text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT upload_requests_status_check CHECK (((status)::text = ANY ((ARRAY['requested'::character varying, 'submitted'::character varying, 'under_review'::character varying, 'changes_required'::character varying, 'satisfied'::character varying, 'cancelled'::character varying])::text[]))),
+    CONSTRAINT upload_requests_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: upload_requests_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.upload_requests_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: upload_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.upload_requests_id_seq OWNED BY public.upload_requests.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1974,6 +2278,41 @@ ALTER TABLE ONLY public.case_studies ALTER COLUMN id SET DEFAULT nextval('public
 --
 
 ALTER TABLE ONLY public.client_contacts ALTER COLUMN id SET DEFAULT nextval('public.client_contacts_id_seq'::regclass);
+
+
+--
+-- Name: document_access_grants id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants ALTER COLUMN id SET DEFAULT nextval('public.document_access_grants_id_seq'::regclass);
+
+
+--
+-- Name: document_releases id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases ALTER COLUMN id SET DEFAULT nextval('public.document_releases_id_seq'::regclass);
+
+
+--
+-- Name: document_reviews id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_reviews ALTER COLUMN id SET DEFAULT nextval('public.document_reviews_id_seq'::regclass);
+
+
+--
+-- Name: document_versions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_versions ALTER COLUMN id SET DEFAULT nextval('public.document_versions_id_seq'::regclass);
+
+
+--
+-- Name: documents id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents ALTER COLUMN id SET DEFAULT nextval('public.documents_id_seq'::regclass);
 
 
 --
@@ -2180,6 +2519,13 @@ ALTER TABLE ONLY public.training_offerings ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: upload_requests id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests ALTER COLUMN id SET DEFAULT nextval('public.upload_requests_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2264,6 +2610,46 @@ ALTER TABLE ONLY public.case_studies
 
 ALTER TABLE ONLY public.client_contacts
     ADD CONSTRAINT client_contacts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: document_access_grants document_access_grants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants
+    ADD CONSTRAINT document_access_grants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: document_releases document_releases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases
+    ADD CONSTRAINT document_releases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: document_reviews document_reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_reviews
+    ADD CONSTRAINT document_reviews_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: document_versions document_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_versions
+    ADD CONSTRAINT document_versions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: documents documents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT documents_pkey PRIMARY KEY (id);
 
 
 --
@@ -2504,6 +2890,14 @@ ALTER TABLE ONLY public.tasks
 
 ALTER TABLE ONLY public.training_offerings
     ADD CONSTRAINT training_offerings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: upload_requests upload_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT upload_requests_pkey PRIMARY KEY (id);
 
 
 --
@@ -2792,6 +3186,174 @@ CREATE INDEX index_client_contacts_on_organization_id ON public.client_contacts 
 --
 
 CREATE UNIQUE INDEX index_client_contacts_unique_active_email ON public.client_contacts USING btree (organization_id, email) WHERE ((email IS NOT NULL) AND ((status)::text = 'active'::text));
+
+
+--
+-- Name: index_document_access_grants_on_document_id_and_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_access_grants_on_document_id_and_user_id ON public.document_access_grants USING btree (document_id, user_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_document_access_grants_on_granted_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_access_grants_on_granted_by_membership_id ON public.document_access_grants USING btree (granted_by_membership_id);
+
+
+--
+-- Name: index_document_access_grants_on_project_id_and_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_access_grants_on_project_id_and_user_id ON public.document_access_grants USING btree (project_id, user_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_document_access_grants_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_access_grants_on_user_id ON public.document_access_grants USING btree (user_id);
+
+
+--
+-- Name: index_document_releases_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_releases_on_client_organization_id ON public.document_releases USING btree (client_organization_id);
+
+
+--
+-- Name: index_document_releases_on_document_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_releases_on_document_id ON public.document_releases USING btree (document_id);
+
+
+--
+-- Name: index_document_releases_on_document_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_releases_on_document_version_id ON public.document_releases USING btree (document_version_id);
+
+
+--
+-- Name: index_document_releases_on_released_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_releases_on_released_by_membership_id ON public.document_releases USING btree (released_by_membership_id);
+
+
+--
+-- Name: index_document_releases_one_active_per_document; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_document_releases_one_active_per_document ON public.document_releases USING btree (document_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_document_releases_one_active_per_document_client; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_document_releases_one_active_per_document_client ON public.document_releases USING btree (document_id, client_organization_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_document_reviews_on_document_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_reviews_on_document_version_id ON public.document_reviews USING btree (document_version_id);
+
+
+--
+-- Name: index_document_reviews_on_reviewer_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_reviews_on_reviewer_membership_id ON public.document_reviews USING btree (reviewer_membership_id);
+
+
+--
+-- Name: index_document_reviews_open_per_version_reviewer; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_document_reviews_open_per_version_reviewer ON public.document_reviews USING btree (document_version_id, reviewer_membership_id) WHERE (decided_at IS NULL);
+
+
+--
+-- Name: index_document_versions_on_document_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_versions_on_document_id ON public.document_versions USING btree (document_id);
+
+
+--
+-- Name: index_document_versions_on_document_id_and_version_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_document_versions_on_document_id_and_version_number ON public.document_versions USING btree (document_id, version_number);
+
+
+--
+-- Name: index_document_versions_on_storage_asset_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_document_versions_on_storage_asset_id ON public.document_versions USING btree (storage_asset_id);
+
+
+--
+-- Name: index_document_versions_on_uploaded_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_document_versions_on_uploaded_by_membership_id ON public.document_versions USING btree (uploaded_by_membership_id);
+
+
+--
+-- Name: index_documents_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_client_organization_id ON public.documents USING btree (client_organization_id);
+
+
+--
+-- Name: index_documents_on_client_organization_id_and_workflow_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_client_organization_id_and_workflow_status ON public.documents USING btree (client_organization_id, workflow_status);
+
+
+--
+-- Name: index_documents_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_created_by_membership_id ON public.documents USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_documents_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_operating_organization_id ON public.documents USING btree (operating_organization_id);
+
+
+--
+-- Name: index_documents_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_project_id ON public.documents USING btree (project_id);
+
+
+--
+-- Name: index_documents_on_project_id_and_workflow_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_project_id_and_workflow_status ON public.documents USING btree (project_id, workflow_status);
+
+
+--
+-- Name: index_documents_on_upload_request_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_documents_on_upload_request_id ON public.documents USING btree (upload_request_id);
 
 
 --
@@ -3873,10 +4435,66 @@ CREATE INDEX index_training_offerings_on_updated_by_membership_id ON public.trai
 
 
 --
+-- Name: index_upload_requests_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_client_organization_id ON public.upload_requests USING btree (client_organization_id);
+
+
+--
+-- Name: index_upload_requests_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_operating_organization_id ON public.upload_requests USING btree (operating_organization_id);
+
+
+--
+-- Name: index_upload_requests_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_project_id ON public.upload_requests USING btree (project_id);
+
+
+--
+-- Name: index_upload_requests_on_project_id_and_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_project_id_and_status ON public.upload_requests USING btree (project_id, status);
+
+
+--
+-- Name: index_upload_requests_on_requested_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_requested_by_membership_id ON public.upload_requests USING btree (requested_by_membership_id);
+
+
+--
+-- Name: index_upload_requests_on_satisfied_document_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_upload_requests_on_satisfied_document_id ON public.upload_requests USING btree (satisfied_document_id);
+
+
+--
 -- Name: index_users_on_lower_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX index_users_on_lower_email ON public.users USING btree (lower((email)::text));
+
+
+--
+-- Name: document_releases document_releases_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER document_releases_protect BEFORE DELETE OR UPDATE ON public.document_releases FOR EACH ROW EXECUTE FUNCTION public.ant_marine_document_release_protect();
+
+
+--
+-- Name: document_versions document_versions_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER document_versions_protect BEFORE DELETE OR UPDATE ON public.document_versions FOR EACH ROW EXECUTE FUNCTION public.ant_marine_document_version_protect();
 
 
 --
@@ -3916,11 +4534,35 @@ ALTER TABLE ONLY public.quote_deliveries
 
 
 --
+-- Name: upload_requests fk_rails_02b246319c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT fk_rails_02b246319c FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: tasks fk_rails_02e851e3b7; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT fk_rails_02e851e3b7 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: documents fk_rails_03fc43389b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_03fc43389b FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: document_releases fk_rails_0568e06025; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases
+    ADD CONSTRAINT fk_rails_0568e06025 FOREIGN KEY (document_id) REFERENCES public.documents(id);
 
 
 --
@@ -4004,6 +4646,14 @@ ALTER TABLE ONLY public.quote_responses
 
 
 --
+-- Name: document_reviews fk_rails_1b114ccc04; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_reviews
+    ADD CONSTRAINT fk_rails_1b114ccc04 FOREIGN KEY (reviewer_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: project_status_events fk_rails_1de9195048; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4028,6 +4678,14 @@ ALTER TABLE ONLY public.staff_notifications
 
 
 --
+-- Name: upload_requests fk_rails_2273250fab; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT fk_rails_2273250fab FOREIGN KEY (satisfied_document_id) REFERENCES public.documents(id);
+
+
+--
 -- Name: quote_responses fk_rails_2275e4ea2a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4041,6 +4699,14 @@ ALTER TABLE ONLY public.quote_responses
 
 ALTER TABLE ONLY public.public_site_pages
     ADD CONSTRAINT fk_rails_23a3fba204 FOREIGN KEY (published_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: upload_requests fk_rails_24e2a65cb0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT fk_rails_24e2a65cb0 FOREIGN KEY (project_id) REFERENCES public.projects(id);
 
 
 --
@@ -4065,6 +4731,14 @@ ALTER TABLE ONLY public.project_updates
 
 ALTER TABLE ONLY public.services
     ADD CONSTRAINT fk_rails_2e9f369e43 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: document_reviews fk_rails_2f139198ac; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_reviews
+    ADD CONSTRAINT fk_rails_2f139198ac FOREIGN KEY (document_version_id) REFERENCES public.document_versions(id);
 
 
 --
@@ -4124,6 +4798,22 @@ ALTER TABLE ONLY public.tasks
 
 
 --
+-- Name: documents fk_rails_4030d9d40a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_4030d9d40a FOREIGN KEY (upload_request_id) REFERENCES public.upload_requests(id);
+
+
+--
+-- Name: document_access_grants fk_rails_414fa122fc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants
+    ADD CONSTRAINT fk_rails_414fa122fc FOREIGN KEY (document_id) REFERENCES public.documents(id);
+
+
+--
 -- Name: projects fk_rails_42e54ee219; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4153,6 +4843,14 @@ ALTER TABLE ONLY public.quote_responses
 
 ALTER TABLE ONLY public.public_resources
     ADD CONSTRAINT fk_rails_4635c8fb84 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: upload_requests fk_rails_4655b43b31; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT fk_rails_4655b43b31 FOREIGN KEY (requested_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -4228,6 +4926,14 @@ ALTER TABLE ONLY public.schedule_events
 
 
 --
+-- Name: documents fk_rails_55cfc1b0e0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_55cfc1b0e0 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
 -- Name: training_offerings fk_rails_5642067273; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4252,6 +4958,14 @@ ALTER TABLE ONLY public.project_milestones
 
 
 --
+-- Name: document_releases fk_rails_5b6f6bc6f7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases
+    ADD CONSTRAINT fk_rails_5b6f6bc6f7 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: storage_assets fk_rails_5bf79e38ce; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4273,6 +4987,14 @@ ALTER TABLE ONLY public.articles
 
 ALTER TABLE ONLY public.articles
     ADD CONSTRAINT fk_rails_5ecb1de37b FOREIGN KEY (published_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: document_releases fk_rails_60f1050b0f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases
+    ADD CONSTRAINT fk_rails_60f1050b0f FOREIGN KEY (released_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -4356,6 +5078,14 @@ ALTER TABLE ONLY public.quote_deliveries
 
 
 --
+-- Name: documents fk_rails_703386e8df; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_703386e8df FOREIGN KEY (current_version_id) REFERENCES public.document_versions(id);
+
+
+--
 -- Name: sessions fk_rails_758836b4f0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4428,6 +5158,14 @@ ALTER TABLE ONLY public.projects
 
 
 --
+-- Name: document_access_grants fk_rails_7fad973732; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants
+    ADD CONSTRAINT fk_rails_7fad973732 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: service_inquiry_notes fk_rails_81b6480f05; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4492,11 +5230,43 @@ ALTER TABLE ONLY public.quotes
 
 
 --
+-- Name: document_access_grants fk_rails_93a4622de3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants
+    ADD CONSTRAINT fk_rails_93a4622de3 FOREIGN KEY (granted_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: document_releases fk_rails_93f015a9b6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_releases
+    ADD CONSTRAINT fk_rails_93f015a9b6 FOREIGN KEY (document_version_id) REFERENCES public.document_versions(id);
+
+
+--
 -- Name: service_inquiry_assignments fk_rails_95eee61eba; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.service_inquiry_assignments
     ADD CONSTRAINT fk_rails_95eee61eba FOREIGN KEY (new_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: document_access_grants fk_rails_96507fd8d2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_access_grants
+    ADD CONSTRAINT fk_rails_96507fd8d2 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: document_versions fk_rails_975f9c7128; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_versions
+    ADD CONSTRAINT fk_rails_975f9c7128 FOREIGN KEY (uploaded_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -4700,6 +5470,14 @@ ALTER TABLE ONLY public.quote_responses
 
 
 --
+-- Name: document_versions fk_rails_c81b8ae028; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_versions
+    ADD CONSTRAINT fk_rails_c81b8ae028 FOREIGN KEY (document_id) REFERENCES public.documents(id);
+
+
+--
 -- Name: permission_overrides fk_rails_c942e92102; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4724,6 +5502,14 @@ ALTER TABLE ONLY public.public_resources
 
 
 --
+-- Name: documents fk_rails_d15199831d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_d15199831d FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: client_contacts fk_rails_d1a05dd5fd; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4732,11 +5518,27 @@ ALTER TABLE ONLY public.client_contacts
 
 
 --
+-- Name: document_versions fk_rails_d27d652526; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.document_versions
+    ADD CONSTRAINT fk_rails_d27d652526 FOREIGN KEY (storage_asset_id) REFERENCES public.storage_assets(id);
+
+
+--
 -- Name: case_studies fk_rails_d3d72e44da; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.case_studies
     ADD CONSTRAINT fk_rails_d3d72e44da FOREIGN KEY (updated_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: documents fk_rails_d60c82736e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.documents
+    ADD CONSTRAINT fk_rails_d60c82736e FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -4785,6 +5587,14 @@ ALTER TABLE ONLY public.service_inquiry_assignments
 
 ALTER TABLE ONLY public.service_inquiry_clarifications
     ADD CONSTRAINT fk_rails_e218ab8492 FOREIGN KEY (withdrawn_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: upload_requests fk_rails_e5a86e017b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.upload_requests
+    ADD CONSTRAINT fk_rails_e5a86e017b FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -4914,6 +5724,8 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126190000'),
+('20261126180000'),
 ('20261126150000'),
 ('20261126140000'),
 ('20261126120000'),

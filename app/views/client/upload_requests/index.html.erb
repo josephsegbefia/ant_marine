@@ -1,0 +1,20 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_back_link(label: @project.title, path: client_project_path(@project)) %>
+
+<%= ant_page_header(title: "Files we need", description: "Upload the documents ANT Marine requested for #{@project.reference_number}.") %>
+
+<section class="mt-6">
+  <% if @requests.any? %>
+    <ul class="space-y-4">
+      <% @requests.each do |request| %>
+        <li class="client-content-card p-4">
+          <%= link_to request.title, client_project_upload_request_path(@project, request), class: "font-medium staff-quote-link" %>
+          <p class="staff-quote-summary__hint mt-1"><%= upload_request_status_label(request.status) %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <%= ant_empty_state(title: "No requests", description: "ANT Marine has not asked for any files on this project yet.") %>
+  <% end %>
+</section>

@@ -13,6 +13,11 @@
   </div>
 <% end %>
 
+<div class="mt-4 flex flex-wrap gap-4">
+  <%= link_to "Documents", client_project_documents_path(@project), class: "staff-quote-link" %>
+  <%= link_to "Files we need", client_project_upload_requests_path(@project), class: "staff-quote-link" %>
+</div>
+
 <section class="mt-6 grid gap-6 lg:grid-cols-2">
   <div class="client-content-card p-5">
     <h2 class="text-lg font-semibold">Overview</h2>

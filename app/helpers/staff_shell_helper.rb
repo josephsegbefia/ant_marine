@@ -109,7 +109,14 @@ module StaffShellHelper
       "task_assigned" => "clipboard",
       "schedule_confirmed" => "clock",
       "schedule_cancelled" => "clock",
-      "project_update" => "mail"
+      "project_update" => "mail",
+      "document_uploaded" => "file",
+      "document_review_required" => "file",
+      "document_changes_requested" => "file",
+      "document_approved" => "check",
+      "document_released" => "file",
+      "document_release_revoked" => "file",
+      "upload_requested" => "clipboard"
     }.fetch(kind.to_s, "mail")
   end
 end

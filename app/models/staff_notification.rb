@@ -7,6 +7,8 @@ class StaffNotification < ApplicationRecord
     quote_accepted quote_declined quote_changes_requested
     project_created project_assigned project_assignment_changed
     task_assigned schedule_confirmed schedule_cancelled project_update
+    document_uploaded document_review_required document_changes_requested document_approved
+    document_released document_release_revoked upload_requested
   ].freeze
 
   belongs_to :organization
@@ -37,7 +39,14 @@ class StaffNotification < ApplicationRecord
       "task_assigned" => "Task assigned",
       "schedule_confirmed" => "Schedule confirmed",
       "schedule_cancelled" => "Schedule cancelled",
-      "project_update" => "Project update"
+      "project_update" => "Project update",
+      "document_uploaded" => "Document uploaded",
+      "document_review_required" => "Review needed",
+      "document_changes_requested" => "Document changes requested",
+      "document_approved" => "Document approved",
+      "document_released" => "Released to client",
+      "document_release_revoked" => "Client release withdrawn",
+      "upload_requested" => "File requested"
     }.fetch(kind)
   end
 
@@ -48,6 +57,8 @@ class StaffNotification < ApplicationRecord
     when "ServiceInquiry" then ServiceInquiry.find_by(id: subject_id)
     when "Quote" then Quote.find_by(id: subject_id)
     when "Project" then Project.find_by(id: subject_id)
+    when "Document" then Document.find_by(id: subject_id)
+    when "UploadRequest" then UploadRequest.find_by(id: subject_id)
     end
   end
 end

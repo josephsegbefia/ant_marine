@@ -235,7 +235,14 @@ data: {
 - With JavaScript: Stimulus `ant-date-picker` hides the native input, shows a trigger (calendar icon, formatted date or placeholder, clear button) and opens a centred native `<dialog>` calendar (year and month arrows, Monday-first grid, Today / Cancel, blurred navy backdrop).
 - Keyboard: arrow keys, Home/End, PageUp/PageDown (Shift for year), Enter/Space to select; Escape closes without closing a surrounding dialog.
 - Linked ranges: `range_start_for` / `range_end_for` take the paired field id so "from" cannot pass "to".
-- Used on: enquiry received from/to, clarification answer date, quotation valid-until. The public quote form still uses a native date field.
+- Used on: enquiry received from/to, clarification answer date, quotation valid-until, and the public request-a-quote preferred date.
+
+## Project documents (F4-06)
+
+- Staff S11: [`staff/project_documents`](../../app/views/staff/project_documents/) — `ant_page_header`, summary cards, filters, `ant_empty_state`, upload form, request dialog (`ant_dialog`), version/review/release actions on show.
+- Client C07–C09: [`client/upload_requests`](../../app/views/client/upload_requests/), [`client/project_documents`](../../app/views/client/project_documents/), [`client/documents`](../../app/views/client/documents/) — request list, library, metadata + protected download only (no unsafe in-app preview).
+- Labels: [`DocumentsHelper`](../../app/helpers/documents_helper.rb) for workflow/security/upload-request status wording.
+- Quarantine copy must stay truthful: uploaded files show security checks pending until `storage_assets.scan_status = available`.
 
 ## Staff overview (S01)
 

@@ -117,6 +117,24 @@ Rails.application.routes.draw do
         end
       end
       resources :updates, only: %i[create], controller: "project_updates"
+      resources :documents, only: %i[index show new create], controller: "project_documents" do
+        member do
+          post :submit_for_review
+        end
+        resources :versions, only: %i[create], controller: "document_versions" do
+          member do
+            get :download
+            post :review
+            post :release
+          end
+        end
+        resources :releases, only: [], controller: "document_releases" do
+          member do
+            post :revoke
+          end
+        end
+      end
+      resources :upload_requests, only: %i[create], controller: "project_upload_requests"
     end
     resources :tasks, only: %i[index], controller: "tasks"
     resources :schedule_events, only: %i[index], controller: "schedule_events"
@@ -166,7 +184,19 @@ Rails.application.routes.draw do
         post :decide, action: :create_decision
       end
     end
-    resources :projects, only: %i[index show]
+    resources :projects, only: %i[index show] do
+      resources :documents, only: %i[index show], controller: "project_documents" do
+        member do
+          get :download
+        end
+      end
+      resources :upload_requests, only: %i[index show], controller: "upload_requests" do
+        member do
+          post :submit
+        end
+      end
+    end
+    resources :documents, only: %i[index], controller: "documents"
     resource :account, only: %i[show], controller: "accounts"
     resources :invitations, only: %i[index create destroy] do
       member do

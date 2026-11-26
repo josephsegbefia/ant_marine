@@ -165,6 +165,114 @@ module Notifications
       )
     end
 
+    def document_uploaded(document:, audit_event:, actor:)
+      project = document.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_uploaded",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "New file on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def document_review_required(document:, audit_event:, actor:)
+      project = document.project
+      recipients = staff_with_permissions(project.operating_organization, "reports.review", "documents.manage")
+                       .reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_review_required",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "Review required on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def document_changes_requested(document:, audit_event:, actor:)
+      project = document.project
+      uploader = document.current_version&.uploaded_by_membership
+      recipients = [ uploader, project.coordinator_membership ].compact.uniq.reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_changes_requested",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "Changes requested on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def document_approved(document:, audit_event:, actor:)
+      project = document.project
+      uploader = document.current_version&.uploaded_by_membership
+      recipients = [ uploader, project.coordinator_membership ].compact.uniq.reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_approved",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "Approved on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def document_released(document:, audit_event:, actor:)
+      project = document.project
+      recipients = staff_with_permissions(project.operating_organization, "projects.view_all")
+                       .reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_released",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "Shared with client on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def document_release_revoked(document:, audit_event:, actor:)
+      project = document.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "document_release_revoked",
+        organization: project.operating_organization,
+        subject: document,
+        audit_event: audit_event,
+        title: "Client access withdrawn on #{project.reference_number}: #{document.title}"
+      )
+    end
+
+    def upload_requested(upload_request:, audit_event:, actor:)
+      project = upload_request.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "upload_requested",
+        organization: project.operating_organization,
+        subject: upload_request,
+        audit_event: audit_event,
+        title: "File requested on #{project.reference_number}: #{upload_request.title}"
+      )
+    end
+
+    def delivery_staff(project)
+      active_staff(project.operating_organization).select do |membership|
+        Documents::Access.staff_delivery_ops?(membership, project)
+      end
+    end
+
+    def staff_with_permissions(organization, *keys)
+      active_staff(organization).select do |membership|
+        perms = Authorization::EffectivePermissions.new(membership)
+        keys.any? { |key| perms.allowed?(key) }
+      end
+    end
+
     def publish_subject(recipients, kind:, organization:, subject:, audit_event:, title:)
       raise ArgumentError, "#{kind} is not an in-app event" unless Events.fetch(kind)[:channel] == "in_app"
 

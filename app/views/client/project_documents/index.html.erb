@@ -1,0 +1,30 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_back_link(label: @project.title, path: client_project_path(@project)) %>
+
+<%= ant_page_header(
+      title: "Project documents",
+      description: "Files for #{@project.reference_number}. You only see files you submitted or files ANT Marine released to you."
+    ) %>
+
+<div class="mt-4 flex flex-wrap gap-3">
+  <%= link_to "Files we need from you", client_project_upload_requests_path(@project), class: "staff-quote-link" %>
+</div>
+
+<section class="mt-6">
+  <% if @documents.any? %>
+    <ul class="space-y-4">
+      <% @documents.each do |document| %>
+        <li class="client-content-card p-4">
+          <%= link_to document.title, client_project_document_path(@project, document), class: "font-medium staff-quote-link" %>
+          <p class="staff-quote-summary__hint mt-1"><%= document.category_label %> · <%= document_workflow_label(document.workflow_status) %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <%= ant_empty_state(
+          title: "No documents yet",
+          description: "When ANT Marine shares a file or you submit one against a request, it will appear here."
+        ) %>
+  <% end %>
+</section>

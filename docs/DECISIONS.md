@@ -65,6 +65,13 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-05-007 | Resume after hold | Resume restores prior internal status from the latest `on_hold` status event; falls back to `planning` | **Implemented** 2026-11-26 | F4-05-H1 |
 | ADR-F4-05-008 | access_scope enforcement | `Delivery::Access` + `ProjectPolicy#manage?`; review/collaborator assignment ≠ manage | **Implemented** 2026-11-26 | P2-OD-042 / F4-05-H1 |
 | ADR-F4-05-009 | Project commercial protect | DB trigger `projects_commercial_protect` mirrors AR commercial immutability; no bypass GUC | **Implemented** 2026-11-26 | F4-05-H1 |
+| ADR-F4-06-001 | Document domain names | Phase 2: `Document`, `DocumentVersion`, `UploadRequest`, `DocumentAccessGrant`. F4-06 adds exact-version `DocumentReview` + `DocumentRelease` (report pattern) to satisfy F4-05-H1 release ≠ approval | **Implemented** 2026-11-26 | `docs/architecture/F4_06_DOCUMENT_MANAGEMENT.md` |
+| ADR-F4-06-002 | Storage linkage | Document versions link to existing `storage_assets` (P3 AES-GCM + quarantine). No parallel encryption stack | **Implemented** 2026-11-26 | Same |
+| ADR-F4-06-003 | Visibility vs permission | `visibility_intent` is not download authority; clients need active `DocumentRelease` (exact version) or own clean `client_submitted` receipt | **Implemented** 2026-11-26 | Same |
+| ADR-F4-06-004 | Upload request satisfaction | File upload moves request to `submitted` only; `satisfied` requires authorised release (or explicit staff completion path later) | **Implemented** 2026-11-26 | Same |
+| ADR-F4-06-005 | Preview | F4-06 ships protected download + metadata; no HTML/SVG/script in-app preview | **Implemented** 2026-11-26 | Same |
+| ADR-F4-06-006 | M09 admin rules | Deferred; categories seeded as `Document::CATEGORIES` | **Deferred** 2026-11-26 | Same |
+| ADR-F4-06-007 | Simulation / production | Document upload and client release remain unavailable for simulated projects in production; live document ops blocked until ADR-010 + scanner + key custody gates | **Implemented gates** 2026-11-26 | ADR-010 still OPEN |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 
