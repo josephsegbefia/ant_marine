@@ -20,6 +20,9 @@ default: &default
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 
+# ERB evaluates every environment in this file when Rails boots (including
+# production asset precompile in Docker). Development/test password must not
+# ENV.fetch without a default, or image builds fail when local secrets are absent.
 development:
   primary: &primary_development
     <<: *default
@@ -27,7 +30,7 @@ development:
     host: <%= ENV.fetch("ANT_MARINE_DB_HOST", "127.0.0.1") %>
     port: <%= ENV.fetch("ANT_MARINE_DB_PORT", 5433) %>
     username: <%= ENV.fetch("ANT_MARINE_DB_USER", "ant_marine_dev") %>
-    password: <%= ENV.fetch("ANT_MARINE_DB_PASSWORD") %>
+    password: <%= ENV.fetch("ANT_MARINE_DB_PASSWORD", "") %>
   queue:
     <<: *primary_development
     database: ant_marine_development_queue
@@ -42,7 +45,7 @@ test:
   host: <%= ENV.fetch("ANT_MARINE_DB_HOST", "127.0.0.1") %>
   port: <%= ENV.fetch("ANT_MARINE_DB_PORT", 5433) %>
   username: <%= ENV.fetch("ANT_MARINE_DB_USER", "ant_marine_dev") %>
-  password: <%= ENV.fetch("ANT_MARINE_DB_PASSWORD") %>
+  password: <%= ENV.fetch("ANT_MARINE_DB_PASSWORD", "") %>
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -70,21 +73,43 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# Render / managed hosts typically supply DATABASE_URL (and optionally
+# CACHE_DATABASE_URL / QUEUE_DATABASE_URL / CABLE_DATABASE_URL). Rails merges
+# those URLs over this config. Keep password optional so Docker asset builds
+# (SECRET_KEY_BASE_DUMMY=1) can parse YAML without runtime secrets.
 production:
   primary: &primary_production
     <<: *default
     database: ant_marine_production
-    username: ant_marine
+    username: <%= ENV.fetch("ANT_MARINE_DATABASE_USER", "ant_marine") %>
     password: <%= ENV["ANT_MARINE_DATABASE_PASSWORD"] %>
+    <% if ENV["DATABASE_URL"].present? %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% end %>
   cache:
     <<: *primary_production
     database: ant_marine_production_cache
     migrations_paths: db/cache_migrate
+    <% if ENV["CACHE_DATABASE_URL"].present? %>
+    url: <%= ENV["CACHE_DATABASE_URL"] %>
+    <% elsif ENV["DATABASE_URL"].present? %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% end %>
   queue:
     <<: *primary_production
     database: ant_marine_production_queue
     migrations_paths: db/queue_migrate
+    <% if ENV["QUEUE_DATABASE_URL"].present? %>
+    url: <%= ENV["QUEUE_DATABASE_URL"] %>
+    <% elsif ENV["DATABASE_URL"].present? %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% end %>
   cable:
     <<: *primary_production
     database: ant_marine_production_cable
     migrations_paths: db/cable_migrate
+    <% if ENV["CABLE_DATABASE_URL"].present? %>
+    url: <%= ENV["CABLE_DATABASE_URL"] %>
+    <% elsif ENV["DATABASE_URL"].present? %>
+    url: <%= ENV["DATABASE_URL"] %>
+    <% end %>
