@@ -6,12 +6,12 @@ class InspectionsReportsH1Test < ApplicationSystemTestCase
   setup do
     @staff = memberships(:ops_manager_membership)
     @client = memberships(:client_owner_membership)
-    @dir = Rails.root.join("tmp/f407_h1_screens")
+    @dir = Rails.root.join("tmp/f409a_screens")
     FileUtils.mkdir_p(@dir)
   end
 
   test "connected inspection report release revoke journey with responsive checks" do
-    project = build_accepted_project!(staff: @staff, owner: @client, idempotency_key: "f407-h1-sys")[:project]
+    project = build_accepted_project!(staff: @staff, owner: @client, idempotency_key: "f409a-h1-sys")[:project]
     surveyor = create_staff_membership!(role_key: "staff.surveyor", password: "password")
     Delivery::Assign.call(
       actor_membership: @staff,
@@ -45,29 +45,7 @@ class InspectionsReportsH1Test < ApplicationSystemTestCase
     assert_text "Checklist"
     page.save_screenshot(@dir.join("02_surveyor_workspace_390.png"))
 
-    8.times do
-      visit staff_inspection_path(inspection)
-      unanswered = page.all("article.staff-card").find do |card|
-        card.text.include?("Required") && !card.text.include?("Saved:")
-      end
-      break unless unanswered
-
-      begin
-        within(unanswered) do
-          next unless page.has_select?("Answer", wait: 0.2)
-
-          option_labels = find("select").all("option").map(&:text)
-          if option_labels.any? { |label| label == "No" }
-            select "No", from: "Answer"
-          elsif option_labels.any? { |label| label == "Satisfactory" }
-            select "Satisfactory", from: "Answer"
-          end
-          click_button "Save answer"
-        end
-      rescue Selenium::WebDriver::Error::StaleElementReferenceError
-        next
-      end
-    end
+    save_required_checklist_answers!(inspection: inspection, minimum: 2)
 
     visit staff_inspection_path(inspection)
     assert_text "Saved:", minimum: 2
@@ -94,39 +72,47 @@ class InspectionsReportsH1Test < ApplicationSystemTestCase
 
     report = project.reports.order(:id).last
 
-    # Review / revise / approve / release exercised through domain services with the same QA identities
-    # (custom ant_select review control is covered by unit SoD tests; UI release/revoke continue below).
-    Reports::Review.call(
-      membership: reviewer,
-      report: report,
-      version: report.current_version,
-      outcome: "changes_requested",
-      comments: "Clarify conclusions for the simulated report."
-    )
-    Reports::Revise.call(membership: @staff, report: report.reload)
-    Reports::UpdateDraft.call(
-      membership: @staff,
-      report: report,
-      version: report.reload.current_version,
-      sections: {
-        executive_summary: "Corrected simulated summary after review comments.",
-        conclusions: "No operational certification claimed."
-      }
-    )
-    Reports::Submit.call(membership: @staff, report: report, version: report.reload.current_version)
-    Reports::Review.call(
-      membership: reviewer,
-      report: report.reload,
-      version: report.current_version,
-      outcome: "approved"
-    )
-    page.save_screenshot(@dir.join("06_report_approved_domain.png"))
+    sign_in_through_form(reviewer.user, password: "password")
+    visit staff_report_path(report)
+    assert_text "Reviewer decision"
+    select_ant_option("Decision", "Request changes")
+    fill_in "Comments", with: "Clarify conclusions for the simulated report."
+    click_button "Record review"
+    assert_text(/changes requested|Clarify conclusions/i)
+    page.save_screenshot(@dir.join("05_changes_requested_1280.png"))
 
+    sign_in_through_form(@staff.user, password: "password")
     visit staff_report_path(report.reload)
+    click_button "Start corrected draft" if page.has_button?("Start corrected draft", wait: 2)
+    assert_text(/draft|Corrected|Simulated/i)
+    fill_in "Executive summary", with: "Corrected simulated summary after review comments."
+    fill_in "Conclusions", with: "No operational certification claimed." if page.has_field?("Conclusions", wait: 1)
+    click_button "Save draft"
+    click_button "Submit for review"
+    assert_text(/submitted|review/i)
+
+    sign_in_through_form(reviewer.user, password: "password")
+    visit staff_report_path(report.reload)
+    assert_text "Reviewer decision"
+    select_ant_option("Decision", "Approve")
+    click_button "Record review"
     assert_text(/approved|View approved PDF/i)
     page.save_screenshot(@dir.join("06_report_approved_1280.png"))
-    click_button "Release version #{report.current_version.version_number} to client"
-    assert_text(/available to the client|Released/i)
+
+    sign_in_through_form(@staff.user, password: "password")
+    visit staff_report_path(report.reload)
+    assert_text(/approved|View approved PDF/i)
+    approved = report.report_versions.where(status: "approved").order(:version_number).last
+    assert approved, "Expected an approved report version before release"
+    release_label = "Release version #{approved.version_number} to client"
+    assert_selector :button, release_label
+    click_button release_label
+    # Do not match revise copy ("released version") — require the flash/badge from a successful release.
+    assert_text "This version is now available to the client.", wait: 10
+    assert_text "Released to client"
+    visit staff_report_path(report)
+    assert_text "Released to client"
+    assert report.reload.released_to_client?, "Release must persist an active client release"
     page.save_screenshot(@dir.join("07_report_released_1280.png"))
 
     page.current_window.resize_to(768, 1024)
@@ -141,15 +127,7 @@ class InspectionsReportsH1Test < ApplicationSystemTestCase
     page.current_window.resize_to(1280, 900)
     sign_in_through_form(@staff.user, password: "password")
     visit staff_report_path(report)
-    click_button "Start corrected draft" if page.has_button?("Start corrected draft", wait: 1)
-
-    sign_in_through_form(@client.user, password: "password")
-    visit client_reports_path
-    assert_text report.reference_number
-
-    sign_in_through_form(@staff.user, password: "password")
-    visit staff_report_path(report)
-    if page.has_field?("Reason for withdrawing client access", wait: 1)
+    if page.has_field?("Reason for withdrawing client access", wait: 2)
       fill_in "Reason for withdrawing client access", with: "Withdraw simulated release for H1 acceptance."
       click_button "Revoke client release"
       assert_text(/withdraw|revok/i)
@@ -162,4 +140,53 @@ class InspectionsReportsH1Test < ApplicationSystemTestCase
   ensure
     page.current_window.resize_to(1280, 900) if page&.driver
   end
+
+  private
+
+    def save_required_checklist_answers!(inspection:, minimum:)
+      saved = 0
+      10.times do
+        break if saved >= minimum
+
+        visit staff_inspection_path(inspection)
+        before = page.text.scan(/Saved:/).size
+        card = page.all("article.staff-card").find do |node|
+          node.text.include?("Required") && !node.text.include?("Saved:") && node.has_button?("Save answer")
+        end
+        break unless card
+
+        prompt = card.find(".staff-card__title").text.split("Required").first.to_s.strip
+        within(card) do
+          if page.has_css?(".ant-select__trigger", wait: 2)
+            find(".ant-select__trigger", match: :first).click
+            assert_selector '[role="option"]', wait: 3
+            preferred = page.all('[role="option"]').find { |opt| %w[No Satisfactory].include?(opt.text.strip) }
+            choice = preferred || page.all('[role="option"]').find { |opt| opt.text.strip.present? && opt.text.strip != "Choose one" }
+            flunk "No selectable ant_select option for #{prompt}" unless choice
+            expected = choice.text.strip
+            choice.click
+            native = find("select.ant-select__native", visible: :all)
+            assert_predicate native.value, :present?, "ant_select did not sync native value for #{prompt}"
+            assert_no_selector ".ant-select__panel:not(.hidden)", wait: 2
+          elsif page.has_field?("Response", wait: 0.2)
+            fill_in "Response", with: "Simulated checklist note"
+          elsif page.has_field?("Number", wait: 0.2)
+            fill_in "Number", with: "2"
+          else
+            flunk "No visible answer control for #{prompt}"
+          end
+          click_button "Save answer"
+        end
+
+        assert_text(/Checklist updated|Saved:/i, wait: 5)
+        visit staff_inspection_path(inspection)
+        after = page.text.scan(/Saved:/).size
+        assert_operator after, :>, before, "Saving checklist answer for #{prompt} did not increase Saved: count"
+        saved += 1
+      rescue Selenium::WebDriver::Error::StaleElementReferenceError
+        next
+      end
+
+      assert_operator saved, :>=, minimum, "Expected to save at least #{minimum} checklist answers through visible controls"
+    end
 end

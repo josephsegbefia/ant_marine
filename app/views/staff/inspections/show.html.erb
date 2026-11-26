@@ -34,24 +34,53 @@
         <% end %>
 
         <% if policy(@inspection).update? %>
-          <%= form_with url: staff_inspection_checklist_responses_path(@inspection), method: :post, class: "staff-form mt-2" do %>
+          <%= form_with url: staff_inspection_checklist_responses_path(@inspection), method: :post, class: "staff-form mt-2",
+                data: { turbo: false } do %>
             <%= hidden_field_tag "checklist_response[item_key]", item["key"] %>
             <%= hidden_field_tag "checklist_response[response_type]", item["response_type"] %>
             <%= hidden_field_tag "checklist_response[lock_version]", response&.lock_version %>
             <% case item["response_type"] %>
             <% when "yes_no_na" %>
-              <%= ant_select_tag "checklist_response[answer]", [ ["Yes", "yes"], ["No", "no"], ["Not applicable", "na"] ], label: "Answer", selected: response&.value_json&.dig("answer") %>
-              <%= ant_text_field_tag "checklist_response[not_applicable_reason]", label: "Why not applicable", value: response&.not_applicable_reason %>
+              <%= ant_select_tag "checklist_response[answer]", [ ["Yes", "yes"], ["No", "no"], ["Not applicable", "na"] ],
+                    label: "Answer",
+                    id: "checklist_answer_#{item['key']}",
+                    include_blank: "Choose one",
+                    selected: response&.value_json&.dig("answer"),
+                    required: item["required"] %>
+              <%= ant_text_field_tag "checklist_response[not_applicable_reason]",
+                    label: "Why not applicable",
+                    id: "checklist_na_#{item['key']}",
+                    value: response&.not_applicable_reason %>
             <% when "satisfactory_unsatisfactory" %>
-              <%= ant_select_tag "checklist_response[answer]", [ ["Satisfactory", "satisfactory"], ["Unsatisfactory", "unsatisfactory"] ], label: "Answer", selected: response&.value_json&.dig("answer") %>
+              <%= ant_select_tag "checklist_response[answer]", [ ["Satisfactory", "satisfactory"], ["Unsatisfactory", "unsatisfactory"] ],
+                    label: "Answer",
+                    id: "checklist_answer_#{item['key']}",
+                    include_blank: "Choose one",
+                    selected: response&.value_json&.dig("answer"),
+                    required: item["required"] %>
             <% when "short_text", "long_text" %>
-              <%= ant_text_field_tag "checklist_response[text]", label: "Response", value: response&.value_json&.dig("text"), multiline: item["response_type"] == "long_text" %>
+              <%= ant_text_field_tag "checklist_response[text]",
+                    label: "Response",
+                    id: "checklist_text_#{item['key']}",
+                    value: response&.value_json&.dig("text"),
+                    multiline: item["response_type"] == "long_text" %>
             <% when "numeric" %>
-              <%= ant_text_field_tag "checklist_response[number]", label: "Number", value: response&.value_json&.dig("number") %>
+              <%= ant_text_field_tag "checklist_response[number]",
+                    label: "Number",
+                    id: "checklist_number_#{item['key']}",
+                    value: response&.value_json&.dig("number") %>
             <% when "date" %>
-              <%= ant_date_field "checklist_response[date]", label: "Date", value: response&.value_json&.dig("date") %>
+              <%= ant_date_field "checklist_response[date]",
+                    label: "Date",
+                    id: "checklist_date_#{item['key']}",
+                    value: response&.value_json&.dig("date") %>
             <% when "single_select" %>
-              <%= ant_select_tag "checklist_response[selected]", item["options"].map { |o| [ o["label"], o["value"] ] }, label: "Choose one", selected: response&.value_json&.dig("selected") %>
+              <%= ant_select_tag "checklist_response[selected]", item["options"].map { |o| [ o["label"], o["value"] ] },
+                    label: "Choose one",
+                    id: "checklist_selected_#{item['key']}",
+                    include_blank: "Choose one",
+                    selected: response&.value_json&.dig("selected"),
+                    required: item["required"] %>
             <% when "multi_select" %>
               <fieldset>
                 <legend class="staff-form__label"><%= item["prompt"] %> options</legend>

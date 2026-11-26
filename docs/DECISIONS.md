@@ -94,7 +94,11 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-07-H1-002 | Trusted artifact flag | `mark_available!(trusted_application_generated: true)` required for `application_generated` provenance; only `Reports::ArtifactStore` | **Implemented** 2026-11-26 | F4-07-H1 |
 | ADR-F4-07-H1-003 | Material editor SoD | Draft editors recorded in `content_json.material_editor_membership_ids`; cannot approve | **Implemented** 2026-11-26 | F4-07-H1 |
 | ADR-F4-07-H1-004 | Milestone conservatism | Kind gates remain at-least-one; `project_technically_ready?` blocks while drafts/open work remain; revoke reopens `report_release` | **Implemented** 2026-11-26 | F4-07-H1 |
-| ADR-F4-07-H1-005 | Browser review control | Connected H1 system journey uses domain services for review/revise/approve; release/revoke/client UI remain browser-driven | **Accepted limitation** 2026-11-26 | F4-07-H1 |
+| ADR-F4-07-H1-005 | Browser review control | Connected H1 system journey uses domain services for review/revise/approve; release/revoke/client UI remain browser-driven | **Superseded for F4-09A positive path** 2026-11-26 | F4-09A uses visible ant_select + browser review/release |
+| ADR-F4-08-007 | Financial concurrency | Issuance capacity, payments, reversals, void races covered by independent-connection tests; cumulative issued ≤ accepted; net payments ≤ invoice; reversals ≤ unreversed payment | **Implemented** 2026-11-26 | F4-09A / `test/lib/billing/concurrency_test.rb` |
+| ADR-F4-09A-001 | F4-09A acceptance boundary | End-to-end integration + audits only; no F4-09B features; no live switches; Design Studio HTML unmodified; unrelated WIP preserved | **Accepted (local)** 2026-11-26 | `docs/acceptance/F4_09A_INTEGRATION.md` |
+| ADR-F4-09A-002 | ant_select system interaction | System tests must drive visible `.ant-select__trigger` / `[role=option]`; portal label matching is case-insensitive because CSS uppercases labels | **Implemented** 2026-11-26 | `AntSelectSystemHelper` |
+| ADR-F4-09A-003 | Mandatory MVP gaps remain open | Client messaging (C10/S23) and client notification center (C17) are original expectations deferred by prior ADRs — not silently removed; PO must classify before Phase 4 “fully complete” | **Recorded** 2026-11-26 | `DEFERRED_FEATURE_REGISTER.md` |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

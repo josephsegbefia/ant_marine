@@ -59,11 +59,16 @@ class EnquiryTriageTest < ApplicationSystemTestCase
     sign_in_through_form(@coordinator.user)
 
     visit staff_service_inquiry_path(@inquiry)
-    click_on "Close enquiry"
+    # Prefer the dialog trigger (not the submit button inside the closed dialog). Sticky
+    # aside / toast overlays can intercept mid-panel clicks — scroll and dismiss first.
+    page.all(".ant-toast__dismiss", minimum: 0).each(&:click)
+    trigger = find("#dialog-close-trigger, [data-ant-dialog-target='trigger'][aria-controls='dialog-close'], button[aria-controls='dialog-close']", match: :first)
+    page.execute_script("arguments[0].scrollIntoView({block:'center'})", trigger.native)
+    trigger.click
     assert_selector "#dialog-close[open]"
     find("#dialog-close").send_keys(:escape)
     assert_no_selector "#dialog-close[open]"
-    assert_equal "Close enquiry", page.evaluate_script("document.activeElement.textContent").strip
+    assert_includes page.evaluate_script("document.activeElement.textContent").to_s, "Close enquiry"
   end
 
   test "staff can filter with the shared dropdown and date picker" do

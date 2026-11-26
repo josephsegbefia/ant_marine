@@ -159,7 +159,7 @@ Markup uses `role="status"`, a single `h2` title, and responsive action stacking
 ## Custom dropdown
 
 - Native `<select class="ant-select__native">` remains the submitted value.
-- Stimulus [`custom-select`](../../app/javascript/controllers/custom_select_controller.js) enhances UI; without JavaScript the native control is shown (`.is-enhanced` is added on connect).
+- Stimulus [`custom-select`](../../app/javascript/controllers/custom_select_controller.js) enhances UI; without JavaScript the native control is shown (`.is-enhanced` is added on connect). On choice it dispatches both `input` and `change` on the native select.
 - **Helpers:**
   - `ant_select(form, method, choices:)` / `ant_collection_select` for form builders.
   - `ant_select_tag(name, choices, label:, selected:, include_blank:, searchable:, compact:, data:, …)` for fields outside a form builder (filters, quotation steps). `data:` and `aria:` go on the native select so Stimulus targets and actions keep working.
@@ -168,6 +168,8 @@ Markup uses `role="status"`, a single `h2` title, and responsive action stacking
 - Inside a `<dialog>`, the options panel is fixed to the viewport so it is not clipped.
 - Disabled when the native select matches `:disabled` (including a disabled parent fieldset).
 - Keyboard: Enter/Space, arrows, Home/End, Escape (does not close a surrounding dialog), Tab exits.
+- **System tests (F4-09A):** drive the visible `.ant-select__trigger` / `[role=option]` via `AntSelectSystemHelper` — do not `select` the `sr-only` native control after enhancement. Portal labels use CSS uppercase; match labels case-insensitively.
+- **Checklist / report release forms:** use `data: { turbo: false }` where a full page reload is required for truthful “Saved” / release badge assertions.
 
 ## Toasts and flash
 

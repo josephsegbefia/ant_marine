@@ -14,6 +14,8 @@ end
 Capybara::Selenium::Driver::ChromeDriver.prepend(ChromeResetCompatibility)
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
+  include AntSelectSystemHelper
+
   driven_by :selenium, using: :headless_chrome, screen_size: [ 1280, 900 ]
 
   setup do

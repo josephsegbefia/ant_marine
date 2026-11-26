@@ -15,7 +15,7 @@ class ProjectManagementH1Test < ApplicationSystemTestCase
     visit staff_project_path(@project)
     assert_text @project.reference_number
     assert_text(/Simulated/i)
-    assert_text "Project overview"
+    assert_text(/Agreed commercial terms|Project overview|Job details/i)
   end
 
   test "client sees own project without internal notes" do

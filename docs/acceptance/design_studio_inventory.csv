@@ -1,0 +1,105 @@
+screen_id,title,intended_role,group,current_route,functional_status,design_fidelity,authorization_status,responsive_status,test_evidence,known_limitation,recommended_next_action
+G01,Welcome & product map,Any (design guide),Design guide,N/A (studio only),NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,Phase 1 handoff,Prototype map only,Keep as design reference
+G02,Colors type & components,Any (design guide),Design guide,N/A (studio only),NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,SHARED_UI_COMPONENTS.md,Living component docs supersede,Maintain SHARED_UI_COMPONENTS.md
+G03,End-to-end service journey,Any (design guide),Design guide,/,PARTIALLY IMPLEMENTED,PARTIAL,N/A,VERIFIED,Public homepage teaser,Editorial content PO-gated,PO editorial approval
+G04,Navigation & writing rules,Any (design guide),Design guide,N/A,NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,NOT APPLICABLE,AGENTS.md plain-English rule,N/A,Keep as writing standard
+P01,Homepage,Public visitor,Public website,/,COMPLETE,HIGH,Public,VERIFIED @1440/768/390,F4-01 public UI tests,Published-only content; no fake claims,PO visual/editorial sign-off
+P02,All services,Public visitor,Public website,/services,COMPLETE,HIGH,Public,VERIFIED,F4-01,Empty state when unpublished,PO content
+P03,Marine surveys,Public visitor,Public website,/services/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01,Depends on published service,PO content
+P04,Project support,Public visitor,Public website,/services/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01,Depends on published service,PO content
+P05,Environmental & safety checks,Public visitor,Public website,/services/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01,Depends on published service,PO content
+P06,Naval design & modifications,Public visitor,Public website,/services/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01,Depends on published service,PO content
+P07,Technical reports,Public visitor,Public website,/services/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01,Depends on published service,PO content
+P08,Training,Public visitor,Public website,/services/:slug + /training,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Catalogue PO-gated,PO content
+P09,Industries we serve,Public visitor,Public website,/industries,COMPLETE,MEDIUM,Public,VERIFIED,F4-01,Page snapshot content,PO editorial
+P10,Projects & experience,Public visitor,Public website,/projects,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Hidden when empty; no fake projects,PO case studies
+P11,Project story,Public visitor,Public website,/projects/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Published case studies only,PO content
+P12,About ANT Marine,Public visitor,Public website,/about,COMPLETE,MEDIUM,Public,VERIFIED,F4-01,No invented credentials,PO editorial
+P13,Insights & updates,Public visitor,Public website,/insights,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Published articles only,PO content
+P14,Insight article,Public visitor,Public website,/insights/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Action Text snapshot,PO content
+P15,Resources & downloads,Public visitor,Public website,/resources,PARTIALLY IMPLEMENTED,MEDIUM,Public,VERIFIED,F4-01B,File downloads disabled,Decide resource file policy
+P16,Training sessions,Public visitor,Public website,/training,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Published offerings only,PO content
+P17,Training details,Public visitor,Public website,/training/:slug,COMPLETE,HIGH,Public,VERIFIED,F4-01B,Registration not online,PO content
+P18,Contact,Public visitor,Public website,/contact,COMPLETE,MEDIUM,Public,VERIFIED,F4-01,Contact form is page content; enquire CTA,PO editorial
+P19,Quote — your details,Public visitor,Public website,/request-a-quote,COMPLETE,HIGH,Public,VERIFIED @390+,F4-02B enquiry wizard,No uploads (approved),Preserve WIP enquiry UI
+P20,Quote — project details,Public visitor,Public website,/request-a-quote,COMPLETE,HIGH,Public,VERIFIED,F4-02B,No file upload,OK
+P21,Quote — review & send,Public visitor,Public website,/request-a-quote,COMPLETE,HIGH,Public,VERIFIED,F4-02B,Idempotent submit,OK
+P22,Request received,Public visitor,Public website,/request-a-quote/received,COMPLETE,HIGH,Public,VERIFIED,F4-02B,Session confirmation,OK
+P23,Book a visit,Public visitor,Public website,N/A,EXPLICITLY DEFERRED,N/A,N/A,N/A,Questionnaire booking,Preferred-date booking vs schedule,F4-09B scope decision
+P24,Privacy & information,Public visitor,Public website,N/A (contact/privacy copy),PARTIALLY IMPLEMENTED,LOW,Public,UNVERIFIED,Page content may cover,Dedicated privacy page missing,PO legal copy + page
+A01,Sign in,Staff/Client,Access,/session/new,COMPLETE,HIGH,Auth,VERIFIED,P3-A1 + system tests,Rate limit test-skipped,OK
+A02,Accept invitation,Invitee,Access,/invitations/:token,COMPLETE,HIGH,Auth,VERIFIED @390,P3-A2,Replay/expire tested,OK
+A03,Set up account,Invitee,Access,/invitations/:token/setup,COMPLETE,HIGH,Auth,VERIFIED,P3-A2,OK,OK
+A04,Confirm it’s you,User,Access,N/A,EXPLICITLY DEFERRED,N/A,N/A,N/A,OTP MFA not shipped,Security enhancement,Post-MVP / F4-09B
+A05,Reset password,User,Access,/passwords/*,COMPLETE,MEDIUM,Auth,PARTIAL,Rails auth generators,Mailbox flow PO-open historically,PO mailbox verify
+A06,Choose workspace,Multi-membership user,Access,/workspace,COMPLETE,HIGH,Auth,VERIFIED,P3-A1,OK,OK
+C01,Client home,Client member,Client portal,/client,COMPLETE,MEDIUM,Org-scoped,VERIFIED,F4-04A + shell tests,No messaging/notifications center,F4-09B messaging decision
+C02,My requests,Client member,Client portal,/client/requests,COMPLETE,MEDIUM,Org-scoped,VERIFIED,F4-04A,OK,OK
+C03,Request details,Client member,Client portal,/client/requests/:id,PARTIALLY IMPLEMENTED,MEDIUM,Org-scoped,PARTIAL,F4-04A,Limited clarification UX,Enhancement
+C04,Review a quotation,Client with quotes.accept,Client portal,/client/quotations/:id,COMPLETE,HIGH,Permissioned,VERIFIED,F4-04B H1,Simulated only,Live acceptance gated
+C05,My projects,Client member,Client portal,/client/projects,COMPLETE,HIGH,Org-scoped,VERIFIED,F4-05,OK,OK
+C06,Project overview,Client member,Client portal,/client/projects/:id,COMPLETE,MEDIUM,Org-scoped,VERIFIED,F4-05,OK,OK
+C07,Files we need,Client member,Client portal,/client/projects/:id/upload_requests,COMPLETE,HIGH,Org-scoped,VERIFIED @390,F4-06 H1,Quarantine required,OK
+C08,Documents & files,Client member,Client portal,/client/documents + project docs,COMPLETE,HIGH,Release-gated,VERIFIED,F4-06,No preview,Deferred preview
+C09,Document preview,Client member,Client portal,N/A (download only),EXPLICITLY DEFERRED,N/A,N/A,N/A,ADR-F4-06-005,Download only,F4-09B optional
+C10,Project messages,Client member,Client portal,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Original questionnaire,No client-staff messaging,F4-09B MVP gap decision
+C11,My reports,Client member,Client portal,/client/reports,COMPLETE,HIGH,Release-gated,VERIFIED,F4-07 H1 system,OK,OK
+C12,Final report,Client member,Client portal,/client/reports/:id,COMPLETE,HIGH,Release-gated,VERIFIED,F4-07 H1,PDF download,OK
+C13,Bills & payments,Client finance/member,Client portal,/client/invoices,COMPLETE,HIGH,billing.view,VERIFIED,F4-08 billing H1,Simulated; no gateway,Live billing gated
+C14,Bill details,Client finance/member,Client portal,/client/invoices/:id,COMPLETE,HIGH,billing.view,VERIFIED,F4-08,PDF download,OK
+C15,My company & team,Client owner/admin,Client portal,/client/invitations,PARTIALLY IMPLEMENTED,MEDIUM,team.*,PARTIAL,P3-A2/F4-04A,Invite/resend; limited profile UI,Enhance team settings
+C16,My account,Client user,Client portal,N/A,PARTIALLY IMPLEMENTED,LOW,Auth,UNVERIFIED,Password reset exists,Full profile/alerts missing,Enhancement
+C17,Updates & reminders,Client member,Client portal,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,No client notification center,Staff notifications only,F4-09B MVP gap decision
+C18,My vessels,Client member,Client portal,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Vessel register deferred,Post-MVP,F4-09B optional
+C19,Vessel details,Client member,Client portal,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Vessel register deferred,Post-MVP,F4-09B optional
+C20,Help & support,Client member,Client portal,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Help center absent,Link to contact,Enhancement
+S01,Team overview,Staff,Staff workspace,/staff,COMPLETE,MEDIUM,Permission-scoped,VERIFIED,ADR-F4-03-007,Real counts only,PO visual
+S02,Incoming requests,Staff with inquiries.*,Staff workspace,/staff/enquiries,COMPLETE,HIGH,Scoped,VERIFIED,F4-03 system,OK,OK
+S03,Request details,Staff with inquiries.qualify,Staff workspace,/staff/enquiries/:id,COMPLETE,HIGH,Scoped,VERIFIED,F4-03,OK,OK
+S04,Prepare quotation,Staff with quotes.create,Staff workspace,/staff/quotations/:id/edit,COMPLETE,HIGH,Permissioned,VERIFIED,F4-02A H2,OK,OK
+S05,Quotes & decisions,Staff with quotes.view_*,Staff workspace,/staff/quotations,COMPLETE,HIGH,Permissioned,VERIFIED,F4-02A/B,OK,OK
+S06,Booking calendar,Staff,Staff workspace,N/A interactive calendar,PARTIALLY IMPLEMENTED,LOW,projects.*,PARTIAL,F4-05 schedule agenda,No full calendar UI,Deferred interactive calendar
+S07,All jobs,Staff with projects.*,Staff workspace,/staff/projects,COMPLETE,HIGH,Scoped,VERIFIED,F4-05 H1,OK,OK
+S08,Job overview,Staff assigned/manage,Staff workspace,/staff/projects/:id,COMPLETE,MEDIUM,Scoped,VERIFIED,F4-05; WIP overview exists,Unrelated WIP revamp present,Preserve WIP; PO review
+S09,Assign team,Staff with projects.assign,Staff workspace,/staff/projects/:id,COMPLETE,MEDIUM,Scoped,VERIFIED,F4-05 H1,access_scope enforced,OK
+S10,Inspection checklist,Surveyor/staff,Staff workspace,/staff/inspections/:id,COMPLETE,HIGH,Assignment-scoped,VERIFIED @390,F4-09A H1 system,ant_select fixed,OK
+S11,Job documents,Staff with documents.*,Staff workspace,/staff/projects/:id/documents,COMPLETE,HIGH,Scoped,VERIFIED,F4-06 H1,OK,OK
+S12,Reports to review,Reviewer/staff,Staff workspace,/staff/reports,COMPLETE,HIGH,Scoped,VERIFIED,F4-07,OK,OK
+S13,Review report,Technical reviewer,Staff workspace,/staff/reports/:id,COMPLETE,HIGH,reports.review,VERIFIED,F4-09A browser controls,SoD enforced,OK
+S14,Release final report,Staff with reports.release,Staff workspace,/staff/reports/:id,COMPLETE,HIGH,reports.release,VERIFIED,F4-09A,Separate from approve,OK
+S15,My tasks,Staff,Staff workspace,/staff/tasks,COMPLETE,MEDIUM,Assigned,VERIFIED,F4-05,OK,OK
+S16,Client directory,Staff,Staff workspace,/staff/clients,COMPLETE,MEDIUM,Scoped,VERIFIED,F4-04A; WIP revamp,Unrelated WIP present,Preserve WIP
+S17,Client profile,Staff,Staff workspace,/staff/clients/:id,COMPLETE,MEDIUM,Scoped,VERIFIED,F4-04A/B,OK,OK
+S18,Vessel register,Staff,Staff workspace,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Deferred,Post-MVP,F4-09B optional
+S19,Bills & balances,Finance/ops,Staff workspace,/staff/finance + /staff/invoices,COMPLETE,HIGH,billing.*,VERIFIED,F4-08 + concurrency,Simulated only,Live gated
+S20,Prepare bill,Finance,Staff workspace,/staff/invoices/new,COMPLETE,HIGH,billing.manage,VERIFIED,F4-08,Capacity locks,OK
+S21,Team calendar,Staff,Staff workspace,/staff/schedule_events,PARTIALLY IMPLEMENTED,MEDIUM,Scoped,PARTIAL,F4-05 agenda list,No external calendar sync,Deferred
+S22,Activity history,Staff with audit.view_staff,Staff workspace,Partial via timelines,PARTIALLY IMPLEMENTED,LOW,audit.*,PARTIAL,Module timelines + AuditEvent,No unified M13 UI,Enhancement
+S23,Client conversations,Staff,Staff workspace,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Messaging absent,F4-09B MVP gap,F4-09B decision
+M01,Company overview,Admin/content,Company settings,/staff (partial),PARTIALLY IMPLEMENTED,LOW,analytics.*,UNVERIFIED,S01 proxies some data,No dedicated M01,Enhancement
+M02,Service pages,Content manager,Company settings,/staff/website/services,COMPLETE,HIGH,content.*,VERIFIED,F4-01A,Publish PO-gated,PO publish
+M03,Website content,Content manager,Company settings,/staff/website/pages,COMPLETE,HIGH,content.*,VERIFIED,F4-01A,Snapshot isolation,PO publish
+M04,Insights & articles,Content manager,Company settings,/staff/website/articles,COMPLETE,HIGH,content.*,VERIFIED,F4-01B,OK,PO publish
+M05,Project stories,Content manager,Company settings,/staff/website/case_studies,COMPLETE,HIGH,content.*,VERIFIED,F4-01B,OK,PO publish
+M06,Training catalogue,Content manager,Company settings,/staff/website/training_offerings,COMPLETE,HIGH,content.*,VERIFIED,F4-01B,OK,PO publish
+M07,Team access,Staff with team.*,Company settings,Invitations + overrides,PARTIALLY IMPLEMENTED,MEDIUM,team.*,PARTIAL,P3-A3 PermissionGranter,Full M07 UX incomplete,Enhance permissions UI
+M08,Invitations,Staff with team.invite,Company settings,/staff/invitations,COMPLETE,HIGH,team.invite,VERIFIED,P3-A2,OK,OK
+M09,Document rules,Admin,Company settings,N/A,EXPLICITLY DEFERRED,N/A,N/A,N/A,ADR-F4-06-006,Seeded categories,F4-09B optional
+M10,Email messages,Admin,Company settings,N/A,PRODUCTION-GATED,N/A,N/A,N/A,Mailers exist; live off,No template admin UI,Production email gate
+M11,Company settings,Admin,Company settings,N/A,PARTIALLY IMPLEMENTED,LOW,company.settings_*,UNVERIFIED,Permission exists,Dedicated settings UI thin,Enhancement
+M12,Business insights,Ops/finance,Company settings,Finance dashboard partial,PARTIALLY IMPLEMENTED,LOW,analytics/billing,PARTIAL,F4-08 currency totals,No full analytics export,Enhancement
+M13,Security history,Admin,Company settings,AuditEvent store,PARTIALLY IMPLEMENTED,LOW,audit.view_staff,PARTIAL,Events recorded,No dedicated UI,Enhancement
+M14,Archive & retention,Admin,Company settings,N/A,NOT IMPLEMENTED,N/A,N/A,N/A,Retention/legal holds deferred,Production policy,Production gate
+R01,Mobile home,Public,Mobile previews,/,COMPLETE,HIGH,Public,VERIFIED @390,F4-01,OK,OK
+R02,Mobile quote request,Public,Mobile previews,/request-a-quote,COMPLETE,HIGH,Public,VERIFIED @390,F4-02B,OK,OK
+R03,Mobile client home,Client,Mobile previews,/client,COMPLETE,MEDIUM,Org-scoped,VERIFIED,Shell tests,OK,OK
+R04,Mobile project details,Client,Mobile previews,/client/projects/:id,COMPLETE,MEDIUM,Org-scoped,PARTIAL,F4-05,OK,OK
+R05,Mobile file upload,Client,Mobile previews,Upload requests,COMPLETE,HIGH,Org-scoped,VERIFIED @390,F4-06,OK,OK
+R06,Mobile team home,Staff,Mobile previews,/staff,COMPLETE,MEDIUM,Scoped,PARTIAL,Drawer nav,OK,OK
+R07,Mobile job details,Staff,Mobile previews,/staff/projects/:id,COMPLETE,MEDIUM,Scoped,PARTIAL,F4-05,OK,OK
+R08,Mobile inspection checklist,Surveyor,Mobile previews,/staff/inspections/:id,COMPLETE,HIGH,Assignment,VERIFIED @390,F4-09A H1,OK,OK
+X01,New client — no projects,Client,Special states,/client,COMPLETE,MEDIUM,Org-scoped,PARTIAL,Empty states,OK,OK
+X02,Unable to load information,Any,Special states,Generic errors,PARTIALLY IMPLEMENTED,LOW,N/A,UNVERIFIED,Rails errors,No branded X02 everywhere,Polish
+X03,Upload needs attention,Client/staff,Special states,Document quarantine messaging,COMPLETE,MEDIUM,Scoped,VERIFIED,F4-06,OK,OK
+X04,Access not allowed,Any,Special states,403/404 scoped,COMPLETE,MEDIUM,Authz,VERIFIED,Isolation tests,OK,OK
+X05,Nothing matched the search,Staff/client,Special states,Filter empty states,COMPLETE,MEDIUM,Scoped,PARTIAL,Enquiry filters etc.,OK,OK

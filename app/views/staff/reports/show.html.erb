@@ -65,7 +65,7 @@
           target: "_blank",
           rel: "noopener" %>
     <% if policy(@approved_version).release? && !@report.released_to_client? %>
-      <%= form_with url: release_staff_report_version_path(@report, @approved_version), method: :post, class: "inline" do %>
+      <%= form_with url: release_staff_report_version_path(@report, @approved_version), method: :post, class: "inline", data: { turbo: false } do %>
         <%= hidden_field_tag :confirm, true %>
         <%= submit_tag "Release version #{@approved_version.version_number} to client", class: "ant-button ant-button--primary" %>
       <% end %>

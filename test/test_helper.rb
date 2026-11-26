@@ -11,6 +11,7 @@ require_relative "test_helpers/enquiry_test_helper"
 require_relative "test_helpers/delivery_test_helper"
 require_relative "test_helpers/inspections_test_helper"
 require_relative "test_helpers/malware_scan_stub_helper"
+require_relative "test_helpers/ant_select_system_helper"
 
 module ActiveSupport
   class TestCase

@@ -266,7 +266,11 @@ export default class extends Controller {
     if (item.getAttribute("aria-disabled") === "true") return
     const changed = this.nativeTarget.value !== item.dataset.value
     this.nativeTarget.value = item.dataset.value
-    if (changed) this.nativeTarget.dispatchEvent(new Event("change", { bubbles: true }))
+    // Keep both change and input bubbling so Turbo/forms and Capybara helpers observe the update.
+    if (changed) {
+      this.nativeTarget.dispatchEvent(new Event("input", { bubbles: true }))
+      this.nativeTarget.dispatchEvent(new Event("change", { bubbles: true }))
+    }
     this.syncFromNative()
     this.close()
     this.triggerTarget.focus()
