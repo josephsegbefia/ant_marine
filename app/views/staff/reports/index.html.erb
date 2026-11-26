@@ -1,0 +1,20 @@
+<% content_for :staff_nav, :reports %>
+
+<%= ant_page_header(title: "Reports", description: "Simulated technical reports awaiting review and release.") %>
+
+<% if @reports.any? %>
+  <ul class="staff-record-list mt-6">
+    <% @reports.each do |report| %>
+      <li>
+        <%= link_to staff_report_path(report), class: "staff-record-list__link" do %>
+          <span class="staff-record-list__title"><%= report.title %></span>
+          <span class="staff-quote-summary__hint"><%= report.reference_number %> · <%= report.project.reference_number %></span>
+          <%= ant_status_badge(label: report.current_version&.status_label || "Draft") %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+  <%= ant_pagination(@pagination, label: "reports", path_for: ->(page) { staff_reports_path(page: page) }) %>
+<% else %>
+  <%= ant_empty_state(title: "No reports yet", description: "Prepare a report after an inspection is submitted.") %>
+<% end %>

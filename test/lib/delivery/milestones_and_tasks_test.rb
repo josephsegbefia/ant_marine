@@ -21,12 +21,20 @@ class Delivery::MilestonesAndTasksTest < ActiveSupport::TestCase
     assert_match(/of \d+ milestones complete/, summary[:label])
   end
 
-  test "evidence-gated milestones cannot be completed" do
+  test "evidence-gated milestones cannot be completed without inspection" do
     milestone = @project.project_milestones.find_by!(kind: "technical_review")
     assert_raises(Delivery::Milestones::Error) do
       Delivery::Milestones.complete!(actor: @staff, milestone: milestone)
     end
     assert_equal "pending", milestone.reload.status
+  end
+
+  test "technical review milestone completes after inspection submitted" do
+    inspection = build_inspection!(project: @project, staff: @staff, assignee: @surveyor, status: "submitted")
+    milestone = @project.project_milestones.find_by!(kind: "technical_review")
+    Delivery::Milestones.complete!(actor: @staff, milestone: milestone)
+    assert milestone.reload.completed?
+    assert inspection.persisted?
   end
 
   test "cancelled milestones are excluded from progress denominator" do

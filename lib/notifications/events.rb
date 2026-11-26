@@ -30,7 +30,13 @@ module Notifications
       "document_approved" => { category: "documents", channel: "in_app" },
       "document_released" => { category: "documents", channel: "in_app" },
       "document_release_revoked" => { category: "documents", channel: "in_app" },
-      "upload_requested" => { category: "documents", channel: "in_app" }
+      "upload_requested" => { category: "documents", channel: "in_app" },
+      "inspection_assigned" => { category: "inspections", channel: "in_app" },
+      "inspection_submitted" => { category: "inspections", channel: "in_app" },
+      "report_review_required" => { category: "reports", channel: "in_app" },
+      "report_changes_requested" => { category: "reports", channel: "in_app" },
+      "report_approved" => { category: "reports", channel: "in_app" },
+      "report_released" => { category: "reports", channel: "in_app" }
     }.freeze
 
     def self.fetch(key)

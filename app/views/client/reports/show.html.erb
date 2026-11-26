@@ -1,0 +1,10 @@
+<% content_for :client_nav, :reports %>
+
+<%= ant_page_header(title: @report.title, description: @report.reference_number) %>
+
+<% if @version %>
+  <p class="staff-quote-summary__hint mt-4"><%= @version.label %> · released <%= l(@release.released_at, format: :short) %></p>
+  <%= link_to "Download PDF", download_client_report_path(@report), class: "ant-button ant-button--primary mt-6" %>
+<% else %>
+  <%= ant_empty_state(title: "Report unavailable", description: "This report is no longer available to download.") %>
+<% end %>

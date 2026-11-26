@@ -64,6 +64,20 @@
       <%= render "shared/staff/nav_icon", name: "clock" %>
       <span>Schedule</span>
     <% end %>
+    <% if staff_can_view_inspections? %>
+      <%= link_to staff_inspections_path,
+            class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:inspections)}" do %>
+        <%= render "shared/staff/nav_icon", name: "clipboard" %>
+        <span>Inspections</span>
+      <% end %>
+    <% end %>
+    <% if staff_can_view_reports? %>
+      <%= link_to staff_reports_path,
+            class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:reports)}" do %>
+        <%= render "shared/staff/nav_icon", name: "file" %>
+        <span>Reports</span>
+      <% end %>
+    <% end %>
   <% end %>
 
   <p class="staff-side-label staff-side-label--spaced">ADMINISTRATION</p>

@@ -136,6 +136,34 @@ Rails.application.routes.draw do
       end
       resources :upload_requests, only: %i[create], controller: "project_upload_requests"
     end
+    resources :inspections, only: %i[index show new create] do
+      member do
+        post :submit
+        post :request_corrections
+        post :complete
+      end
+      resources :checklist_responses, only: %i[create update], controller: "inspection_checklist_responses"
+      resources :findings, only: %i[create], controller: "inspection_findings"
+      resources :evidence_links, only: %i[create destroy], controller: "inspection_evidence_links"
+    end
+    resources :reports, only: %i[index show new create] do
+      member do
+        post :submit
+        post :revise
+        get :pdf
+      end
+      resources :versions, only: %i[update], controller: "report_versions" do
+        member do
+          post :review
+          post :release
+        end
+      end
+      resources :releases, only: [], controller: "report_releases" do
+        member do
+          post :revoke
+        end
+      end
+    end
     resources :tasks, only: %i[index], controller: "tasks"
     resources :schedule_events, only: %i[index], controller: "schedule_events"
     namespace :website do
@@ -197,6 +225,11 @@ Rails.application.routes.draw do
       end
     end
     resources :documents, only: %i[index], controller: "documents"
+    resources :reports, only: %i[index show] do
+      member do
+        get :download
+      end
+    end
     resource :account, only: %i[show], controller: "accounts"
     resources :invitations, only: %i[index create destroy] do
       member do

@@ -77,6 +77,34 @@ module AntUiHelper
            }
   end
 
+  # Text / textarea field outside a form builder (params keyed by `name`).
+  def ant_text_field_tag(name, label:, value: nil, id: nil, hint: nil, error: nil, required: false,
+                         multiline: false, placeholder: nil, wrapper_class: nil)
+    field_id = id || sanitize_to_id(name)
+    describedby = [ hint.present? ? "#{field_id}-hint" : nil, error.present? ? "#{field_id}-error" : nil ].compact.join(" ").presence
+    input_opts = {
+      id: field_id,
+      class: "ant-control",
+      required: required,
+      placeholder: placeholder,
+      aria: { invalid: (true if error.present?), describedby: describedby }.compact
+    }
+    control = if multiline
+      text_area_tag(name, value, input_opts.merge(rows: 4))
+    else
+      text_field_tag(name, value, input_opts)
+    end
+
+    content_tag(:div, class: [ "ant-field", "ant-field--portal", wrapper_class ].compact.join(" ")) do
+      safe_join([
+        label_tag(field_id, label, class: "ant-field__label"),
+        control,
+        (tag.p(hint, class: "ant-field__hint", id: "#{field_id}-hint") if hint.present?),
+        (tag.p(error, class: "ant-field__error", id: "#{field_id}-error", role: "alert") if error.present?)
+      ].compact)
+    end
+  end
+
   # The ANT dropdown for fields outside a form builder. choices: [[label, value], ...].
   # include_blank: text for an empty first option (for example "All statuses").
   # data/aria go on the underlying <select>, so existing Stimulus targets and actions keep working.

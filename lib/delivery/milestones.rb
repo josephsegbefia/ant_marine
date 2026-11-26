@@ -11,8 +11,9 @@ module Delivery
       raise Denied, "You need permission to update milestones." unless manage?(actor, milestone.project)
       raise Error, "That milestone is already completed." if milestone.completed?
       raise Error, "Cancelled milestones cannot be completed." if milestone.status == "cancelled"
-      if milestone.evidence_gated?
-        raise Error, "Technical review and report release milestones need evidence from a later module (F4-07)."
+      if milestone.evidence_gated? && !evidence_satisfied?(milestone)
+        label = milestone.kind.tr("_", " ")
+        raise Error, "The #{label} milestone needs a submitted inspection or client report release before it can be marked complete."
       end
 
       milestone.update!(
@@ -32,6 +33,18 @@ module Delivery
 
     def manage?(actor, project)
       Delivery::Access.can_manage_delivery?(actor, project)
+    end
+
+    def evidence_satisfied?(milestone)
+      project = milestone.project
+      case milestone.kind
+      when "technical_review"
+        Delivery::TechnicalProgress.inspection_evidence_met?(project)
+      when "report_release"
+        Delivery::TechnicalProgress.report_release_evidence_met?(project)
+      else
+        true
+      end
     end
   end
 end

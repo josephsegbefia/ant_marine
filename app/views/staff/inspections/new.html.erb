@@ -1,0 +1,21 @@
+<% content_for :staff_nav, :inspections %>
+
+<%= ant_page_header(
+      title: "New inspection",
+      description: "Create a simulated checklist for #{@project.reference_number}."
+    ) %>
+
+<div class="ant-notice ant-notice--warn mt-4">
+  <p><strong>Simulated only.</strong> This checklist is for development and training, not regulatory sign-off.</p>
+</div>
+
+<%= form_with model: @inspection, url: staff_inspections_path(project_id: @project.id), class: "staff-form mt-6" do |form| %>
+  <%= ant_field form, :title, label: "Title", required: true, placeholder: "e.g. General vessel observation" %>
+  <%= ant_field form, :inspection_type, label: "Inspection type", required: true, placeholder: "general_observation" %>
+  <%= ant_field form, :vessel_name, label: "Vessel name (optional)" %>
+  <%= ant_field form, :location, label: "Location (optional)" %>
+  <div class="staff-form__actions">
+    <%= form.submit "Create inspection", class: "ant-button ant-button--primary" %>
+    <%= ant_back_link label: "Back to project", path: staff_project_path(@project) %>
+  </div>
+<% end %>

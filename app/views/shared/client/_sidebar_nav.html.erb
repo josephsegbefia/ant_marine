@@ -33,6 +33,15 @@
     <% end %>
   <% end %>
 
+  <% if client_can_view_reports? %>
+    <%= link_to client_reports_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:reports)}",
+          data: { action: "click->client-shell#close" } do %>
+      <%= render "shared/staff/nav_icon", name: "file" %>
+      <span>Reports</span>
+    <% end %>
+  <% end %>
+
   <% if client_can_view_documents? %>
     <%= link_to client_documents_path,
           class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:documents)}",

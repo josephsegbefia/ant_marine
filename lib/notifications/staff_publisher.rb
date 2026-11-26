@@ -247,6 +247,84 @@ module Notifications
       )
     end
 
+    def inspection_assigned(inspection:, audit_event:, actor:)
+      project = inspection.project
+      recipients = [ inspection.assigned_surveyor_membership ].compact.reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "inspection_assigned",
+        organization: project.operating_organization,
+        subject: inspection,
+        audit_event: audit_event,
+        title: "You were assigned inspection #{inspection.reference_number} on #{project.reference_number}"
+      )
+    end
+
+    def inspection_submitted(inspection:, audit_event:, actor:)
+      project = inspection.project
+      recipients = review_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "inspection_submitted",
+        organization: project.operating_organization,
+        subject: inspection,
+        audit_event: audit_event,
+        title: "Inspection submitted on #{project.reference_number}: #{inspection.title}"
+      )
+    end
+
+    def report_review_required(report:, audit_event:, actor:)
+      project = report.project
+      recipients = review_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "report_review_required",
+        organization: project.operating_organization,
+        subject: report,
+        audit_event: audit_event,
+        title: "Review required on #{project.reference_number}: #{report.title}"
+      )
+    end
+
+    def report_changes_requested(report:, audit_event:, actor:)
+      project = report.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "report_changes_requested",
+        organization: project.operating_organization,
+        subject: report,
+        audit_event: audit_event,
+        title: "Changes requested on #{project.reference_number}: #{report.title}"
+      )
+    end
+
+    def report_approved(report:, audit_event:, actor:)
+      project = report.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "report_approved",
+        organization: project.operating_organization,
+        subject: report,
+        audit_event: audit_event,
+        title: "Approved on #{project.reference_number}: #{report.title}"
+      )
+    end
+
+    def report_released(report:, audit_event:, actor:)
+      project = report.project
+      recipients = delivery_staff(project).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "report_released",
+        organization: project.operating_organization,
+        subject: report,
+        audit_event: audit_event,
+        title: "Shared with client on #{project.reference_number}: #{report.title}"
+      )
+    end
+
     def upload_requested(upload_request:, audit_event:, actor:)
       project = upload_request.project
       recipients = delivery_staff(project).reject { |m| m.id == actor.id }
@@ -258,6 +336,12 @@ module Notifications
         audit_event: audit_event,
         title: "File requested on #{project.reference_number}: #{upload_request.title}"
       )
+    end
+
+    def review_staff(project)
+      active_staff(project.operating_organization).select do |membership|
+        Reports::Access.can_review?(membership, Report.new(project: project))
+      end
     end
 
     def delivery_staff(project)

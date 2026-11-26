@@ -7,6 +7,7 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | `ant_field` | [`app/helpers/ant_ui_helper.rb`](../../app/helpers/ant_ui_helper.rb) + [`app/views/shared/ui/_field.html.erb`](../../app/views/shared/ui/_field.html.erb) | Text, email, password inputs |
+| `ant_text_field_tag` | [`app/helpers/ant_ui_helper.rb`](../../app/helpers/ant_ui_helper.rb) | Tag-style text/textarea outside a form builder (inspections/reports) |
 | `ant_rich_text_field` | [`_rich_text_field.html.erb`](../../app/views/shared/ui/_rich_text_field.html.erb) + [`_rich_text_toolbar.html.erb`](../../app/views/shared/ui/_rich_text_toolbar.html.erb) + [`trix_ant_marine_config.js`](../../app/javascript/trix_ant_marine_config.js) + [`rich_text_editor_controller.js`](../../app/javascript/controllers/rich_text_editor_controller.js) | Action Text / Trix (2.1.19): primary + **More** menus (underline, strike, indent, code block, clear formatting); shared across all staff long-form fields |
 | **Editorial workspace** | [`staff/website/editorial_workspace/*`](../../app/views/staff/website/editorial_workspace/) + [`staff_editorial_wizard_controller.js`](../../app/javascript/controllers/staff_editorial_wizard_controller.js) + [`StaffEditorialWorkspaceHelper`](../../app/helpers/staff_editorial_workspace_helper.rb) | Multi-step staff CMS shell (matches service editor): stepper, cards, preview aside, page settings, save draft / save and continue |
 | `staff-editorial-preview` | [`staff_editorial_preview_controller.js`](../../app/javascript/controllers/staff_editorial_preview_controller.js) + [`editorial/_draft_preview.html.erb`](../../app/views/staff/website/editorial/_draft_preview.html.erb) | Legacy single-page preview; superseded by editorial workspace previews for F4-01B types |
@@ -243,6 +244,14 @@ data: {
 - Client C07–C09: [`client/upload_requests`](../../app/views/client/upload_requests/), [`client/project_documents`](../../app/views/client/project_documents/), [`client/documents`](../../app/views/client/documents/) — request list, library, metadata + protected download only (no unsafe in-app preview).
 - Labels: [`DocumentsHelper`](../../app/helpers/documents_helper.rb) for workflow/security/upload-request status wording.
 - Quarantine copy must stay truthful: uploaded files show security checks pending until `storage_assets.scan_status = available`.
+
+## Inspections & technical reports (F4-07)
+
+- Staff inspections (S10): [`staff/inspections`](../../app/views/staff/inspections/) — list + create + surveyor workspace (checklist forms, findings, evidence attach, submit). Reuses `ant_page_header`, `ant_status_badge`, `ant_empty_state`, `ant_select_tag` / `ant_field` / `ant_date_field`.
+- Staff reports (S12–S14): [`staff/reports`](../../app/views/staff/reports/) — draft sections, submit, independent review, start corrected draft, approved PDF link, exact-version release, revoke.
+- Client reports (C11–C12): [`client/reports`](../../app/views/client/reports/) — released versions only + protected PDF download. Nav item appears when reports routes are present.
+- Simulation banners required on staff and client surfaces. No fabricated metrics or non-functional review controls.
+- Responsive evidence: `tmp/f407_screens/` (gitignored).
 
 ## Staff overview (S01)
 

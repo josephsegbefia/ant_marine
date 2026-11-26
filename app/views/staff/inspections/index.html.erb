@@ -1,0 +1,32 @@
+<% content_for :staff_nav, :inspections %>
+
+<%= ant_page_header(
+      title: "Inspections",
+      description: "Simulated field checklists for assigned projects."
+    ) %>
+
+<% if Rails.env.production? %>
+  <div class="ant-notice ant-notice--warn mt-4">
+    <p>Simulated inspections are not available in production yet.</p>
+  </div>
+<% end %>
+
+<% if @inspections.any? %>
+  <ul class="staff-record-list mt-6">
+    <% @inspections.each do |inspection| %>
+      <li>
+        <%= link_to staff_inspection_path(inspection), class: "staff-record-list__link" do %>
+          <span class="staff-record-list__title"><%= inspection.title %></span>
+          <span class="staff-quote-summary__hint"><%= inspection.reference_number %> · <%= inspection.project.reference_number %></span>
+          <%= ant_status_badge(label: inspection.status_label) %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+  <%= ant_pagination(@pagination, label: "inspections", path_for: ->(page) { staff_inspections_path(page: page) }) %>
+<% else %>
+  <%= ant_empty_state(
+        title: "No inspections yet",
+        description: "Start a simulated inspection from a project when delivery planning is ready."
+      ) %>
+<% end %>

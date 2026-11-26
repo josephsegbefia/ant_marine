@@ -1,0 +1,136 @@
+<% content_for :staff_nav, :inspections %>
+
+<%= ant_page_header(
+      title: @inspection.title,
+      description: "#{@inspection.reference_number} · #{@inspection.project.reference_number}"
+    ) %>
+
+<div class="ant-notice ant-notice--warn mt-4">
+  <p><strong>Simulated inspection.</strong> Answers and findings are for testing only.</p>
+</div>
+
+<div class="mt-4 flex flex-wrap items-center gap-3">
+  <%= ant_status_badge(label: @inspection.status_label) %>
+  <% if policy(@inspection).update? %>
+    <span class="staff-quote-summary__hint">You can edit this checklist.</span>
+  <% end %>
+</div>
+
+<section class="mt-8">
+  <h2 class="staff-section-title">Checklist</h2>
+  <% checklist_sections(@inspection).each do |section| %>
+    <h3 class="staff-subsection-title mt-4"><%= section["title"] %></h3>
+    <% Array(section["items"]).each do |item| %>
+      <% response = @responses[item["key"]] %>
+      <article class="staff-card mt-3">
+        <p class="staff-card__title">
+          <%= item["prompt"] %>
+          <% if item["required"] %><span class="staff-quote-summary__hint">Required</span><% end %>
+        </p>
+        <% if response %>
+          <p class="staff-quote-summary__hint">Saved: <%= inspection_response_value(response) %></p>
+        <% elsif !policy(@inspection).update? %>
+          <p class="staff-quote-summary__hint">Not answered yet.</p>
+        <% end %>
+
+        <% if policy(@inspection).update? %>
+          <%= form_with url: staff_inspection_checklist_responses_path(@inspection), method: :post, class: "staff-form mt-2" do %>
+            <%= hidden_field_tag "checklist_response[item_key]", item["key"] %>
+            <%= hidden_field_tag "checklist_response[response_type]", item["response_type"] %>
+            <%= hidden_field_tag "checklist_response[lock_version]", response&.lock_version %>
+            <% case item["response_type"] %>
+            <% when "yes_no_na" %>
+              <%= ant_select_tag "checklist_response[answer]", [ ["Yes", "yes"], ["No", "no"], ["Not applicable", "na"] ], label: "Answer", selected: response&.value_json&.dig("answer") %>
+              <%= ant_text_field_tag "checklist_response[not_applicable_reason]", label: "Why not applicable", value: response&.not_applicable_reason %>
+            <% when "satisfactory_unsatisfactory" %>
+              <%= ant_select_tag "checklist_response[answer]", [ ["Satisfactory", "satisfactory"], ["Unsatisfactory", "unsatisfactory"] ], label: "Answer", selected: response&.value_json&.dig("answer") %>
+            <% when "short_text", "long_text" %>
+              <%= ant_text_field_tag "checklist_response[text]", label: "Response", value: response&.value_json&.dig("text"), multiline: item["response_type"] == "long_text" %>
+            <% when "numeric" %>
+              <%= ant_text_field_tag "checklist_response[number]", label: "Number", value: response&.value_json&.dig("number") %>
+            <% when "date" %>
+              <%= ant_date_field "checklist_response[date]", label: "Date", value: response&.value_json&.dig("date") %>
+            <% when "single_select" %>
+              <%= ant_select_tag "checklist_response[selected]", item["options"].map { |o| [ o["label"], o["value"] ] }, label: "Choose one", selected: response&.value_json&.dig("selected") %>
+            <% when "multi_select" %>
+              <fieldset>
+                <legend class="staff-form__label"><%= item["prompt"] %> options</legend>
+                <% item["options"].each do |opt| %>
+                  <label class="staff-form__checkbox">
+                    <%= check_box_tag "checklist_response[selected][]", opt["value"], Array(response&.value_json&.dig("selected")).include?(opt["value"]) %>
+                    <%= opt["label"] %>
+                  </label>
+                <% end %>
+              </fieldset>
+            <% end %>
+            <%= submit_tag "Save answer", class: "ant-button ant-button--secondary mt-2" %>
+          <% end %>
+        <% end %>
+      </article>
+    <% end %>
+  <% end %>
+</section>
+
+<% if policy(@inspection).update? %>
+  <section class="mt-8">
+    <h2 class="staff-section-title">Record a finding</h2>
+    <%= form_with url: staff_inspection_findings_path(@inspection), class: "staff-form mt-3" do %>
+      <%= ant_text_field_tag "finding[title]", label: "Title", required: true %>
+      <%= ant_text_field_tag "finding[observation]", label: "Observation", required: true, multiline: true %>
+      <%= ant_select_tag "finding[classification]", InspectionFinding::CLASSIFICATIONS.map { |c| [ c.humanize, c ] }, label: "Classification", selected: "observation" %>
+      <%= submit_tag "Record finding", class: "ant-button ant-button--secondary" %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @findings.any? %>
+  <section class="mt-8">
+    <h2 class="staff-section-title">Findings</h2>
+    <ul class="staff-record-list">
+      <% @findings.each do |finding| %>
+        <li>
+          <span class="staff-record-list__title"><%= finding.reference_number %> — <%= finding.title %></span>
+          <p class="staff-quote-summary__hint"><%= finding.observation %></p>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<% if policy(@inspection).update? && @project_documents.any? %>
+  <section class="mt-8">
+    <h2 class="staff-section-title">Link evidence file</h2>
+    <%= form_with url: staff_inspection_evidence_links_path(@inspection), class: "staff-form mt-3" do %>
+      <%= ant_select_tag "document_version_id",
+            @project_documents.flat_map { |doc| doc.document_versions.map { |v| ["#{doc.title} — v#{v.version_number}", v.id] } },
+            label: "Project file version", include_blank: "Choose a scanned file" %>
+      <%= submit_tag "Attach evidence", class: "ant-button ant-button--secondary" %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @evidence_links.any? %>
+  <section class="mt-4">
+    <h3 class="staff-subsection-title">Linked evidence</h3>
+    <ul class="staff-record-list">
+      <% @evidence_links.each do |link| %>
+        <li><%= link.document_version.document.title %> · v<%= link.document_version.version_number %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<div class="staff-form__actions mt-8">
+  <% if policy(@inspection).submit? %>
+    <%= form_with url: submit_staff_inspection_path(@inspection), method: :post, class: "inline" do %>
+      <%= hidden_field_tag :confirm, true %>
+      <%= submit_tag "Submit inspection", class: "ant-button ant-button--primary" %>
+    <% end %>
+  <% end %>
+  <% if policy(@inspection).complete? && @inspection.status == "submitted" %>
+    <%= button_to "Mark complete", complete_staff_inspection_path(@inspection), method: :post, class: "ant-button ant-button--secondary" %>
+  <% end %>
+  <% if @inspection.submitted_or_later? && policy(Report.new(project: @inspection.project), :create?) %>
+    <%= link_to "Prepare report", new_staff_report_path(project_id: @inspection.project_id, inspection_id: @inspection.id), class: "ant-button ant-button--secondary" %>
+  <% end %>
+</div>

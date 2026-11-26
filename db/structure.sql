@@ -72,6 +72,58 @@ $$;
 
 
 --
+-- Name: ant_marine_inspection_evidence_link_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_inspection_evidence_link_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  insp_status text;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    SELECT status INTO insp_status FROM inspections WHERE id = OLD.inspection_id;
+    IF insp_status IN ('submitted', 'corrections_requested', 'completed') THEN
+      PERFORM ant_marine_reject('Evidence links cannot be removed after inspection submission.');
+    END IF;
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_inspection_template_version_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_inspection_template_version_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Inspection template versions cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.inspection_template_id IS DISTINCT FROM OLD.inspection_template_id
+       OR NEW.version_number IS DISTINCT FROM OLD.version_number
+       OR NEW.schema_json IS DISTINCT FROM OLD.schema_json
+       OR NEW.published_at IS DISTINCT FROM OLD.published_at
+       OR NEW.created_by_membership_id IS DISTINCT FROM OLD.created_by_membership_id
+       OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN
+      PERFORM ant_marine_reject('Inspection template version identity fields are immutable.');
+    END IF;
+  END IF;
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: ant_marine_project_commercial_protect(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -225,6 +277,70 @@ CREATE FUNCTION public.ant_marine_reject(message text) RETURNS void
         RAISE EXCEPTION '%', message USING ERRCODE = 'integrity_constraint_violation';
       END;
       $$;
+
+
+--
+-- Name: ant_marine_report_release_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_report_release_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Report releases cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.report_id IS DISTINCT FROM OLD.report_id
+       OR NEW.report_version_id IS DISTINCT FROM OLD.report_version_id
+       OR NEW.client_organization_id IS DISTINCT FROM OLD.client_organization_id
+       OR NEW.released_by_membership_id IS DISTINCT FROM OLD.released_by_membership_id
+       OR NEW.released_at IS DISTINCT FROM OLD.released_at
+       OR NEW.artifact_checksum_sha256 IS DISTINCT FROM OLD.artifact_checksum_sha256 THEN
+      PERFORM ant_marine_reject('Report release identity fields are immutable.');
+    END IF;
+    IF OLD.revoked_at IS NOT NULL
+       AND (NEW.revoked_at IS DISTINCT FROM OLD.revoked_at
+            OR NEW.revocation_reason IS DISTINCT FROM OLD.revocation_reason) THEN
+      PERFORM ant_marine_reject('Report release revocation cannot be changed after set.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_report_version_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_report_version_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Report versions cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.report_id IS DISTINCT FROM OLD.report_id
+       OR NEW.version_number IS DISTINCT FROM OLD.version_number
+       OR NEW.authored_by_membership_id IS DISTINCT FROM OLD.authored_by_membership_id THEN
+      PERFORM ant_marine_reject('Report version identity fields are immutable.');
+    END IF;
+    IF OLD.status IS DISTINCT FROM 'draft' THEN
+      IF NEW.title IS DISTINCT FROM OLD.title
+         OR NEW.content_json IS DISTINCT FROM OLD.content_json THEN
+        PERFORM ant_marine_reject('Report version content is immutable after leaving draft.');
+      END IF;
+    END IF;
+    IF OLD.status = 'approved' THEN
+      IF NEW.storage_asset_id IS DISTINCT FROM OLD.storage_asset_id
+         OR NEW.artifact_checksum_sha256 IS DISTINCT FROM OLD.artifact_checksum_sha256 THEN
+        PERFORM ant_marine_reject('Approved report version artifacts are immutable.');
+      END IF;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
 
 
 --
@@ -846,6 +962,249 @@ CREATE SEQUENCE public.documents_id_seq
 --
 
 ALTER SEQUENCE public.documents_id_seq OWNED BY public.documents.id;
+
+
+--
+-- Name: inspection_checklist_responses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspection_checklist_responses (
+    id bigint NOT NULL,
+    inspection_id bigint NOT NULL,
+    item_key character varying NOT NULL,
+    response_type character varying NOT NULL,
+    value_json jsonb DEFAULT '{}'::jsonb NOT NULL,
+    not_applicable_reason text,
+    updated_by_membership_id bigint NOT NULL,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: inspection_checklist_responses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspection_checklist_responses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspection_checklist_responses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspection_checklist_responses_id_seq OWNED BY public.inspection_checklist_responses.id;
+
+
+--
+-- Name: inspection_evidence_links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspection_evidence_links (
+    id bigint NOT NULL,
+    inspection_id bigint NOT NULL,
+    document_version_id bigint NOT NULL,
+    finding_id bigint,
+    checklist_item_key character varying,
+    attached_by_membership_id bigint NOT NULL,
+    attached_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: inspection_evidence_links_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspection_evidence_links_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspection_evidence_links_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspection_evidence_links_id_seq OWNED BY public.inspection_evidence_links.id;
+
+
+--
+-- Name: inspection_findings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspection_findings (
+    id bigint NOT NULL,
+    inspection_id bigint NOT NULL,
+    reference_number character varying NOT NULL,
+    checklist_item_key character varying,
+    title character varying NOT NULL,
+    observation text NOT NULL,
+    recommendation text,
+    location_or_equipment character varying,
+    classification character varying DEFAULT 'observation'::character varying NOT NULL,
+    status character varying DEFAULT 'draft'::character varying NOT NULL,
+    recorded_by_membership_id bigint NOT NULL,
+    recorded_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT inspection_findings_classification_check CHECK (((classification)::text = ANY ((ARRAY['observation'::character varying, 'deficiency'::character varying, 'recommendation'::character varying, 'other'::character varying])::text[]))),
+    CONSTRAINT inspection_findings_status_check CHECK (((status)::text = ANY ((ARRAY['draft'::character varying, 'recorded'::character varying, 'included_in_report'::character varying])::text[])))
+);
+
+
+--
+-- Name: inspection_findings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspection_findings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspection_findings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspection_findings_id_seq OWNED BY public.inspection_findings.id;
+
+
+--
+-- Name: inspection_template_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspection_template_versions (
+    id bigint NOT NULL,
+    inspection_template_id bigint NOT NULL,
+    version_number integer NOT NULL,
+    schema_json jsonb DEFAULT '{}'::jsonb NOT NULL,
+    published_at timestamp(6) without time zone,
+    created_by_membership_id bigint NOT NULL,
+    created_at timestamp(6) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: inspection_template_versions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspection_template_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspection_template_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspection_template_versions_id_seq OWNED BY public.inspection_template_versions.id;
+
+
+--
+-- Name: inspection_templates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspection_templates (
+    id bigint NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    key character varying NOT NULL,
+    title character varying NOT NULL,
+    description text,
+    service_id bigint,
+    status character varying DEFAULT 'draft'::character varying NOT NULL,
+    current_version_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT inspection_templates_status_check CHECK (((status)::text = ANY ((ARRAY['draft'::character varying, 'published'::character varying, 'archived'::character varying])::text[]))),
+    CONSTRAINT inspection_templates_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: inspection_templates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspection_templates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspection_templates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspection_templates_id_seq OWNED BY public.inspection_templates.id;
+
+
+--
+-- Name: inspections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.inspections (
+    id bigint NOT NULL,
+    reference_number character varying NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    service_id bigint,
+    inspection_template_version_id bigint NOT NULL,
+    schedule_event_id bigint,
+    title character varying NOT NULL,
+    inspection_type character varying NOT NULL,
+    vessel_name character varying,
+    location character varying,
+    status character varying DEFAULT 'draft'::character varying NOT NULL,
+    assigned_surveyor_membership_id bigint,
+    created_by_membership_id bigint NOT NULL,
+    mode character varying DEFAULT 'simulated'::character varying NOT NULL,
+    operational_instructions text,
+    submitted_at timestamp(6) without time zone,
+    completed_at timestamp(6) without time zone,
+    cancelled_at timestamp(6) without time zone,
+    cancellation_reason text,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT inspections_mode_check CHECK (((mode)::text = 'simulated'::text)),
+    CONSTRAINT inspections_status_check CHECK (((status)::text = ANY ((ARRAY['draft'::character varying, 'assigned'::character varying, 'in_progress'::character varying, 'submitted'::character varying, 'corrections_requested'::character varying, 'completed'::character varying, 'cancelled'::character varying])::text[]))),
+    CONSTRAINT inspections_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: inspections_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.inspections_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: inspections_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.inspections_id_seq OWNED BY public.inspections.id;
 
 
 --
@@ -1617,6 +1976,162 @@ ALTER SEQUENCE public.quotes_id_seq OWNED BY public.quotes.id;
 
 
 --
+-- Name: report_releases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.report_releases (
+    id bigint NOT NULL,
+    report_id bigint NOT NULL,
+    report_version_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    released_by_membership_id bigint NOT NULL,
+    released_at timestamp(6) without time zone NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    revocation_reason text,
+    artifact_checksum_sha256 character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: report_releases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.report_releases_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: report_releases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.report_releases_id_seq OWNED BY public.report_releases.id;
+
+
+--
+-- Name: report_reviews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.report_reviews (
+    id bigint NOT NULL,
+    report_version_id bigint NOT NULL,
+    reviewer_membership_id bigint NOT NULL,
+    outcome character varying NOT NULL,
+    comments text,
+    decided_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT report_reviews_outcome_check CHECK (((outcome)::text = ANY ((ARRAY['approved'::character varying, 'changes_requested'::character varying])::text[])))
+);
+
+
+--
+-- Name: report_reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.report_reviews_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: report_reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.report_reviews_id_seq OWNED BY public.report_reviews.id;
+
+
+--
+-- Name: report_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.report_versions (
+    id bigint NOT NULL,
+    report_id bigint NOT NULL,
+    version_number integer NOT NULL,
+    status character varying DEFAULT 'draft'::character varying NOT NULL,
+    title character varying NOT NULL,
+    content_json jsonb DEFAULT '{}'::jsonb NOT NULL,
+    authored_by_membership_id bigint NOT NULL,
+    submitted_by_membership_id bigint,
+    storage_asset_id bigint,
+    artifact_checksum_sha256 character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT report_versions_status_check CHECK (((status)::text = ANY ((ARRAY['draft'::character varying, 'submitted_for_review'::character varying, 'changes_requested'::character varying, 'approved'::character varying])::text[])))
+);
+
+
+--
+-- Name: report_versions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.report_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: report_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.report_versions_id_seq OWNED BY public.report_versions.id;
+
+
+--
+-- Name: reports; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.reports (
+    id bigint NOT NULL,
+    reference_number character varying NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    inspection_id bigint,
+    title character varying NOT NULL,
+    report_kind character varying DEFAULT 'technical_report'::character varying NOT NULL,
+    mode character varying DEFAULT 'simulated'::character varying NOT NULL,
+    current_version_id bigint,
+    created_by_membership_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT reports_mode_check CHECK (((mode)::text = 'simulated'::text)),
+    CONSTRAINT reports_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: reports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.reports_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: reports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.reports_id_seq OWNED BY public.reports.id;
+
+
+--
 -- Name: role_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2011,7 +2526,7 @@ CREATE TABLE public.staff_notifications (
     dedupe_key character varying NOT NULL,
     read_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying, 'document_uploaded'::character varying, 'document_review_required'::character varying, 'document_changes_requested'::character varying, 'document_approved'::character varying, 'document_released'::character varying, 'document_release_revoked'::character varying, 'upload_requested'::character varying])::text[]))),
+    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying, 'document_uploaded'::character varying, 'document_review_required'::character varying, 'document_changes_requested'::character varying, 'document_approved'::character varying, 'document_released'::character varying, 'document_release_revoked'::character varying, 'upload_requested'::character varying, 'inspection_assigned'::character varying, 'inspection_submitted'::character varying, 'report_review_required'::character varying, 'report_changes_requested'::character varying, 'report_approved'::character varying, 'report_released'::character varying])::text[]))),
     CONSTRAINT staff_notifications_title_length CHECK ((char_length((title)::text) <= 200))
 );
 
@@ -2363,6 +2878,48 @@ ALTER TABLE ONLY public.documents ALTER COLUMN id SET DEFAULT nextval('public.do
 
 
 --
+-- Name: inspection_checklist_responses id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_checklist_responses ALTER COLUMN id SET DEFAULT nextval('public.inspection_checklist_responses_id_seq'::regclass);
+
+
+--
+-- Name: inspection_evidence_links id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links ALTER COLUMN id SET DEFAULT nextval('public.inspection_evidence_links_id_seq'::regclass);
+
+
+--
+-- Name: inspection_findings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_findings ALTER COLUMN id SET DEFAULT nextval('public.inspection_findings_id_seq'::regclass);
+
+
+--
+-- Name: inspection_template_versions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_template_versions ALTER COLUMN id SET DEFAULT nextval('public.inspection_template_versions_id_seq'::regclass);
+
+
+--
+-- Name: inspection_templates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_templates ALTER COLUMN id SET DEFAULT nextval('public.inspection_templates_id_seq'::regclass);
+
+
+--
+-- Name: inspections id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections ALTER COLUMN id SET DEFAULT nextval('public.inspections_id_seq'::regclass);
+
+
+--
 -- Name: invitations id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2479,6 +3036,34 @@ ALTER TABLE ONLY public.quote_revisions ALTER COLUMN id SET DEFAULT nextval('pub
 --
 
 ALTER TABLE ONLY public.quotes ALTER COLUMN id SET DEFAULT nextval('public.quotes_id_seq'::regclass);
+
+
+--
+-- Name: report_releases id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases ALTER COLUMN id SET DEFAULT nextval('public.report_releases_id_seq'::regclass);
+
+
+--
+-- Name: report_reviews id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_reviews ALTER COLUMN id SET DEFAULT nextval('public.report_reviews_id_seq'::regclass);
+
+
+--
+-- Name: report_versions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions ALTER COLUMN id SET DEFAULT nextval('public.report_versions_id_seq'::regclass);
+
+
+--
+-- Name: reports id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports ALTER COLUMN id SET DEFAULT nextval('public.reports_id_seq'::regclass);
 
 
 --
@@ -2700,6 +3285,54 @@ ALTER TABLE ONLY public.documents
 
 
 --
+-- Name: inspection_checklist_responses inspection_checklist_responses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_checklist_responses
+    ADD CONSTRAINT inspection_checklist_responses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inspection_evidence_links inspection_evidence_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links
+    ADD CONSTRAINT inspection_evidence_links_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inspection_findings inspection_findings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_findings
+    ADD CONSTRAINT inspection_findings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inspection_template_versions inspection_template_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_template_versions
+    ADD CONSTRAINT inspection_template_versions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inspection_templates inspection_templates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_templates
+    ADD CONSTRAINT inspection_templates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: inspections inspections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT inspections_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: invitations invitations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2833,6 +3466,38 @@ ALTER TABLE ONLY public.quote_revisions
 
 ALTER TABLE ONLY public.quotes
     ADD CONSTRAINT quotes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: report_releases report_releases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases
+    ADD CONSTRAINT report_releases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: report_reviews report_reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_reviews
+    ADD CONSTRAINT report_reviews_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: report_versions report_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions
+    ADD CONSTRAINT report_versions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: reports reports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT reports_pkey PRIMARY KEY (id);
 
 
 --
@@ -2970,10 +3635,38 @@ CREATE INDEX idx_on_created_by_membership_id_5421d8492b ON public.service_inquir
 
 
 --
+-- Name: idx_on_inspection_id_reference_number_7f7a45af83; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_on_inspection_id_reference_number_7f7a45af83 ON public.inspection_findings USING btree (inspection_id, reference_number);
+
+
+--
 -- Name: idx_on_operating_organization_id_internal_status_3e729fa405; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_on_operating_organization_id_internal_status_3e729fa405 ON public.projects USING btree (operating_organization_id, internal_status);
+
+
+--
+-- Name: idx_on_operating_organization_id_key_85c2188d63; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_on_operating_organization_id_key_85c2188d63 ON public.inspection_templates USING btree (operating_organization_id, key);
+
+
+--
+-- Name: idx_on_operating_organization_id_status_b9750d6e1c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_operating_organization_id_status_b9750d6e1c ON public.inspection_templates USING btree (operating_organization_id, status);
+
+
+--
+-- Name: idx_on_report_version_id_reviewer_membership_id_852becd9b4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_report_version_id_reviewer_membership_id_852becd9b4 ON public.report_reviews USING btree (report_version_id, reviewer_membership_id);
 
 
 --
@@ -2988,6 +3681,13 @@ CREATE INDEX idx_on_response_recorded_by_membership_id_e5ec9fb48e ON public.serv
 --
 
 CREATE INDEX idx_on_responsible_membership_id_starts_at_76bde5637d ON public.schedule_events USING btree (responsible_membership_id, starts_at);
+
+
+--
+-- Name: idx_on_updated_by_membership_id_672df2cd34; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_updated_by_membership_id_672df2cd34 ON public.inspection_checklist_responses USING btree (updated_by_membership_id);
 
 
 --
@@ -3401,6 +4101,174 @@ CREATE INDEX index_documents_on_project_id_and_workflow_status ON public.documen
 --
 
 CREATE INDEX index_documents_on_upload_request_id ON public.documents USING btree (upload_request_id);
+
+
+--
+-- Name: index_inspection_checklist_responses_on_inspection_and_item; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_inspection_checklist_responses_on_inspection_and_item ON public.inspection_checklist_responses USING btree (inspection_id, item_key);
+
+
+--
+-- Name: index_inspection_checklist_responses_on_inspection_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_checklist_responses_on_inspection_id ON public.inspection_checklist_responses USING btree (inspection_id);
+
+
+--
+-- Name: index_inspection_evidence_links_on_attached_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_evidence_links_on_attached_by_membership_id ON public.inspection_evidence_links USING btree (attached_by_membership_id);
+
+
+--
+-- Name: index_inspection_evidence_links_on_document_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_evidence_links_on_document_version_id ON public.inspection_evidence_links USING btree (document_version_id);
+
+
+--
+-- Name: index_inspection_evidence_links_on_finding_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_evidence_links_on_finding_id ON public.inspection_evidence_links USING btree (finding_id);
+
+
+--
+-- Name: index_inspection_evidence_links_on_inspection_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_evidence_links_on_inspection_id ON public.inspection_evidence_links USING btree (inspection_id);
+
+
+--
+-- Name: index_inspection_evidence_links_unique_attachment; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_inspection_evidence_links_unique_attachment ON public.inspection_evidence_links USING btree (inspection_id, document_version_id, checklist_item_key);
+
+
+--
+-- Name: index_inspection_findings_on_inspection_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_findings_on_inspection_id ON public.inspection_findings USING btree (inspection_id);
+
+
+--
+-- Name: index_inspection_findings_on_recorded_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_findings_on_recorded_by_membership_id ON public.inspection_findings USING btree (recorded_by_membership_id);
+
+
+--
+-- Name: index_inspection_template_versions_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_template_versions_on_created_by_membership_id ON public.inspection_template_versions USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_inspection_template_versions_on_inspection_template_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_template_versions_on_inspection_template_id ON public.inspection_template_versions USING btree (inspection_template_id);
+
+
+--
+-- Name: index_inspection_template_versions_on_template_and_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_inspection_template_versions_on_template_and_number ON public.inspection_template_versions USING btree (inspection_template_id, version_number);
+
+
+--
+-- Name: index_inspection_templates_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_templates_on_operating_organization_id ON public.inspection_templates USING btree (operating_organization_id);
+
+
+--
+-- Name: index_inspection_templates_on_service_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspection_templates_on_service_id ON public.inspection_templates USING btree (service_id);
+
+
+--
+-- Name: index_inspections_on_assigned_surveyor_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_assigned_surveyor_membership_id ON public.inspections USING btree (assigned_surveyor_membership_id);
+
+
+--
+-- Name: index_inspections_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_client_organization_id ON public.inspections USING btree (client_organization_id);
+
+
+--
+-- Name: index_inspections_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_created_by_membership_id ON public.inspections USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_inspections_on_inspection_template_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_inspection_template_version_id ON public.inspections USING btree (inspection_template_version_id);
+
+
+--
+-- Name: index_inspections_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_operating_organization_id ON public.inspections USING btree (operating_organization_id);
+
+
+--
+-- Name: index_inspections_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_project_id ON public.inspections USING btree (project_id);
+
+
+--
+-- Name: index_inspections_on_project_id_and_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_project_id_and_status ON public.inspections USING btree (project_id, status);
+
+
+--
+-- Name: index_inspections_on_reference_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_inspections_on_reference_number ON public.inspections USING btree (reference_number);
+
+
+--
+-- Name: index_inspections_on_schedule_event_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_schedule_event_id ON public.inspections USING btree (schedule_event_id);
+
+
+--
+-- Name: index_inspections_on_service_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_inspections_on_service_id ON public.inspections USING btree (service_id);
 
 
 --
@@ -4069,6 +4937,146 @@ CREATE UNIQUE INDEX index_quotes_one_open_quote_per_inquiry ON public.quotes USI
 
 
 --
+-- Name: index_report_releases_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_releases_on_client_organization_id ON public.report_releases USING btree (client_organization_id);
+
+
+--
+-- Name: index_report_releases_on_released_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_releases_on_released_by_membership_id ON public.report_releases USING btree (released_by_membership_id);
+
+
+--
+-- Name: index_report_releases_on_report_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_releases_on_report_id ON public.report_releases USING btree (report_id);
+
+
+--
+-- Name: index_report_releases_on_report_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_releases_on_report_version_id ON public.report_releases USING btree (report_version_id);
+
+
+--
+-- Name: index_report_releases_one_active_per_report; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_report_releases_one_active_per_report ON public.report_releases USING btree (report_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_report_releases_one_active_per_report_client; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_report_releases_one_active_per_report_client ON public.report_releases USING btree (report_id, client_organization_id) WHERE (revoked_at IS NULL);
+
+
+--
+-- Name: index_report_reviews_on_report_version_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_reviews_on_report_version_id ON public.report_reviews USING btree (report_version_id);
+
+
+--
+-- Name: index_report_reviews_on_reviewer_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_reviews_on_reviewer_membership_id ON public.report_reviews USING btree (reviewer_membership_id);
+
+
+--
+-- Name: index_report_versions_on_authored_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_versions_on_authored_by_membership_id ON public.report_versions USING btree (authored_by_membership_id);
+
+
+--
+-- Name: index_report_versions_on_report_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_versions_on_report_id ON public.report_versions USING btree (report_id);
+
+
+--
+-- Name: index_report_versions_on_report_id_and_version_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_report_versions_on_report_id_and_version_number ON public.report_versions USING btree (report_id, version_number);
+
+
+--
+-- Name: index_report_versions_on_storage_asset_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_versions_on_storage_asset_id ON public.report_versions USING btree (storage_asset_id);
+
+
+--
+-- Name: index_report_versions_on_submitted_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_report_versions_on_submitted_by_membership_id ON public.report_versions USING btree (submitted_by_membership_id);
+
+
+--
+-- Name: index_reports_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_client_organization_id ON public.reports USING btree (client_organization_id);
+
+
+--
+-- Name: index_reports_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_created_by_membership_id ON public.reports USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_reports_on_inspection_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_inspection_id ON public.reports USING btree (inspection_id);
+
+
+--
+-- Name: index_reports_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_operating_organization_id ON public.reports USING btree (operating_organization_id);
+
+
+--
+-- Name: index_reports_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_project_id ON public.reports USING btree (project_id);
+
+
+--
+-- Name: index_reports_on_project_id_and_report_kind; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_reports_on_project_id_and_report_kind ON public.reports USING btree (project_id, report_kind);
+
+
+--
+-- Name: index_reports_on_reference_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_reports_on_reference_number ON public.reports USING btree (reference_number);
+
+
+--
 -- Name: index_role_permissions_on_permission_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4545,6 +5553,20 @@ CREATE TRIGGER document_versions_protect BEFORE DELETE OR UPDATE ON public.docum
 
 
 --
+-- Name: inspection_evidence_links inspection_evidence_links_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER inspection_evidence_links_protect BEFORE DELETE ON public.inspection_evidence_links FOR EACH ROW EXECUTE FUNCTION public.ant_marine_inspection_evidence_link_protect();
+
+
+--
+-- Name: inspection_template_versions inspection_template_versions_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER inspection_template_versions_protect BEFORE DELETE OR UPDATE ON public.inspection_template_versions FOR EACH ROW EXECUTE FUNCTION public.ant_marine_inspection_template_version_protect();
+
+
+--
 -- Name: projects projects_commercial_protect; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -4573,6 +5595,20 @@ CREATE TRIGGER quote_revisions_history_protect BEFORE DELETE OR UPDATE ON public
 
 
 --
+-- Name: report_releases report_releases_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER report_releases_protect BEFORE DELETE OR UPDATE ON public.report_releases FOR EACH ROW EXECUTE FUNCTION public.ant_marine_report_release_protect();
+
+
+--
+-- Name: report_versions report_versions_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER report_versions_protect BEFORE DELETE OR UPDATE ON public.report_versions FOR EACH ROW EXECUTE FUNCTION public.ant_marine_report_version_protect();
+
+
+--
 -- Name: storage_assets storage_assets_protect; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -4585,6 +5621,14 @@ CREATE TRIGGER storage_assets_protect BEFORE UPDATE ON public.storage_assets FOR
 
 ALTER TABLE ONLY public.quote_deliveries
     ADD CONSTRAINT fk_rails_000eeecdbf FOREIGN KEY (quote_revision_id) REFERENCES public.quote_revisions(id);
+
+
+--
+-- Name: inspection_templates fk_rails_029bb2ba8c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_templates
+    ADD CONSTRAINT fk_rails_029bb2ba8c FOREIGN KEY (service_id) REFERENCES public.services(id);
 
 
 --
@@ -4604,11 +5648,35 @@ ALTER TABLE ONLY public.tasks
 
 
 --
+-- Name: report_releases fk_rails_030cb5ddd1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases
+    ADD CONSTRAINT fk_rails_030cb5ddd1 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: report_reviews fk_rails_03974995be; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_reviews
+    ADD CONSTRAINT fk_rails_03974995be FOREIGN KEY (reviewer_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: documents fk_rails_03fc43389b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.documents
     ADD CONSTRAINT fk_rails_03fc43389b FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: inspection_templates fk_rails_04476e86aa; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_templates
+    ADD CONSTRAINT fk_rails_04476e86aa FOREIGN KEY (current_version_id) REFERENCES public.inspection_template_versions(id);
 
 
 --
@@ -4620,6 +5688,22 @@ ALTER TABLE ONLY public.document_releases
 
 
 --
+-- Name: inspection_template_versions fk_rails_058335d1cf; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_template_versions
+    ADD CONSTRAINT fk_rails_058335d1cf FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: inspections fk_rails_059e81e415; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_059e81e415 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: projects fk_rails_07fdbba781; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4628,11 +5712,43 @@ ALTER TABLE ONLY public.projects
 
 
 --
+-- Name: inspection_evidence_links fk_rails_08fdaa2b59; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links
+    ADD CONSTRAINT fk_rails_08fdaa2b59 FOREIGN KEY (attached_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: quotes fk_rails_0afeb292dc; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.quotes
     ADD CONSTRAINT fk_rails_0afeb292dc FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: inspections fk_rails_0b204a9070; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_0b204a9070 FOREIGN KEY (service_id) REFERENCES public.services(id);
+
+
+--
+-- Name: inspections fk_rails_0bb22eb215; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_0bb22eb215 FOREIGN KEY (schedule_event_id) REFERENCES public.schedule_events(id);
+
+
+--
+-- Name: report_releases fk_rails_0d3bbf1cbd; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases
+    ADD CONSTRAINT fk_rails_0d3bbf1cbd FOREIGN KEY (report_version_id) REFERENCES public.report_versions(id);
 
 
 --
@@ -4673,6 +5789,22 @@ ALTER TABLE ONLY public.service_inquiries
 
 ALTER TABLE ONLY public.services
     ADD CONSTRAINT fk_rails_138a98acfd FOREIGN KEY (approved_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: inspections fk_rails_158e51a7ee; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_158e51a7ee FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: inspection_findings fk_rails_16f0a8243d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_findings
+    ADD CONSTRAINT fk_rails_16f0a8243d FOREIGN KEY (inspection_id) REFERENCES public.inspections(id);
 
 
 --
@@ -4836,6 +5968,14 @@ ALTER TABLE ONLY public.projects
 
 
 --
+-- Name: reports fk_rails_39a43c4285; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_39a43c4285 FOREIGN KEY (current_version_id) REFERENCES public.report_versions(id);
+
+
+--
 -- Name: service_inquiry_clarifications fk_rails_39e15834b4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4849,6 +5989,14 @@ ALTER TABLE ONLY public.service_inquiry_clarifications
 
 ALTER TABLE ONLY public.tasks
     ADD CONSTRAINT fk_rails_3b9f41a231 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: report_releases fk_rails_3ec0b7cebc; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases
+    ADD CONSTRAINT fk_rails_3ec0b7cebc FOREIGN KEY (released_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -4932,6 +6080,14 @@ ALTER TABLE ONLY public.training_offerings
 
 
 --
+-- Name: inspection_templates fk_rails_4a52f0a843; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_templates
+    ADD CONSTRAINT fk_rails_4a52f0a843 FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: project_status_events fk_rails_4bc03a6f1c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4961,6 +6117,14 @@ ALTER TABLE ONLY public.project_updates
 
 ALTER TABLE ONLY public.service_inquiries
     ADD CONSTRAINT fk_rails_50e31e4c00 FOREIGN KEY (duplicate_of_id) REFERENCES public.service_inquiries(id);
+
+
+--
+-- Name: inspection_findings fk_rails_5236e77cd2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_findings
+    ADD CONSTRAINT fk_rails_5236e77cd2 FOREIGN KEY (recorded_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -5004,6 +6168,14 @@ ALTER TABLE ONLY public.quote_revisions
 
 
 --
+-- Name: report_versions fk_rails_59edb745c9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions
+    ADD CONSTRAINT fk_rails_59edb745c9 FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
 -- Name: project_milestones fk_rails_5ac5d10ce0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5017,6 +6189,14 @@ ALTER TABLE ONLY public.project_milestones
 
 ALTER TABLE ONLY public.document_releases
     ADD CONSTRAINT fk_rails_5b6f6bc6f7 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: inspection_template_versions fk_rails_5bd9bee925; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_template_versions
+    ADD CONSTRAINT fk_rails_5bd9bee925 FOREIGN KEY (inspection_template_id) REFERENCES public.inspection_templates(id);
 
 
 --
@@ -5036,6 +6216,14 @@ ALTER TABLE ONLY public.articles
 
 
 --
+-- Name: reports fk_rails_5e53559372; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_5e53559372 FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: articles fk_rails_5ecb1de37b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5052,11 +6240,27 @@ ALTER TABLE ONLY public.document_releases
 
 
 --
+-- Name: reports fk_rails_6107003ca8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_6107003ca8 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: quote_portal_releases fk_rails_622397318a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.quote_portal_releases
     ADD CONSTRAINT fk_rails_622397318a FOREIGN KEY (quote_revision_id) REFERENCES public.quote_revisions(id);
+
+
+--
+-- Name: reports fk_rails_62d58a0388; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_62d58a0388 FOREIGN KEY (inspection_id) REFERENCES public.inspections(id);
 
 
 --
@@ -5108,6 +6312,14 @@ ALTER TABLE ONLY public.service_inquiry_notes
 
 
 --
+-- Name: inspections fk_rails_68b0ae5376; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_68b0ae5376 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
 -- Name: service_inquiry_clarifications fk_rails_6b2318db12; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5137,6 +6349,14 @@ ALTER TABLE ONLY public.quote_deliveries
 
 ALTER TABLE ONLY public.documents
     ADD CONSTRAINT fk_rails_703386e8df FOREIGN KEY (current_version_id) REFERENCES public.document_versions(id);
+
+
+--
+-- Name: inspection_checklist_responses fk_rails_7448d4e834; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_checklist_responses
+    ADD CONSTRAINT fk_rails_7448d4e834 FOREIGN KEY (inspection_id) REFERENCES public.inspections(id);
 
 
 --
@@ -5204,6 +6424,14 @@ ALTER TABLE ONLY public.permission_overrides
 
 
 --
+-- Name: inspections fk_rails_7ee07318d5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_7ee07318d5 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: projects fk_rails_7f51c5737c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5217,6 +6445,22 @@ ALTER TABLE ONLY public.projects
 
 ALTER TABLE ONLY public.document_access_grants
     ADD CONSTRAINT fk_rails_7fad973732 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: inspection_evidence_links fk_rails_80615e21e0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links
+    ADD CONSTRAINT fk_rails_80615e21e0 FOREIGN KEY (document_version_id) REFERENCES public.document_versions(id);
+
+
+--
+-- Name: inspection_evidence_links fk_rails_80722701ab; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links
+    ADD CONSTRAINT fk_rails_80722701ab FOREIGN KEY (inspection_id) REFERENCES public.inspections(id);
 
 
 --
@@ -5265,6 +6509,22 @@ ALTER TABLE ONLY public.project_milestones
 
 ALTER TABLE ONLY public.schedule_events
     ADD CONSTRAINT fk_rails_89c18faad2 FOREIGN KEY (responsible_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: report_releases fk_rails_8ac9a62ab5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_releases
+    ADD CONSTRAINT fk_rails_8ac9a62ab5 FOREIGN KEY (report_id) REFERENCES public.reports(id);
+
+
+--
+-- Name: inspections fk_rails_8c01baf3b5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_8c01baf3b5 FOREIGN KEY (inspection_template_version_id) REFERENCES public.inspection_template_versions(id);
 
 
 --
@@ -5340,6 +6600,22 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
+-- Name: reports fk_rails_9a0a9c9bec; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_9a0a9c9bec FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: inspection_checklist_responses fk_rails_9d92e2160c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_checklist_responses
+    ADD CONSTRAINT fk_rails_9d92e2160c FOREIGN KEY (updated_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: tasks fk_rails_9f28c828eb; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5380,6 +6656,14 @@ ALTER TABLE ONLY public.invitations
 
 
 --
+-- Name: report_versions fk_rails_a653a00b67; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions
+    ADD CONSTRAINT fk_rails_a653a00b67 FOREIGN KEY (storage_asset_id) REFERENCES public.storage_assets(id);
+
+
+--
 -- Name: public_resources fk_rails_aa198ccc2d; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5412,6 +6696,14 @@ ALTER TABLE ONLY public.storage_assets
 
 
 --
+-- Name: report_versions fk_rails_b1ce893d5d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions
+    ADD CONSTRAINT fk_rails_b1ce893d5d FOREIGN KEY (submitted_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: client_contacts fk_rails_b52803964e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5441,6 +6733,14 @@ ALTER TABLE ONLY public.public_site_pages
 
 ALTER TABLE ONLY public.quote_deliveries
     ADD CONSTRAINT fk_rails_b748812030 FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
+
+
+--
+-- Name: reports fk_rails_bbe1f0fdf5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.reports
+    ADD CONSTRAINT fk_rails_bbe1f0fdf5 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -5676,6 +6976,14 @@ ALTER TABLE ONLY public.training_offerings
 
 
 --
+-- Name: inspections fk_rails_eb2ad78932; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspections
+    ADD CONSTRAINT fk_rails_eb2ad78932 FOREIGN KEY (assigned_surveyor_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: articles fk_rails_eb3527c40a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5732,6 +7040,14 @@ ALTER TABLE ONLY public.case_studies
 
 
 --
+-- Name: inspection_evidence_links fk_rails_f66572c54b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.inspection_evidence_links
+    ADD CONSTRAINT fk_rails_f66572c54b FOREIGN KEY (finding_id) REFERENCES public.inspection_findings(id);
+
+
+--
 -- Name: public_site_pages fk_rails_f7f635af30; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5764,6 +7080,22 @@ ALTER TABLE ONLY public.service_inquiries
 
 
 --
+-- Name: report_versions fk_rails_fc879b7434; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_versions
+    ADD CONSTRAINT fk_rails_fc879b7434 FOREIGN KEY (authored_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: report_reviews fk_rails_fddd4b8641; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.report_reviews
+    ADD CONSTRAINT fk_rails_fddd4b8641 FOREIGN KEY (report_version_id) REFERENCES public.report_versions(id);
+
+
+--
 -- Name: quote_portal_releases fk_rails_fea84cae67; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5778,6 +7110,8 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126210000'),
+('20261126200000'),
 ('20261126195000'),
 ('20261126190000'),
 ('20261126180000'),

@@ -1,0 +1,11 @@
+<% content_for :staff_nav, :reports %>
+
+<%= ant_page_header(
+      title: "Prepare report",
+      description: "Snapshot inspection #{@inspection.reference_number} into a draft technical report."
+    ) %>
+
+<%= form_with url: staff_reports_path(project_id: @project.id, inspection_id: @inspection.id), class: "staff-form mt-6" do %>
+  <%= ant_text_field_tag "report[title]", label: "Report title", value: "Technical report — #{@inspection.title}" %>
+  <%= submit_tag "Create draft report", class: "ant-button ant-button--primary" %>
+<% end %>

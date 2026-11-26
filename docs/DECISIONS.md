@@ -76,6 +76,14 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-06-H1-002 | Storage asset freeze | Verified/rejected `storage_assets` identity fields immutable via trigger + AR | **Implemented** 2026-11-26 | F4-06-H1 |
 | ADR-F4-06-H1-003 | Scanner allowlist | Only `clamscan`/`clamdscan` or repo `scripts/clamav_*.sh`; shell metacharacters denied; timeout fail-closed | **Implemented** 2026-11-26 | F4-06-H1 |
 | ADR-F4-06-H1-004 | Client notifications | No client in-app notification model in F4-06; clients discover requests/releases via portal lists | **Accepted limitation** 2026-11-26 | F4-06-H1 |
+| ADR-F4-07-001 | Inspection templates | Versioned `InspectionTemplate` / `InspectionTemplateVersion`; inspections bind exact published version; synthetic QA seeder labelled non-regulatory | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-002 | Exact-version evidence | `InspectionEvidenceLink` → exact `DocumentVersion`; quarantine/cross-project denied; no mutable “latest” pointer | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-003 | Report SoD | Independent technical review; author/submitter/same user cannot approve; collaborator scope cannot approve | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-004 | Approval ≠ release | Approve freezes PDF via trusted `application_generated` artifact path; client visibility requires explicit `ReportRelease` | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-005 | Report revision | Corrections / post-approval edits create a new draft `ReportVersion`; prior approved/released content unchanged | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-006 | Simulation boundary | Inspections/reports `mode: simulated` only; production create/release paths refuse; PDF watermark required | **Implemented** 2026-11-26 | F4-07 |
+| ADR-F4-07-007 | Billing handoff | No invoice from inspection/report events; F4-08 owns commercial billing | **Deferred** 2026-11-26 | F4-08 |
+| ADR-F4-07-008 | Client report notifications | Client discover released reports via portal library; no new client notification channel in F4-07 | **Accepted limitation** 2026-11-26 | F4-07 |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

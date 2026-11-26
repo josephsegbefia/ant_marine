@@ -64,6 +64,14 @@ module StaffShellHelper
     @staff_unread_notification_count ||= StaffNotificationPolicy::Scope.new(Current.membership, StaffNotification).resolve.unread.count
   end
 
+  def staff_can_view_inspections?
+    staff_can_view_projects? && Current.membership&.staff_domain?
+  end
+
+  def staff_can_view_reports?
+    staff_can_view_projects? && Current.membership&.staff_domain?
+  end
+
   def staff_can_manage_website?
     return false unless Current.membership&.staff_domain?
 
@@ -116,7 +124,13 @@ module StaffShellHelper
       "document_approved" => "check",
       "document_released" => "file",
       "document_release_revoked" => "file",
-      "upload_requested" => "clipboard"
+      "upload_requested" => "clipboard",
+      "inspection_assigned" => "clipboard",
+      "inspection_submitted" => "clipboard",
+      "report_review_required" => "file",
+      "report_changes_requested" => "file",
+      "report_approved" => "check",
+      "report_released" => "file"
     }.fetch(kind.to_s, "mail")
   end
 end

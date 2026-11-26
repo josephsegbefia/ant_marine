@@ -9,6 +9,8 @@ class StaffNotification < ApplicationRecord
     task_assigned schedule_confirmed schedule_cancelled project_update
     document_uploaded document_review_required document_changes_requested document_approved
     document_released document_release_revoked upload_requested
+    inspection_assigned inspection_submitted
+    report_review_required report_changes_requested report_approved report_released
   ].freeze
 
   belongs_to :organization
@@ -46,7 +48,13 @@ class StaffNotification < ApplicationRecord
       "document_approved" => "Document approved",
       "document_released" => "Released to client",
       "document_release_revoked" => "Client release withdrawn",
-      "upload_requested" => "File requested"
+      "upload_requested" => "File requested",
+      "inspection_assigned" => "Inspection assigned",
+      "inspection_submitted" => "Inspection submitted",
+      "report_review_required" => "Report review required",
+      "report_changes_requested" => "Report changes requested",
+      "report_approved" => "Report approved",
+      "report_released" => "Report released to client"
     }.fetch(kind)
   end
 
@@ -59,6 +67,8 @@ class StaffNotification < ApplicationRecord
     when "Project" then Project.find_by(id: subject_id)
     when "Document" then Document.find_by(id: subject_id)
     when "UploadRequest" then UploadRequest.find_by(id: subject_id)
+    when "Inspection" then Inspection.find_by(id: subject_id)
+    when "Report" then Report.find_by(id: subject_id)
     end
   end
 end

@@ -1,0 +1,82 @@
+<% content_for :staff_nav, :reports %>
+
+<%= ant_page_header(
+      title: @report.title,
+      description: "#{@report.reference_number} · #{@report.project.reference_number}"
+    ) %>
+
+<div class="ant-notice ant-notice--warn mt-4">
+  <p><strong>Simulated technical report.</strong> Client release is separate from document sharing.</p>
+</div>
+
+<div class="mt-4 flex flex-wrap gap-3 items-center">
+  <%= ant_status_badge(label: @version&.status_label || "Draft") %>
+  <% if @report.released_to_client? %>
+    <%= ant_status_badge(label: "Released to client", badge_class: "ant-badge--success") %>
+  <% end %>
+</div>
+
+<% sections = @version&.content_json.is_a?(Hash) ? (@version.content_json["sections"] || {}) : {} %>
+
+<% if policy(@report).update? && @version&.draft? %>
+  <section class="mt-8">
+    <h2 class="staff-section-title">Edit draft sections</h2>
+    <%= form_with url: staff_report_version_path(@report, @version), method: :patch, class: "staff-form mt-3" do %>
+      <%= ant_text_field_tag "report_version[sections][executive_summary]", label: "Executive summary", value: sections["executive_summary"], multiline: true %>
+      <%= ant_text_field_tag "report_version[sections][conclusions]", label: "Conclusions", value: sections["conclusions"], multiline: true %>
+      <%= submit_tag "Save draft", class: "ant-button ant-button--secondary" %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if policy(@report).submit? && @version&.draft? %>
+  <%= button_to "Submit for review", submit_staff_report_path(@report), method: :post, class: "ant-button ant-button--primary mt-6" %>
+<% end %>
+
+<% if policy(@report).revise? %>
+  <section class="mt-6">
+    <p class="text-sm text-slate-600">
+      <% if @version&.status == "changes_requested" %>
+        Reviewer asked for changes. Start a new draft version without altering the reviewed copy.
+      <% else %>
+        Prepare a newer draft without replacing any approved or released version.
+      <% end %>
+    </p>
+    <%= button_to "Start corrected draft", revise_staff_report_path(@report), method: :post, class: "ant-button ant-button--secondary mt-3" %>
+  </section>
+<% end %>
+
+<% if @version && policy(@version).review? && @version.status == "submitted_for_review" %>
+  <section class="mt-8 staff-card">
+    <h2 class="staff-section-title">Reviewer decision</h2>
+    <%= form_with url: review_staff_report_version_path(@report, @version), method: :post, class: "staff-form mt-3" do %>
+      <%= ant_select_tag "outcome", [ ["Approve", "approved"], ["Request changes", "changes_requested"] ], label: "Decision" %>
+      <%= ant_text_field_tag "comments", label: "Comments", multiline: true %>
+      <%= submit_tag "Record review", class: "ant-button ant-button--primary" %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @approved_version %>
+  <div class="mt-6 flex gap-3 flex-wrap">
+    <%= link_to "View approved PDF (v#{@approved_version.version_number})",
+          pdf_staff_report_path(@report, version_id: @approved_version.id),
+          class: "ant-button ant-button--secondary",
+          target: "_blank",
+          rel: "noopener" %>
+    <% if policy(@approved_version).release? && !@report.released_to_client? %>
+      <%= form_with url: release_staff_report_version_path(@report, @approved_version), method: :post, class: "inline" do %>
+        <%= hidden_field_tag :confirm, true %>
+        <%= submit_tag "Release version #{@approved_version.version_number} to client", class: "ant-button ant-button--primary" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% active_release = @report.active_release %>
+<% if active_release&.active? && policy(@report).release? %>
+  <%= form_with url: revoke_staff_report_release_path(@report, active_release), method: :post, class: "staff-form mt-6" do %>
+    <%= ant_text_field_tag "reason", label: "Reason for withdrawing client access", required: true, multiline: true %>
+    <%= submit_tag "Revoke client release", class: "ant-button ant-button--danger" %>
+  <% end %>
+<% end %>
