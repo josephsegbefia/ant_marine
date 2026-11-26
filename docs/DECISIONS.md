@@ -62,6 +62,9 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-05-004 | Milestones table | Added `project_milestones` beyond original P2 schema catalogue for truthful progress | **Implemented** 2026-11-26 | F4-05 |
 | ADR-F4-05-005 | Schedule events | Project scheduling uses `schedule_events` (proposed/confirmed); commercial `booking_requests` remain future | **Implemented** 2026-11-26 | F4-05 |
 | ADR-F4-05-006 | Internal status vocabulary | planning, scheduled, in_progress, technical_review, report_ready, completed, closed, on_hold, cancelled | **Implemented** 2026-11-26 | Reconciles P2_4 + F4-05 labels |
+| ADR-F4-05-007 | Resume after hold | Resume restores prior internal status from the latest `on_hold` status event; falls back to `planning` | **Implemented** 2026-11-26 | F4-05-H1 |
+| ADR-F4-05-008 | access_scope enforcement | `Delivery::Access` + `ProjectPolicy#manage?`; review/collaborator assignment ≠ manage | **Implemented** 2026-11-26 | P2-OD-042 / F4-05-H1 |
+| ADR-F4-05-009 | Project commercial protect | DB trigger `projects_commercial_protect` mirrors AR commercial immutability; no bypass GUC | **Implemented** 2026-11-26 | F4-05-H1 |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

@@ -49,7 +49,7 @@ module Delivery
       },
       resume: {
         from: %w[on_hold],
-        to: "planning",
+        to: :restore_prior, # prior status from last place_on_hold event (ADR-F4-05-007)
         permission: "projects.manage",
         require_reason: true
       },
@@ -60,6 +60,8 @@ module Delivery
         require_reason: true
       }
     }.freeze
+
+    RESTORABLE = %w[planning scheduled in_progress technical_review report_ready].freeze
 
     def self.apply!(project:, action:, membership:, reason: nil)
       new(membership: membership).apply!(project: project, action: action, reason: reason)
@@ -98,12 +100,13 @@ module Delivery
         raise InvalidState, "That action is not available from the current project status." unless rule[:from].include?(locked.internal_status)
 
         from = locked.internal_status
-        locked.update!(internal_status: rule[:to], client_status: Project::CLIENT_STATUS_MAP.fetch(rule[:to]))
+        to = resolve_target_status(locked, rule[:to])
+        locked.update!(internal_status: to, client_status: Project::CLIENT_STATUS_MAP.fetch(to))
 
         event = ProjectStatusEvent.create!(
           project: locked,
           from_status: from,
-          to_status: rule[:to],
+          to_status: to,
           actor_membership: @membership,
           reason: reason.to_s.strip.presence,
           occurred_at: Time.current
@@ -116,7 +119,7 @@ module Delivery
           subject: locked,
           metadata: {
             "from" => from,
-            "to" => rule[:to],
+            "to" => to,
             "reason" => reason.to_s.strip.presence,
             "project_status_event_id" => event.id,
             "mode" => locked.mode
@@ -128,6 +131,19 @@ module Delivery
     end
 
     private
+
+      def resolve_target_status(project, target)
+        return target unless target == :restore_prior
+
+        prior = project.project_status_events
+                       .where(to_status: "on_hold")
+                       .order(occurred_at: :desc, id: :desc)
+                       .limit(1)
+                       .pick(:from_status)
+        return prior if prior.present? && RESTORABLE.include?(prior)
+
+        "planning"
+      end
 
       def staff_actor?
         @membership&.status == "active" && @membership.staff_domain?

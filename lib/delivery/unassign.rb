@@ -14,6 +14,7 @@ module Delivery
     end
 
     def call(assignment:, reason:)
+      raise Denied, "Only active ANT Marine staff can change assignments." unless staff_actor?
       raise Denied, "You need permission to change project assignments." unless allowed?("projects.assign")
       raise Error, "Add a short reason for removing this assignment." if reason.to_s.strip.blank?
       raise Error, "That assignment is already inactive." unless assignment.active?
@@ -51,6 +52,10 @@ module Delivery
     end
 
     private
+
+      def staff_actor?
+        @actor&.status == "active" && @actor.staff_domain?
+      end
 
       def allowed?(key)
         Authorization::EffectivePermissions.new(@actor).allowed?(key)

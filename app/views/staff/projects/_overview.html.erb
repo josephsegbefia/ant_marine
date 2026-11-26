@@ -39,19 +39,45 @@
     <section class="staff-quote-side-panel">
       <%= render "shared/ui/side_panel_head", title: "Next actions", heading_id: "project-actions", icon: "check" %>
       <div class="staff-quote-side-panel__body space-y-2">
-        <% if @actions.any? && policy(@project).transition? %>
-          <% @actions.each do |action| %>
+        <% if policy(@project).transition? %>
+          <% reason_actions = %i[place_on_hold cancel resume] %>
+          <% (@actions - reason_actions).each do |action| %>
             <%= button_to action.to_s.tr("_", " ").humanize,
                   transition_staff_project_path(@project),
                   params: { project_action: action },
                   class: "ant-btn-outline ant-btn-outline--compact w-full",
                   form: { class: "w-full" } %>
           <% end %>
-          <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
-            <%= hidden_field_tag :project_action, "place_on_hold" %>
-            <label class="ant-field__label" for="hold_reason">Put on hold — reason</label>
-            <input id="hold_reason" name="reason" class="ant-control w-full" required>
-            <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Place on hold</button>
+
+          <% if @actions.include?(:place_on_hold) %>
+            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
+              <%= hidden_field_tag :project_action, "place_on_hold" %>
+              <label class="ant-field__label" for="hold_reason">Put on hold — reason</label>
+              <input id="hold_reason" name="reason" class="ant-control w-full" required>
+              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Place on hold</button>
+            <% end %>
+          <% end %>
+
+          <% if @actions.include?(:resume) %>
+            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
+              <%= hidden_field_tag :project_action, "resume" %>
+              <label class="ant-field__label" for="resume_reason">Resume — reason</label>
+              <input id="resume_reason" name="reason" class="ant-control w-full" required>
+              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Resume project</button>
+            <% end %>
+          <% end %>
+
+          <% if @actions.include?(:cancel) %>
+            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
+              <%= hidden_field_tag :project_action, "cancel" %>
+              <label class="ant-field__label" for="cancel_reason">Cancel project — reason</label>
+              <input id="cancel_reason" name="reason" class="ant-control w-full" required>
+              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Cancel project</button>
+            <% end %>
+          <% end %>
+
+          <% if @actions.empty? %>
+            <p class="staff-quote-summary__hint">No further status changes are available right now.</p>
           <% end %>
         <% else %>
           <p class="staff-quote-summary__hint">No further status changes are available right now.</p>

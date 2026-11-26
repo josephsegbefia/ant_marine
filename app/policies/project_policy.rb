@@ -21,8 +21,11 @@ class ProjectPolicy < ApplicationPolicy
     manage?
   end
 
+  # Operational delivery manage (tasks, milestones, schedule, updates).
+  # Catalogue projects.manage OR active delivery-scope assignment (P2-OD-042).
+  # review / collaborator assignments do not grant manage.
   def manage?
-    view? && staff? && (allowed?("projects.manage") || assigned_participant?)
+    view? && staff? && Delivery::Access.can_manage_delivery?(membership, record)
   end
 
   def assign?
@@ -38,7 +41,8 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def view_internal_notes?
-    view? && staff? && (allowed?("projects.manage") || allowed?("projects.view_all"))
+    view? && staff? && (allowed?("projects.manage") || allowed?("projects.view_all") ||
+      Delivery::Access.delivery_participant?(membership, record))
   end
 
   def publish_update?
@@ -49,21 +53,24 @@ class ProjectPolicy < ApplicationPolicy
     def resolve
       return scope.none unless membership&.status == "active"
 
+      base = scope
+      base = base.where.not(mode: "simulated") if Rails.env.production?
+
       if membership.staff_domain?
         if Authorization::EffectivePermissions.new(membership).allowed?("projects.view_all")
-          scope.for_operating_organization(membership.organization)
+          base.for_operating_organization(membership.organization)
         elsif Authorization::EffectivePermissions.new(membership).allowed?("projects.view_assigned")
-          scope.for_operating_organization(membership.organization)
+          base.for_operating_organization(membership.organization)
                .where(id: Assignment.active.where(user_id: membership.user_id).select(:project_id))
         else
-          scope.none
+          base.none
         end
       elsif membership.client_domain?
-        return scope.none unless Authorization::EffectivePermissions.new(membership).allowed?("projects.view_org")
+        return base.none unless Authorization::EffectivePermissions.new(membership).allowed?("projects.view_org")
 
-        scope.for_client_organization(membership.organization)
+        base.for_client_organization(membership.organization)
       else
-        scope.none
+        base.none
       end
     end
   end
@@ -77,7 +84,7 @@ class ProjectPolicy < ApplicationPolicy
       if membership.staff_domain?
         return false unless record.operating_organization_id == membership.organization_id
         return true if allowed?("projects.view_all")
-        return true if allowed?("projects.view_assigned") && assigned_participant?
+        return true if allowed?("projects.view_assigned") && Delivery::Access.assigned_any_scope?(membership, record)
 
         false
       elsif membership.client_domain?
@@ -97,11 +104,5 @@ class ProjectPolicy < ApplicationPolicy
 
     def staff?
       membership&.staff_domain?
-    end
-
-    def assigned_participant?
-      return false unless record.is_a?(Project)
-
-      record.assigned?(membership.user) || record.coordinator_membership_id == membership.id
     end
 end

@@ -11,6 +11,30 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: ant_marine_project_commercial_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_project_commercial_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    IF NEW.mode IS DISTINCT FROM OLD.mode
+       OR NEW.quote_id IS DISTINCT FROM OLD.quote_id
+       OR NEW.quote_revision_id IS DISTINCT FROM OLD.quote_revision_id
+       OR NEW.quote_response_id IS DISTINCT FROM OLD.quote_response_id
+       OR NEW.quote_portal_release_id IS DISTINCT FROM OLD.quote_portal_release_id
+       OR NEW.client_organization_id IS DISTINCT FROM OLD.client_organization_id
+       OR NEW.commercial_snapshot IS DISTINCT FROM OLD.commercial_snapshot THEN
+      PERFORM ant_marine_reject('Project commercial source fields are immutable after creation.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: ant_marine_quote_line_item_protect(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -3856,6 +3880,13 @@ CREATE UNIQUE INDEX index_users_on_lower_email ON public.users USING btree (lowe
 
 
 --
+-- Name: projects projects_commercial_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER projects_commercial_protect BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION public.ant_marine_project_commercial_protect();
+
+
+--
 -- Name: quote_line_items quote_line_items_history_protect; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -4883,6 +4914,7 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126150000'),
 ('20261126140000'),
 ('20261126120000'),
 ('20261126020100'),

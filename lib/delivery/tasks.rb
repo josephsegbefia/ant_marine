@@ -43,8 +43,7 @@ module Delivery
     end
 
     def assert_manage!(actor, project)
-      raise Denied, "You need permission to manage project tasks." unless allowed?(actor, "projects.manage") ||
-        (allowed?(actor, "assignments.participate") && project.assigned?(actor.user))
+      raise Denied, "You need permission to manage project tasks." unless Delivery::Access.can_manage_delivery?(actor, project)
     end
 
     def assert_manage_or_assignee!(actor, task)

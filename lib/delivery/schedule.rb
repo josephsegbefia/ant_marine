@@ -59,6 +59,9 @@ module Delivery
       assert_manage!(actor, event.project)
       raise Error, "Only proposed or rescheduled activities can be confirmed." unless event.confirmation_state.in?(%w[proposed rescheduled])
 
+      conflicts = overlapping(event.responsible_membership_id, event.starts_at, event.ends_at, excluding_id: event.id)
+      raise Conflict, "That person already has another activity in this time range." if conflicts.exists?
+
       event.update!(
         confirmation_state: "confirmed",
         confirmed_by_membership: actor,
@@ -102,8 +105,8 @@ module Delivery
 
     def assert_manage!(actor, project)
       perms = Authorization::EffectivePermissions.new(actor)
-      ok = perms.allowed?("projects.manage") || perms.allowed?("bookings.confirm") ||
-           (perms.allowed?("assignments.participate") && project.assigned?(actor.user))
+      ok = Delivery::Access.can_manage_delivery?(actor, project) ||
+           (perms.allowed?("bookings.confirm") && Delivery::Access.delivery_participant?(actor, project))
       raise Denied, "You are not allowed to schedule this project." unless ok
     end
 

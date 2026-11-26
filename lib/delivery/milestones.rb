@@ -31,8 +31,7 @@ module Delivery
     end
 
     def manage?(actor, project)
-      perms = Authorization::EffectivePermissions.new(actor)
-      perms.allowed?("projects.manage") || (perms.allowed?("assignments.participate") && project.assigned?(actor.user))
+      Delivery::Access.can_manage_delivery?(actor, project)
     end
   end
 end
