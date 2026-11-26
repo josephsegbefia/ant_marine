@@ -30,6 +30,7 @@ module Reports
           revocation_reason: reason.to_s.strip
         )
         report = Report.lock.find(locked_release.report_id)
+        Delivery::TechnicalProgress.sync!(project: report.project)
         Reports::Audit.release_revoked(report: report, release: locked_release, actor_membership: @membership)
         Result.new(report: report, release: locked_release)
       end

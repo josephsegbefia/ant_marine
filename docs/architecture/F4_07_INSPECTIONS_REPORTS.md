@@ -1,8 +1,8 @@
 # F4-07 — Inspections & technical reports
 
-**Baseline:** `4cf2b6e` (F4-06-H1)  
-**Status:** Local implementation — simulated projects only  
-**Spec:** [`docs/implementation/F4_07_SPEC.md`](../implementation/F4_07_SPEC.md)
+**Baseline:** `a79837a` (F4-07) → H1 acceptance
+**Status:** Accepted locally — simulated only (see [`F4_07_H1_ACCEPTANCE.md`](F4_07_H1_ACCEPTANCE.md))
+**Spec:** [`docs/implementation/F4_07_SPEC.md`](../implementation/F4_07_SPEC.md) · H1 [`docs/implementation/F4_07_H1_SPEC.md`](../implementation/F4_07_H1_SPEC.md)
 
 ## Design Studio mapping
 

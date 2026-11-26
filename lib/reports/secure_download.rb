@@ -24,8 +24,16 @@ module Reports
 
       asset = version.storage_asset
       raise Error, "This report version has no stored PDF." unless asset&.downloadable?
+      if version.artifact_checksum_sha256.blank? ||
+         !ActiveSupport::SecurityUtils.secure_compare(version.artifact_checksum_sha256, asset.checksum_sha256)
+        raise Error, "The approved report artifact failed integrity verification."
+      end
 
       storage = Storage::SecureDownload.call(asset: asset)
+      if Digest::SHA256.hexdigest(storage.plaintext) != version.artifact_checksum_sha256
+        raise Error, "The approved report artifact failed integrity verification."
+      end
+
       Reports::Audit.download_allowed(report: report, version: version, actor_membership: @membership)
 
       Payload.new(

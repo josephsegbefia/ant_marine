@@ -37,7 +37,8 @@ module Reports
         # Trusted application-generated PDF path only — never for ordinary user uploads.
         asset.mark_available!(
           scan_result: "application_generated_report_pdf",
-          scanner_adapter: "application_generated"
+          scanner_adapter: "application_generated",
+          trusted_application_generated: true
         )
       end
 

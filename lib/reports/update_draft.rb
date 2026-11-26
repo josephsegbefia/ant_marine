@@ -33,6 +33,11 @@ module Reports
             content["sections"][key.to_s] = value.to_s
           end
         end
+        if locked.authored_by_membership_id != @membership.id
+          editors = Array(content["material_editor_membership_ids"]).map(&:to_i)
+          editors << @membership.id
+          content["material_editor_membership_ids"] = editors.uniq
+        end
 
         locked.update!(
           title: title.to_s.strip.presence || locked.title,

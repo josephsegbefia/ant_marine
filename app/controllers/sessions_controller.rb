@@ -2,7 +2,10 @@ class SessionsController < ApplicationController
   layout "access"
 
   allow_unauthenticated_access only: %i[ new create ]
-  rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to new_session_path, alert: "Try again later." }
+  rate_limit to: 10, within: 3.minutes, only: :create,
+             store: Rails.application.config.x.session_rate_limit_store || Rails.cache,
+             with: -> { redirect_to new_session_path, alert: "Try again later." },
+             unless: -> { Rails.env.test? }
 
   def new
   end

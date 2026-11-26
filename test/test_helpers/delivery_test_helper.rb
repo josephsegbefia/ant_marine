@@ -28,12 +28,12 @@ module DeliveryTestHelper
     { quote: quote, release: release, response: response, project: project }
   end
 
-  def create_staff_membership!(role_key:, email: nil, full_name: nil)
+  def create_staff_membership!(role_key:, email: nil, full_name: nil, password: "Secure-password-123")
     email ||= "#{role_key.tr('.', '-')}-#{SecureRandom.hex(3)}@example.com"
     user = User.create!(
       email: email,
-      password: "Secure-password-123",
-      password_confirmation: "Secure-password-123",
+      password: password,
+      password_confirmation: password,
       status: "active",
       full_name: full_name || role_key.split(".").last.humanize
     )

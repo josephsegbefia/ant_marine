@@ -51,11 +51,24 @@ module Storage
       reload
     end
 
-    def mark_available!(scan_result:, scanner_adapter: nil)
+    # Ordinary malware-clean scans must not pass trusted_application_generated.
+    # Only Reports::ArtifactStore may mark a trusted generated PDF available.
+    def mark_available!(scan_result:, scanner_adapter: nil, trusted_application_generated: false)
+      adapter = scanner_adapter.presence || scan_result
+      if adapter.to_s == "application_generated" && !trusted_application_generated
+        raise ArgumentError, "application_generated scan provenance is reserved for trusted report artifacts"
+      end
+      if trusted_application_generated && adapter.to_s != "application_generated"
+        raise ArgumentError, "trusted application-generated assets require scanner_adapter application_generated"
+      end
+      if trusted_application_generated && content_type.to_s != "application/pdf"
+        raise ArgumentError, "trusted application-generated artifacts must be PDF"
+      end
+
       update!(
         scan_status: "available",
         scan_result: scan_result,
-        scanner_adapter: scanner_adapter.presence || scan_result,
+        scanner_adapter: adapter,
         scanned_checksum_sha256: checksum_sha256,
         scanned_at: Time.current,
         rejected_reason: nil

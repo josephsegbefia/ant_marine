@@ -84,6 +84,11 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-07-006 | Simulation boundary | Inspections/reports `mode: simulated` only; production create/release paths refuse; PDF watermark required | **Implemented** 2026-11-26 | F4-07 |
 | ADR-F4-07-007 | Billing handoff | No invoice from inspection/report events; F4-08 owns commercial billing | **Deferred** 2026-11-26 | F4-08 |
 | ADR-F4-07-008 | Client report notifications | Client discover released reports via portal library; no new client notification channel in F4-07 | **Accepted limitation** 2026-11-26 | F4-07 |
+| ADR-F4-07-H1-001 | Session rate limit in tests | Session create rate limit skipped in `Rails.env.test?`; isolated MemoryStore retained for non-test | **Implemented** 2026-11-26 | F4-07-H1 |
+| ADR-F4-07-H1-002 | Trusted artifact flag | `mark_available!(trusted_application_generated: true)` required for `application_generated` provenance; only `Reports::ArtifactStore` | **Implemented** 2026-11-26 | F4-07-H1 |
+| ADR-F4-07-H1-003 | Material editor SoD | Draft editors recorded in `content_json.material_editor_membership_ids`; cannot approve | **Implemented** 2026-11-26 | F4-07-H1 |
+| ADR-F4-07-H1-004 | Milestone conservatism | Kind gates remain at-least-one; `project_technically_ready?` blocks while drafts/open work remain; revoke reopens `report_release` | **Implemented** 2026-11-26 | F4-07-H1 |
+| ADR-F4-07-H1-005 | Browser review control | Connected H1 system journey uses domain services for review/revise/approve; release/revoke/client UI remain browser-driven | **Accepted limitation** 2026-11-26 | F4-07-H1 |
 
 **F4-01 homepage overhaul (2026-11-25, product owner):**
 

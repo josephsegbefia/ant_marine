@@ -24,10 +24,7 @@ module Reports
       raise InvalidState, "This version does not belong to the report." unless version.report_id == report.id
       raise InvalidState, "Submit the report for review first." unless version.status == "submitted_for_review"
 
-      if version.authored_by_membership_id == @membership.id ||
-         version.submitted_by_membership_id == @membership.id ||
-         version.authored_by_membership&.user_id == @membership.user_id ||
-         version.submitted_by_membership&.user_id == @membership.user_id
+      if self_or_material_editor?(version)
         raise Denied, "An independent reviewer must approve this report."
       end
 
@@ -77,5 +74,22 @@ module Reports
     rescue Reports::ArtifactStore::Error, Prawn::Errors::CannotFit, Prawn::Errors::UnknownOption => e
       raise InvalidState, "The report PDF could not be generated. Approval was not recorded. (#{e.message})"
     end
+
+    private
+
+      def self_or_material_editor?(version)
+        actor_user_id = @membership.user_id
+        return true if version.authored_by_membership_id == @membership.id
+        return true if version.submitted_by_membership_id == @membership.id
+        return true if version.authored_by_membership&.user_id == actor_user_id
+        return true if version.submitted_by_membership&.user_id == actor_user_id
+
+        editor_ids = Array(version.content_json.is_a?(Hash) ? version.content_json["material_editor_membership_ids"] : []).map(&:to_i)
+        return true if editor_ids.include?(@membership.id)
+
+        return false if editor_ids.empty?
+
+        Membership.where(id: editor_ids, user_id: actor_user_id).exists?
+      end
   end
 end

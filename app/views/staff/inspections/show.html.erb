@@ -130,7 +130,7 @@
   <% if policy(@inspection).complete? && @inspection.status == "submitted" %>
     <%= button_to "Mark complete", complete_staff_inspection_path(@inspection), method: :post, class: "ant-button ant-button--secondary" %>
   <% end %>
-  <% if @inspection.submitted_or_later? && policy(Report.new(project: @inspection.project), :create?) %>
+  <% if @inspection.submitted_or_later? && policy(Report.new(project: @inspection.project)).create? %>
     <%= link_to "Prepare report", new_staff_report_path(project_id: @inspection.project_id, inspection_id: @inspection.id), class: "ant-button ant-button--secondary" %>
   <% end %>
 </div>

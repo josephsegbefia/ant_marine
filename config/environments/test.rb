@@ -22,6 +22,8 @@ Rails.application.configure do
   config.consider_all_requests_local = true
   config.cache_store = :null_store
   config.x.public_enquiry_rate_limit_store = ActiveSupport::Cache::MemoryStore.new
+  # Isolated MemoryStore so session create rate limits do not flake the full system suite.
+  config.x.session_rate_limit_store = ActiveSupport::Cache::MemoryStore.new
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
