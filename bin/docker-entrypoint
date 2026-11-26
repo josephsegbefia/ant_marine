@@ -1,5 +1,19 @@
 #!/bin/bash -e
 
+# Production needs the key that encrypted config/credentials.yml.enc.
+# Render ActiveSupport::MessageEncryptor::InvalidMessage => wrong/missing RAILS_MASTER_KEY.
+if [ "${RAILS_ENV:-}" = "production" ]; then
+  if [ -z "${RAILS_MASTER_KEY:-}" ] && [ ! -f /rails/config/master.key ]; then
+    echo "RAILS_MASTER_KEY is not set. On Render, add env var RAILS_MASTER_KEY with the exact contents of local config/master.key (32 hex chars, no quotes/newlines), then redeploy." >&2
+    exit 1
+  fi
+
+  if [ -z "${DATABASE_URL:-}" ]; then
+    echo "DATABASE_URL is not set. On Render: create a PostgreSQL database, link it to this web service (Environment → Add from Database / Connect), confirm DATABASE_URL appears, then redeploy." >&2
+    exit 1
+  fi
+fi
+
 if [ "${1:-}" = "./bin/jobs" ] || [ "${1:-}" = "bin/jobs" ]; then
   ./bin/rails db:prepare
 fi

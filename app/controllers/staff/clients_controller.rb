@@ -6,36 +6,53 @@ module Staff
 
     def index
       authorize Organization, :index?
-      scope = policy_scope(Organization).active.order(:name)
-      if params[:q].present?
-        term = "%#{ActiveRecord::Base.sanitize_sql_like(params[:q].to_s.strip)}%"
+      @view = params[:view].presence_in(%w[awaiting with_portal pending_invites]) || "all"
+      @filters = {
+        q: params[:q].to_s.strip.presence,
+        status: params[:status].presence_in(%w[active archived])
+      }
+
+      base = policy_scope(Organization).client
+      scope = case @filters[:status]
+      when "archived"
+        base.where(status: "archived").order(:name)
+      else
+        base.active.order(:name)
+      end
+
+      if @filters[:q]
+        term = "%#{ActiveRecord::Base.sanitize_sql_like(@filters[:q])}%"
         scope = scope.where(
-          "organizations.name ILIKE :term OR organizations.reference_number ILIKE :term OR organizations.profile->>'business_email' ILIKE :term",
+          "organizations.name ILIKE :term OR organizations.reference_number ILIKE :term OR organizations.profile->>'business_email' ILIKE :term OR organizations.profile->>'primary_contact_name' ILIKE :term",
           term: term
         )
       end
-      case params[:status]
-      when "active" then scope = scope.active
-      when "archived" then scope = policy_scope(Organization).where(status: "archived").order(:name)
+
+      active_portal_ids = Membership.active.joins(:organization).merge(Organization.client).select(:organization_id)
+      pending_invite_ids = Invitation.pending.joins(:organization).merge(Organization.client).select(:organization_id)
+
+      scope = case @view
+      when "awaiting"
+        scope.where.not(id: active_portal_ids)
+      when "with_portal"
+        scope.where(id: active_portal_ids)
+      when "pending_invites"
+        scope.where(id: pending_invite_ids)
+      else
+        scope
       end
 
+      active_scope = policy_scope(Organization).client.active
       @summary = {
-        active: policy_scope(Organization).active.count,
+        active: active_scope.count,
+        awaiting: active_scope.where.not(id: active_portal_ids).count,
         pending_invites: Invitation.pending.joins(:organization).merge(Organization.client.active).count,
-        with_portal: Membership.active.joins(:organization).merge(Organization.client.active).select(:organization_id).distinct.count,
-        awaiting: policy_scope(Organization).active.left_outer_joins(:memberships)
-                    .where(memberships: { id: nil }).or(
-                      policy_scope(Organization).active.where.not(
-                        id: Membership.active.where(organizations: { kind: "client" }).select(:organization_id)
-                      )
-                    ).distinct.count
+        with_portal: Membership.active.joins(:organization).merge(Organization.client.active).select(:organization_id).distinct.count
       }
-      # Simpler awaiting count: active clients with no active membership
-      active_ids = Membership.active.joins(:organization).merge(Organization.client).select(:organization_id)
-      @summary[:awaiting] = policy_scope(Organization).active.where.not(id: active_ids).count
 
       @pagination = Pagination.new(scope, page: params[:page], per_page: 25)
       @clients = @pagination.records
+      ActiveRecord::Associations::Preloader.new(records: @clients, associations: [ :memberships, :invitations ]).call
       assign_staff_breadcrumb(crumbs: [], current: "Clients")
     end
 

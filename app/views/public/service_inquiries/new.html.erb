@@ -106,8 +106,15 @@
                 hint: "If the work relates to a vessel, rig or facility." %>
           <%= render "public/service_inquiries/field", form: form, method: :location, label: "Location", required: true,
                 placeholder: "Town, port or offshore area" %>
-          <%= render "public/service_inquiries/field", form: form, method: :preferred_date, label: "Preferred date", type: :date,
-                hint: "This is a request only — it is not a confirmed booking." %>
+          <%= ant_date_field "service_inquiry[preferred_date]",
+                id: "service_inquiry_preferred_date",
+                label: "Preferred date",
+                value: @inquiry.preferred_date,
+                min: Date.current,
+                placeholder: "Select a date",
+                hint: "Optional. This is a request only — it is not a confirmed booking.",
+                error: @inquiry.errors[:preferred_date].first,
+                wrapper_class: "public-enquiry__field" %>
           <%= render "public/service_inquiries/field", form: form, method: :description, label: "Tell us what you need",
                 type: :textarea, required: true,
                 hint: "Explain the work in your own words. It’s fine if you don’t know the technical name." %>

@@ -1,105 +1,274 @@
-<div class="grid gap-6 lg:grid-cols-[1fr_18rem]">
-  <div class="space-y-6">
-    <section class="staff-enquiry-panel p-5">
-      <h2 class="staff-quote-editor__step-title">Project overview</h2>
-      <dl class="staff-quote-summary mt-3">
-        <div><dt>Reference</dt><dd><%= @project.reference_number %></dd></div>
-        <div><dt>Client</dt><dd><%= @project.client_organization.name %></dd></div>
-        <div><dt>Quotation</dt><dd><%= @project.quote.reference_number %> · Version <%= @project.quote_revision.version_number %></dd></div>
-        <div><dt>Location</dt><dd><%= @project.location.presence || "—" %></dd></div>
-        <div><dt>Vessel / asset</dt><dd><%= @project.vessel_name.presence || "—" %></dd></div>
-        <div><dt>Coordinator</dt><dd><%= @project.coordinator_membership&.user&.full_name.presence || @project.coordinator_membership&.user&.email || "Not assigned" %></dd></div>
-        <div><dt>Proposed start</dt><dd><%= @project.proposed_start_on ? l(@project.proposed_start_on) : "—" %></dd></div>
-        <div><dt>Target completion</dt><dd><%= @project.target_completion_on ? l(@project.target_completion_on) : "—" %></dd></div>
-      </dl>
-      <% if @project.operational_description.present? %>
-        <h3 class="mt-4 text-sm font-semibold">Operational description</h3>
-        <div class="staff-quote-summary__hint mt-1"><%= simple_format(@project.operational_description) %></div>
-      <% end %>
-      <% if policy(@project).view_internal_notes? && @project.internal_notes.present? %>
-        <h3 class="mt-4 text-sm font-semibold">Internal notes</h3>
-        <div class="staff-quote-summary__hint mt-1"><%= simple_format(@project.internal_notes) %></div>
-      <% end %>
+<% doc_count = local_assigns.fetch(:doc_count) { project_document_count(@project) } %>
+<% progress = @project.progress_summary %>
+<% attention_items = project_attention_items(
+      @project,
+      doc_count: doc_count,
+      actions: @actions,
+      assignments: @assignments,
+      milestones: @milestones,
+      tasks: @tasks
+    ) %>
+
+<div class="staff-project-overview">
+  <div class="staff-project-overview__main space-y-4">
+    <section class="staff-quote-side-panel" aria-labelledby="project-details-heading">
+      <%= render "shared/ui/side_panel_head",
+            title: "Job details",
+            heading_id: "project-details-heading",
+            icon: "brief",
+            badge_label: @project.internal_status_label,
+            badge_class: project_status_badge_variant(@project.internal_status) %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-enquiry-facts">
+          <div>
+            <dt>Reference</dt>
+            <dd class="staff-quote-summary__ref"><%= @project.reference_number %></dd>
+          </div>
+          <div>
+            <dt>Client</dt>
+            <dd>
+              <% if policy(@project.client_organization).show? %>
+                <%= link_to @project.client_organization.name, staff_client_path(@project.client_organization), class: "staff-quote-link" %>
+              <% else %>
+                <%= @project.client_organization.name %>
+              <% end %>
+            </dd>
+          </div>
+          <div>
+            <dt>Quotation</dt>
+            <dd>
+              <% if policy(@project.quote).show? %>
+                <%= link_to "#{@project.quote.reference_number} · Version #{@project.quote_revision.version_number}",
+                      staff_quotation_path(@project.quote),
+                      class: "staff-quote-link" %>
+              <% else %>
+                <%= @project.quote.reference_number %> · Version <%= @project.quote_revision.version_number %>
+              <% end %>
+            </dd>
+          </div>
+          <div>
+            <dt>Service</dt>
+            <dd><%= @project.service&.name.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt>Location</dt>
+            <dd><%= @project.location.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt>Vessel / asset</dt>
+            <dd><%= @project.vessel_name.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt>Coordinator</dt>
+            <dd><%= project_coordinator_label(@project) %></dd>
+          </div>
+          <div>
+            <dt>Proposed start</dt>
+            <dd><%= @project.proposed_start_on ? l(@project.proposed_start_on, format: :long) : "—" %></dd>
+          </div>
+          <div>
+            <dt>Target completion</dt>
+            <dd><%= @project.target_completion_on ? l(@project.target_completion_on, format: :long) : "—" %></dd>
+          </div>
+        </dl>
+
+        <% if @project.operational_description.present? %>
+          <div class="staff-enquiry-description mt-4">
+            <p class="staff-project-overview__section-label">Operational description</p>
+            <%= simple_format(@project.operational_description) %>
+          </div>
+        <% end %>
+
+        <% if policy(@project).view_internal_notes? && @project.internal_notes.present? %>
+          <div class="staff-enquiry-description mt-4">
+            <p class="staff-project-overview__section-label">Internal notes</p>
+            <%= simple_format(@project.internal_notes) %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel" aria-labelledby="project-checklist-heading">
+      <%= render "shared/ui/side_panel_head",
+            title: "Work checklist",
+            heading_id: "project-checklist-heading",
+            icon: "layers",
+            badge_label: progress[:label],
+            badge_class: "ant-badge--teal" %>
+      <div class="staff-quote-side-panel__body">
+        <% if progress[:total].positive? %>
+          <div class="staff-project-progress" role="progressbar"
+               aria-valuenow="<%= (progress[:completed].to_f / progress[:total] * 100).round %>"
+               aria-valuemin="0" aria-valuemax="100"
+               aria-label="<%= progress[:label] %>">
+            <span class="staff-project-progress__bar" style="width: <%= (@project.progress_ratio * 100).round %>%"></span>
+          </div>
+        <% end %>
+
+        <% if @milestones.any? %>
+          <ul class="staff-project-checklist">
+            <% @milestones.each do |milestone| %>
+              <li class="staff-project-checklist__item">
+                <span class="staff-project-checklist__icon" aria-hidden="true">
+                  <%= render "shared/public/icon",
+                        name: (milestone.completed? ? "check" : "clock"),
+                        size: 16 %>
+                </span>
+                <div class="staff-project-checklist__body">
+                  <p class="staff-project-checklist__title"><%= milestone.title %></p>
+                  <% if milestone.target_on %>
+                    <p class="staff-project-checklist__meta">Due <%= l(milestone.target_on) %></p>
+                  <% end %>
+                </div>
+                <%= ant_status_badge(
+                      label: project_milestone_status_label(milestone),
+                      badge_class: project_milestone_badge_variant(milestone)
+                    ) %>
+              </li>
+            <% end %>
+          </ul>
+          <p class="mt-4">
+            <%= link_to "Open milestones", staff_project_path(@project, tab: "milestones"), class: "staff-quote-link" %>
+          </p>
+        <% else %>
+          <p class="staff-quote-versions__lede">No milestones yet for this project.</p>
+        <% end %>
+      </div>
     </section>
 
     <% if policy(@project).view_commercial? %>
-      <section class="staff-enquiry-panel p-5">
-        <h2 class="staff-quote-editor__step-title">Agreed commercial terms</h2>
-        <p class="staff-quote-summary__hint mt-1">Read-only from the accepted offer. Editing here is not allowed.</p>
-        <dl class="staff-quote-summary mt-3">
-          <div><dt>Total</dt><dd><%= @project.commercial_snapshot["currency"] %> <%= format("%.2f", @project.commercial_snapshot["total_cents"].to_i / 100.0) %></dd></div>
-          <div><dt>Scope</dt><dd><%= simple_format(@project.commercial_snapshot["scope_description"]) %></dd></div>
-          <div><dt>Deliverables</dt><dd><%= simple_format(@project.commercial_snapshot["deliverables"]) %></dd></div>
-        </dl>
-      </section>
-    <% end %>
-
-    <% if staff_can_view_finance? && Billing::Access.can_manage?(Current.membership) %>
-      <% currency = @project.commercial_snapshot["currency"] %>
-      <% accepted = Billing::Capacity.accepted_total_cents(@project) %>
-      <% issued = Billing::Capacity.issued_committed_cents(@project) %>
-      <% remaining = Billing::Capacity.remaining_billable_cents(@project, include_drafts: true) %>
-      <% issued_invoices = @project.invoices.issued %>
-      <% paid = issued_invoices.sum(&:net_paid_cents) %>
-      <% outstanding = issued_invoices.sum(&:outstanding_cents) %>
-      <section class="staff-enquiry-panel p-5">
-        <h2 class="staff-quote-editor__step-title">Simulated billing</h2>
-        <p class="staff-quote-summary__hint mt-1">Not genuine receivables. Figures stay in the accepted currency only.</p>
-        <dl class="staff-quote-summary mt-3">
-          <div><dt>Accepted amount</dt><dd><%= currency %> <%= format("%.2f", accepted / 100.0) %></dd></div>
-          <div><dt>Issued amount</dt><dd><%= currency %> <%= format("%.2f", issued / 100.0) %></dd></div>
-          <div><dt>Recorded payments</dt><dd><%= currency %> <%= format("%.2f", paid / 100.0) %></dd></div>
-          <div><dt>Outstanding</dt><dd><%= currency %> <%= format("%.2f", outstanding / 100.0) %></dd></div>
-          <div><dt>Remaining billable</dt><dd><%= currency %> <%= format("%.2f", remaining / 100.0) %></dd></div>
-        </dl>
-        <% if remaining.positive? && !Rails.env.production? %>
-          <div class="mt-4">
-            <%= link_to "Create invoice", new_staff_invoice_path(project_id: @project.id), class: "ant-btn-outline ant-btn-outline--compact" %>
-          </div>
-        <% end %>
+      <section class="staff-quote-side-panel" aria-labelledby="project-commercial-heading">
+        <%= render "shared/ui/side_panel_head",
+              title: "Agreed commercial terms",
+              heading_id: "project-commercial-heading",
+              icon: "file" %>
+        <div class="staff-quote-side-panel__body">
+          <p class="staff-quote-versions__lede mb-3">Read-only from the accepted offer. Editing here is not allowed.</p>
+          <dl class="staff-enquiry-facts">
+            <div>
+              <dt>Total</dt>
+              <dd><%= @project.commercial_snapshot["currency"] %> <%= format("%.2f", @project.commercial_snapshot["total_cents"].to_i / 100.0) %></dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt>Scope</dt>
+              <dd><%= simple_format(@project.commercial_snapshot["scope_description"]) %></dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt>Deliverables</dt>
+              <dd><%= simple_format(@project.commercial_snapshot["deliverables"]) %></dd>
+            </div>
+          </dl>
+        </div>
       </section>
     <% end %>
   </div>
 
-  <aside class="space-y-4">
-    <section class="staff-quote-side-panel">
-      <%= render "shared/ui/side_panel_head", title: "Next actions", heading_id: "project-actions", icon: "check" %>
-      <div class="staff-quote-side-panel__body space-y-2">
+  <aside class="staff-project-overview__aside space-y-4">
+    <section class="staff-quote-side-panel" aria-labelledby="project-attention-heading">
+      <%= render "shared/ui/side_panel_head", title: "What needs attention", heading_id: "project-attention-heading", icon: "clipboard" %>
+      <div class="staff-quote-side-panel__body">
+        <ul class="staff-project-attention">
+          <% attention_items.each do |item| %>
+            <li>
+              <% if item[:path] %>
+                <%= link_to item[:path], class: "staff-project-attention__row" do %>
+                  <span class="staff-project-attention__icon" aria-hidden="true">
+                    <%= render "shared/public/icon", name: item[:icon], size: 16 %>
+                  </span>
+                  <span class="staff-project-attention__copy">
+                    <span class="staff-project-attention__title"><%= item[:title] %></span>
+                    <span class="staff-project-attention__detail"><%= item[:detail] %></span>
+                  </span>
+                  <% if item[:badge] %>
+                    <%= ant_status_badge(label: item[:badge], badge_class: item[:badge_class]) %>
+                  <% end %>
+                <% end %>
+              <% else %>
+                <div class="staff-project-attention__row staff-project-attention__row--static">
+                  <span class="staff-project-attention__icon" aria-hidden="true">
+                    <%= render "shared/public/icon", name: item[:icon], size: 16 %>
+                  </span>
+                  <span class="staff-project-attention__copy">
+                    <span class="staff-project-attention__title"><%= item[:title] %></span>
+                    <span class="staff-project-attention__detail"><%= item[:detail] %></span>
+                  </span>
+                </div>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+
+        <div class="staff-project-shortcuts mt-4">
+          <% latest_inspection = @project.inspections.order(updated_at: :desc).first %>
+          <% if latest_inspection && policy(latest_inspection).show? %>
+            <%= link_to "Open inspection checklist", staff_inspection_path(latest_inspection), class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% elsif policy(Inspection.new(project: @project)).create? %>
+            <%= link_to "Start inspection checklist", new_staff_inspection_path(project_id: @project.id), class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% elsif policy(Inspection).index? %>
+            <%= link_to "Inspections", staff_inspections_path, class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% end %>
+          <%= link_to "Job documents", staff_project_documents_path(@project), class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% if policy(Report).index? %>
+            <%= link_to "Review reports", staff_reports_path, class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% end %>
+          <% if policy(Invoice).create? && Billing::CreateDraft.available? && @project.simulated? %>
+            <%= link_to "Create invoice", new_staff_invoice_path(project_id: @project.id), class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+          <% end %>
+        </div>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel" aria-labelledby="project-actions-heading">
+      <%= render "shared/ui/side_panel_head", title: "Next actions", heading_id: "project-actions-heading", icon: "check" %>
+      <div class="staff-quote-side-panel__body space-y-3">
         <% if policy(@project).transition? %>
           <% reason_actions = %i[place_on_hold cancel resume] %>
-          <% (@actions - reason_actions).each do |action| %>
-            <%= button_to action.to_s.tr("_", " ").humanize,
-                  transition_staff_project_path(@project),
-                  params: { project_action: action },
-                  class: "ant-btn-outline ant-btn-outline--compact w-full",
-                  form: { class: "w-full" } %>
+          <% primary_actions = @actions - reason_actions %>
+
+          <% if primary_actions.any? %>
+            <div class="staff-project-shortcuts">
+              <% primary_actions.each do |action| %>
+                <%= button_to project_action_label(action),
+                      transition_staff_project_path(@project),
+                      params: { project_action: action },
+                      class: "ant-btn-primary ant-btn-primary--compact w-full",
+                      form: { class: "w-full" } %>
+              <% end %>
+            </div>
           <% end %>
 
-          <% if @actions.include?(:place_on_hold) %>
-            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
-              <%= hidden_field_tag :project_action, "place_on_hold" %>
-              <label class="ant-field__label" for="hold_reason">Put on hold — reason</label>
-              <input id="hold_reason" name="reason" class="ant-control w-full" required>
-              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Place on hold</button>
-            <% end %>
-          <% end %>
+          <% if @actions.include?(:place_on_hold) || @actions.include?(:resume) || @actions.include?(:cancel) %>
+            <details class="staff-project-status-forms">
+              <summary>Status changes that need a reason</summary>
+              <div class="staff-project-status-forms__body space-y-4">
+                <% if @actions.include?(:place_on_hold) %>
+                  <%= form_with url: transition_staff_project_path(@project), method: :post, class: "space-y-2", local: true do %>
+                    <%= hidden_field_tag :project_action, "place_on_hold" %>
+                    <label class="ant-field__label" for="hold_reason">Put on hold — reason</label>
+                    <input id="hold_reason" name="reason" class="ant-control w-full" required>
+                    <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Place on hold</button>
+                  <% end %>
+                <% end %>
 
-          <% if @actions.include?(:resume) %>
-            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
-              <%= hidden_field_tag :project_action, "resume" %>
-              <label class="ant-field__label" for="resume_reason">Resume — reason</label>
-              <input id="resume_reason" name="reason" class="ant-control w-full" required>
-              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Resume project</button>
-            <% end %>
-          <% end %>
+                <% if @actions.include?(:resume) %>
+                  <%= form_with url: transition_staff_project_path(@project), method: :post, class: "space-y-2", local: true do %>
+                    <%= hidden_field_tag :project_action, "resume" %>
+                    <label class="ant-field__label" for="resume_reason">Resume — reason</label>
+                    <input id="resume_reason" name="reason" class="ant-control w-full" required>
+                    <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Resume project</button>
+                  <% end %>
+                <% end %>
 
-          <% if @actions.include?(:cancel) %>
-            <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
-              <%= hidden_field_tag :project_action, "cancel" %>
-              <label class="ant-field__label" for="cancel_reason">Cancel project — reason</label>
-              <input id="cancel_reason" name="reason" class="ant-control w-full" required>
-              <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Cancel project</button>
-            <% end %>
+                <% if @actions.include?(:cancel) %>
+                  <%= form_with url: transition_staff_project_path(@project), method: :post, class: "space-y-2", local: true do %>
+                    <%= hidden_field_tag :project_action, "cancel" %>
+                    <label class="ant-field__label" for="cancel_reason">Cancel project — reason</label>
+                    <input id="cancel_reason" name="reason" class="ant-control w-full" required>
+                    <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Cancel project</button>
+                  <% end %>
+                <% end %>
+              </div>
+            </details>
           <% end %>
 
           <% if @actions.empty? %>
@@ -108,16 +277,18 @@
         <% else %>
           <p class="staff-quote-summary__hint">No further status changes are available right now.</p>
         <% end %>
-        <% doc_count = policy_scope(Document).where(project_id: @project.id).not_archived.count %>
-        <% if doc_count.positive? %>
-          <p class="staff-quote-summary__hint mt-3"><%= doc_count %> document<%= doc_count == 1 ? "" : "s" %> on file.</p>
-          <%= link_to "Open documents", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
-        <% else %>
-          <p class="staff-quote-summary__hint mt-3">No documents yet.</p>
-          <% if policy(Document.new(project: @project)).create? %>
-            <%= link_to "Upload or request files", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
+
+        <div class="staff-project-docs-note">
+          <% if doc_count.positive? %>
+            <p class="staff-quote-summary__hint"><%= doc_count %> document<%= doc_count == 1 ? "" : "s" %> on file.</p>
+            <%= link_to "Open documents", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
+          <% else %>
+            <p class="staff-quote-summary__hint">No documents yet.</p>
+            <% if policy(Document.new(project: @project)).create? %>
+              <%= link_to "Upload or request files", staff_project_documents_path(@project), class: "staff-quote-link mt-2 inline-block" %>
+            <% end %>
           <% end %>
-        <% end %>
+        </div>
       </div>
     </section>
   </aside>

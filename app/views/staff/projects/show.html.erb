@@ -1,21 +1,72 @@
 <% content_for :staff_nav, :projects %>
 <% progress = @project.progress_summary %>
+<% team_count = @assignments.count(&:active?) %>
+<% doc_count = project_document_count(@project) %>
+<% target_label = @project.target_completion_on ? l(@project.target_completion_on, format: :long) : "Not set" %>
 
 <%= ant_page_header(
+      eyebrow: @project.reference_number,
       title: @project.title,
-      description: "#{@project.reference_number} · #{@project.client_organization.name}"
+      description: project_header_description(@project),
+      primary_action: (policy(@project).assign? ? { label: "Assign team", path: staff_project_path(@project, tab: "team") } : nil),
+      secondary_action: { label: "All projects", path: staff_projects_path }
     ) %>
 
 <% if @project.simulated? %>
-  <div class="ant-notice ant-notice--warn mt-4">
+  <div class="staff-quote-notice staff-quote-notice--warn mt-4">
     <p><strong>Simulated project for testing.</strong> Not a live commercial job. No invoices or technical reports are created here.</p>
   </div>
 <% end %>
 
-<div class="mt-4 flex flex-wrap items-center gap-3">
-  <%= ant_status_badge(label: @project.internal_status_label) %>
-  <span class="staff-quote-summary__hint"><%= progress[:label] %></span>
-</div>
+<section class="staff-project-stats mt-5" aria-label="Project summary">
+  <div class="staff-enquiry-stat staff-enquiry-stat--static">
+    <span class="staff-enquiry-stat__top">
+      <span class="staff-enquiry-stat__icon" aria-hidden="true">
+        <%= render "shared/public/icon", name: "layers", size: 16 %>
+      </span>
+      <span class="staff-enquiry-stat__label">Current stage</span>
+    </span>
+    <span class="staff-enquiry-stat__value staff-enquiry-stat__value--text"><%= @project.internal_status_label %></span>
+    <span class="staff-enquiry-stat__caption"><%= progress[:label] %></span>
+  </div>
+
+  <div class="staff-enquiry-stat staff-enquiry-stat--static">
+    <span class="staff-enquiry-stat__top">
+      <span class="staff-enquiry-stat__icon" aria-hidden="true">
+        <%= render "shared/public/icon", name: "calendar", size: 16 %>
+      </span>
+      <span class="staff-enquiry-stat__label">Target date</span>
+    </span>
+    <span class="staff-enquiry-stat__value staff-enquiry-stat__value--text"><%= target_label %></span>
+    <span class="staff-enquiry-stat__caption"><%= @project.proposed_start_on ? "Proposed start #{l(@project.proposed_start_on)}" : "Start date not set" %></span>
+  </div>
+
+  <%= link_to staff_project_path(@project, tab: "team"),
+              class: "staff-enquiry-stat",
+              aria: { label: "Assigned team: #{team_count} members" } do %>
+    <span class="staff-enquiry-stat__top">
+      <span class="staff-enquiry-stat__icon" aria-hidden="true">
+        <%= render "shared/public/icon", name: "users", size: 16 %>
+      </span>
+      <span class="staff-enquiry-stat__label">Assigned team</span>
+    </span>
+    <span class="staff-enquiry-stat__value"><%= team_count %></span>
+    <span class="staff-enquiry-stat__caption"><%= team_count == 1 ? "Team member" : "Team members" %></span>
+  <% end %>
+
+  <%= link_to staff_project_documents_path(@project),
+              class: "staff-enquiry-stat",
+              aria: { label: "Documents: #{doc_count} on file" } do %>
+    <span class="staff-enquiry-stat__top">
+      <span class="staff-enquiry-stat__icon" aria-hidden="true">
+        <%= render "shared/public/icon", name: "folder", size: 16 %>
+      </span>
+      <span class="staff-enquiry-stat__label">Documents</span>
+    </span>
+    <span class="staff-enquiry-stat__value"><%= doc_count %></span>
+    <span class="staff-enquiry-stat__caption"><%= doc_count.positive? ? "On file" : "None yet" %></span>
+  <% end %>
+</section>
 
 <%= ant_section_tabs(tabs: [
       { label: "Overview", path: staff_project_path(@project, tab: "overview"), active: @tab == "overview" },
@@ -28,5 +79,9 @@
     ]) %>
 
 <section class="mt-6">
-  <%= render "staff/projects/#{@tab}" %>
+  <% if @tab == "overview" %>
+    <%= render "staff/projects/overview", doc_count: doc_count %>
+  <% else %>
+    <%= render "staff/projects/#{@tab}" %>
+  <% end %>
 </section>

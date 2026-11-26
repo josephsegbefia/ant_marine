@@ -29,6 +29,17 @@ class StaffWorkspaceTest < ActionDispatch::IntegrationTest
     assert_select "a.staff-nav-button[href=?]", staff_invitations_path do
       assert_select "svg.staff-nav-icon", count: 1
     end
+    [
+      staff_tasks_path,
+      staff_schedule_events_path,
+      staff_inspections_path,
+      staff_reports_path,
+      staff_website_services_path
+    ].each do |path|
+      assert_select "a.staff-nav-button[href=?]", path do
+        assert_select "svg.staff-nav-icon path, svg.staff-nav-icon circle, svg.staff-nav-icon rect", minimum: 1
+      end
+    end
     assert_select "button.staff-mobile-nav-toggle[aria-controls=?]", "staff-workspace-nav"
     assert_select "[data-staff-shell-target='backdrop']", count: 1
     assert_no_match(/Back to workspaces/, response.body)

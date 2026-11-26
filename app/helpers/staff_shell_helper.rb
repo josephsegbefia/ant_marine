@@ -113,7 +113,10 @@ module StaffShellHelper
       mine: "users",
       unassigned: "users",
       awaiting: "clock",
-      ready: "check"
+      ready: "check",
+      active: "users",
+      pending_invites: "mail",
+      with_portal: "check"
     }.fetch(key.to_sym, "chart")
   end
 

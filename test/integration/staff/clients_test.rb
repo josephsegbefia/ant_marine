@@ -11,7 +11,14 @@ class Staff::ClientsTest < ActionDispatch::IntegrationTest
     get staff_clients_path
     assert_response :success
     assert_includes response.body, organizations(:acme_client).name
-    assert_includes response.body, "Clients"
+    assert_includes response.body, "Client directory"
+    assert_includes response.body, "Awaiting portal"
+  end
+
+  test "filters clients awaiting portal access" do
+    get staff_clients_path(view: "awaiting")
+    assert_response :success
+    assert_includes response.body, "Awaiting portal"
   end
 
   test "creates a client organisation" do

@@ -1,86 +1,160 @@
 <% content_for :staff_nav, :clients %>
 <%= ant_page_header(
-      title: "Clients",
-      description: "Client organisations, portal access and linked commercial work.",
-      primary_action: (policy(Organization).create? ? { label: "New client organisation", path: new_staff_client_path } : nil)
+      title: "Client directory",
+      description: "Company details, portal access and current commercial work in one place.",
+      primary_action: (policy(Organization).create? ? { label: "New client", path: new_staff_client_path } : nil)
     ) %>
 
-<div class="staff-overview-stats mt-6" aria-label="Client organisation summary">
-  <div class="staff-overview-stat">
-    <p class="staff-overview-stat__label">Active organisations</p>
-    <p class="staff-overview-stat__value"><%= @summary[:active] %></p>
-  </div>
-  <div class="staff-overview-stat">
-    <p class="staff-overview-stat__label">Awaiting portal access</p>
-    <p class="staff-overview-stat__value"><%= @summary[:awaiting] %></p>
-  </div>
-  <div class="staff-overview-stat">
-    <p class="staff-overview-stat__label">Pending invitations</p>
-    <p class="staff-overview-stat__value"><%= @summary[:pending_invites] %></p>
-  </div>
-  <div class="staff-overview-stat">
-    <p class="staff-overview-stat__label">With active portal access</p>
-    <p class="staff-overview-stat__value"><%= @summary[:with_portal] %></p>
-  </div>
-</div>
+<section class="staff-clients-stats mt-6" aria-label="Client organisation summary">
+  <% [
+       { key: :active, label: "Companies", caption: "Active organisations", path: client_index_path_with, active: @view == "all" && @filters[:status].blank? },
+       { key: :awaiting, label: "Awaiting portal", caption: "No active members yet", path: client_index_path_with(view: "awaiting"), active: @view == "awaiting" },
+       { key: :pending_invites, label: "Pending invitations", caption: "Waiting to activate", path: client_index_path_with(view: "pending_invites"), active: @view == "pending_invites" },
+       { key: :with_portal, label: "Portal connected", caption: "At least one active member", path: client_index_path_with(view: "with_portal"), active: @view == "with_portal" }
+     ].each do |stat| %>
+    <%= link_to stat[:path],
+                class: "staff-enquiry-stat#{" staff-enquiry-stat--active" if stat[:active]}",
+                aria: { label: "#{stat[:label]}: #{@summary[stat[:key]]}. #{stat[:caption]}", current: (stat[:active] ? "page" : nil) }.compact do %>
+      <span class="staff-enquiry-stat__top">
+        <span class="staff-enquiry-stat__icon" aria-hidden="true">
+          <%= render "shared/public/icon", name: staff_stat_icon(stat[:key]), size: 16 %>
+        </span>
+        <span class="staff-enquiry-stat__label"><%= stat[:label] %></span>
+      </span>
+      <span class="staff-enquiry-stat__value"><%= @summary[stat[:key]] %></span>
+      <span class="staff-enquiry-stat__caption"><%= stat[:caption] %></span>
+    <% end %>
+  <% end %>
+</section>
 
-<section class="staff-enquiry-panel mt-6">
-  <%= form_with url: staff_clients_path, method: :get, local: true, class: "staff-enquiry-toolbar" do %>
-    <label class="sr-only" for="client-search">Search clients</label>
-    <input id="client-search" type="search" name="q" value="<%= params[:q] %>" class="ant-control" placeholder="Search by name, reference or email">
-    <%= ant_select_tag "status", [["All statuses", ""], ["Active", "active"], ["Archived", "archived"]],
-                       label: "Status", selected: params[:status], compact: true, include_blank: false %>
-    <button type="submit" class="ant-btn-outline ant-btn-outline--compact">Apply</button>
+<section class="staff-clients-inbox mt-6" aria-labelledby="client-list-heading">
+  <h2 id="client-list-heading" class="sr-only">Client organisations</h2>
+
+  <%= ant_section_tabs(
+        aria_label: "Client views",
+        tabs: [
+          { label: "All clients", path: client_index_path_with(status: @filters[:status]), active: @view == "all" },
+          { label: "Awaiting portal", path: client_index_path_with(view: "awaiting", status: @filters[:status]), active: @view == "awaiting" },
+          { label: "Portal connected", path: client_index_path_with(view: "with_portal", status: @filters[:status]), active: @view == "with_portal" },
+          { label: "Pending invitations", path: client_index_path_with(view: "pending_invites", status: @filters[:status]), active: @view == "pending_invites" }
+        ]
+      ) %>
+
+  <%= form_with url: staff_clients_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+    <% if @view != "all" %><input type="hidden" name="view" value="<%= @view %>"><% end %>
+    <div class="ant-filter-toolbar__field ant-filter-toolbar__field--grow">
+      <label class="ant-field__label" for="client-search">Search</label>
+      <input id="client-search" type="search" name="q" value="<%= @filters[:q] %>" class="ant-control w-full" placeholder="Name, reference, contact or email">
+    </div>
+    <%= ant_select_tag "status",
+                       [ [ "Active", "active" ], [ "Archived", "archived" ] ],
+                       label: "Status",
+                       selected: @filters[:status],
+                       include_blank: "All statuses",
+                       compact: true,
+                       wrapper_class: "ant-filter-toolbar__field" %>
+    <div class="ant-filter-toolbar__actions">
+      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+      <% if client_filters_active?(@filters, view: @view) %>
+        <%= link_to "Clear", staff_clients_path, class: "ant-btn-outline ant-btn-outline--compact" %>
+      <% end %>
+    </div>
   <% end %>
 
   <% if @clients.any? %>
-    <div class="staff-enquiry-table-wrap">
-      <table class="staff-enquiry-table">
-        <thead>
-          <tr>
-            <th>Organisation</th>
-            <th>Reference</th>
-            <th>Primary contact</th>
-            <th>Portal</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @clients.each do |client| %>
+    <div class="staff-enquiry-panel">
+      <div class="staff-enquiry-table-wrap">
+        <table class="staff-enquiry-table">
+          <thead>
             <tr>
-              <td>
-                <p class="staff-enquiry-row__title"><%= client.name %></p>
-                <% if client.business_email.present? %>
-                  <p class="staff-enquiry-row__sub"><%= client.business_email %></p>
-                <% end %>
-              </td>
-              <td><span class="staff-enquiry-row__ref"><%= client.reference_number.presence || "—" %></span></td>
-              <td><%= client.primary_contact_name.presence || "—" %></td>
-              <td>
-                <%= client.portal_member_count %> active
-                <% if client.pending_invitation_count.positive? %>
-                  · <%= client.pending_invitation_count %> pending
-                <% end %>
-              </td>
-              <td><%= ant_status_badge(label: client_status_label(client), badge_class: client_status_badge_variant(client)) %></td>
-              <td><%= link_to "Open", staff_client_path(client), class: "staff-quote-link" %></td>
+              <th scope="col">Organisation</th>
+              <th scope="col">Reference</th>
+              <th scope="col">Primary contact</th>
+              <th scope="col">Portal</th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="sr-only">Action</span></th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-    <div class="staff-enquiry-panel__footer">
-      <%= ant_pagination(@pagination, label: "clients", path_for: ->(page) { staff_clients_path(request.query_parameters.merge(page: page)) }) %>
+          </thead>
+          <tbody>
+            <% @clients.each do |client| %>
+              <tr class="staff-enquiry-row">
+                <td>
+                  <span class="staff-enquiry-row__company"><%= client.name %></span>
+                  <% if client.business_email.present? %>
+                    <span class="staff-enquiry-row__sub"><%= client.business_email %></span>
+                  <% end %>
+                </td>
+                <td><span class="staff-enquiry-row__ref"><%= client.reference_number.presence || "—" %></span></td>
+                <td><%= client.primary_contact_name.presence || "—" %></td>
+                <td><%= client_portal_access_label(client) %></td>
+                <td class="staff-enquiry-row__status">
+                  <%= ant_status_badge(label: client_status_label(client), badge_class: client_status_badge_variant(client)) %>
+                </td>
+                <td class="staff-enquiry-row__action">
+                  <%= link_to staff_client_path(client), class: "staff-enquiry-row__open" do %>
+                    Open<span class="sr-only"> <%= client.name %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="staff-enquiry-cards" aria-label="Client organisations">
+        <% @clients.each do |client| %>
+          <li class="staff-enquiry-card">
+            <div class="staff-enquiry-card__head">
+              <span class="staff-enquiry-row__ref"><%= client.reference_number.presence || "No reference" %></span>
+              <%= ant_status_badge(label: client_status_label(client), badge_class: client_status_badge_variant(client)) %>
+            </div>
+            <p class="staff-enquiry-row__company"><%= client.name %></p>
+            <p class="staff-enquiry-row__sub">
+              <%= client.primary_contact_name.presence || "No primary contact" %>
+              <% if client.business_email.present? %>
+                · <%= client.business_email %>
+              <% end %>
+            </p>
+            <p class="staff-enquiry-card__quote">
+              <span class="staff-enquiry-card__quote-label">Portal</span>
+              <span class="staff-enquiry-row__quote"><%= client_portal_access_label(client) %></span>
+            </p>
+            <%= link_to staff_client_path(client), class: "staff-enquiry-card__open" do %>
+              Open<span class="sr-only"> <%= client.name %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="staff-enquiry-panel__footer">
+        <%= ant_pagination(
+              @pagination,
+              label: "clients",
+              path_for: ->(page) {
+                client_index_path_with(
+                  view: (@view unless @view == "all"),
+                  q: @filters[:q],
+                  status: @filters[:status],
+                  page: page
+                )
+              }
+            ) %>
+      </div>
     </div>
   <% else %>
+    <% title, description = client_empty_state_copy(@view, client_filters_active?(@filters, view: @view)) %>
     <%= ant_empty_state(
-          icon: :brief,
-          title: "No client organisations yet",
-          description: "Create a client organisation when you are ready to set up portal access for a company.",
-          guidance: "You can also start from a qualified enquiry using Set up client access.",
-          primary_action: (policy(Organization).create? ? { label: "Create organisation", path: new_staff_client_path } : nil),
-          variant: :muted
+          icon: :users,
+          title: title,
+          description: description,
+          guidance: (client_filters_active?(@filters, view: @view) ? nil : "You can also start from a qualified enquiry using Set up client access."),
+          primary_action: if client_filters_active?(@filters, view: @view)
+                            { label: "Clear filters", path: staff_clients_path }
+                          elsif policy(Organization).create?
+                            { label: "Create organisation", path: new_staff_client_path }
+                          end,
+          variant: :muted,
+          size: :spacious
         ) %>
   <% end %>
 </section>

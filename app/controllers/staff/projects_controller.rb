@@ -87,7 +87,10 @@ module Staff
     private
 
       def set_project
-        @project = policy_scope(Project).find(params[:id])
+        @project = policy_scope(Project).includes(
+          :client_organization, :service, :quote, :quote_revision,
+          coordinator_membership: :user
+        ).find(params[:id])
       end
 
       def find_acceptance!(id)

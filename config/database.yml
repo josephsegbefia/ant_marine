@@ -73,43 +73,24 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
-# Render / managed hosts typically supply DATABASE_URL (and optionally
-# CACHE_DATABASE_URL / QUEUE_DATABASE_URL / CABLE_DATABASE_URL). Rails merges
-# those URLs over this config. Keep password optional so Docker asset builds
-# (SECRET_KEY_BASE_DUMMY=1) can parse YAML without runtime secrets.
+# Render / managed hosts must set DATABASE_URL (link a PostgreSQL database to
+# the web service). Optional CACHE_/QUEUE_/CABLE_DATABASE_URL override those
+# roles; otherwise they reuse DATABASE_URL (one Postgres, shared schemas).
+# Docker asset builds have no DATABASE_URL — use a TCP dummy so ERB never
+# falls through to a Unix socket. Runtime entrypoint refuses empty DATABASE_URL.
 production:
   primary: &primary_production
     <<: *default
-    database: ant_marine_production
-    username: <%= ENV.fetch("ANT_MARINE_DATABASE_USER", "ant_marine") %>
-    password: <%= ENV["ANT_MARINE_DATABASE_PASSWORD"] %>
-    <% if ENV["DATABASE_URL"].present? %>
-    url: <%= ENV["DATABASE_URL"] %>
-    <% end %>
+    url: <%= ENV.fetch("DATABASE_URL") { "postgresql://ant_marine@127.0.0.1:5432/ant_marine_production" } %>
   cache:
     <<: *primary_production
-    database: ant_marine_production_cache
     migrations_paths: db/cache_migrate
-    <% if ENV["CACHE_DATABASE_URL"].present? %>
-    url: <%= ENV["CACHE_DATABASE_URL"] %>
-    <% elsif ENV["DATABASE_URL"].present? %>
-    url: <%= ENV["DATABASE_URL"] %>
-    <% end %>
+    url: <%= ENV.fetch("CACHE_DATABASE_URL") { ENV.fetch("DATABASE_URL") { "postgresql://ant_marine@127.0.0.1:5432/ant_marine_production" } } %>
   queue:
     <<: *primary_production
-    database: ant_marine_production_queue
     migrations_paths: db/queue_migrate
-    <% if ENV["QUEUE_DATABASE_URL"].present? %>
-    url: <%= ENV["QUEUE_DATABASE_URL"] %>
-    <% elsif ENV["DATABASE_URL"].present? %>
-    url: <%= ENV["DATABASE_URL"] %>
-    <% end %>
+    url: <%= ENV.fetch("QUEUE_DATABASE_URL") { ENV.fetch("DATABASE_URL") { "postgresql://ant_marine@127.0.0.1:5432/ant_marine_production" } } %>
   cable:
     <<: *primary_production
-    database: ant_marine_production_cable
     migrations_paths: db/cable_migrate
-    <% if ENV["CABLE_DATABASE_URL"].present? %>
-    url: <%= ENV["CABLE_DATABASE_URL"] %>
-    <% elsif ENV["DATABASE_URL"].present? %>
-    url: <%= ENV["DATABASE_URL"] %>
-    <% end %>
+    url: <%= ENV.fetch("CABLE_DATABASE_URL") { ENV.fetch("DATABASE_URL") { "postgresql://ant_marine@127.0.0.1:5432/ant_marine_production" } } %>

@@ -800,11 +800,11 @@
   }
 
   .staff-app-side {
-    @apply flex shrink-0 flex-col bg-[#164f67] text-white lg:w-[272px] lg:min-h-dvh;
+    @apply flex shrink-0 flex-col bg-[#164f67] text-white lg:sticky lg:top-0 lg:h-dvh lg:w-[272px] lg:self-start;
   }
 
   .staff-app-side__inner {
-    @apply flex flex-1 flex-col p-3 sm:p-4 lg:min-h-dvh lg:px-3 lg:pb-0 lg:pt-5;
+    @apply flex flex-1 flex-col p-3 sm:p-4 lg:h-dvh lg:overflow-hidden lg:px-3 lg:pb-0 lg:pt-5;
   }
 
   .staff-side-brand {
@@ -2312,22 +2312,28 @@
     @apply grid gap-6;
   }
 
-  /* Public request-a-quote wizard (P19–P22) */
+  /* Public request-a-quote wizard (P19–P22).
+     Width matches the public header via .public-detail gutters (--public-max).
+     Do not add a second max-width here or the form sits narrower than the header. */
   .public-enquiry {
-    @apply mx-auto max-w-[1180px] scroll-mt-24;
+    @apply w-full scroll-mt-24;
   }
 
   .public-enquiry__stepper {
-    @apply mb-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-3 sm:mb-8;
+    @apply mb-6 flex w-full flex-wrap items-center gap-y-3 sm:mb-8 sm:flex-nowrap;
   }
 
   .public-enquiry__step {
-    @apply flex items-center gap-2 text-xs font-semibold text-[#7e939e];
+    @apply flex shrink-0 items-center gap-2 text-xs font-semibold text-[#7e939e];
+  }
+
+  .public-enquiry__step + .public-enquiry__step {
+    @apply min-w-0 flex-1;
   }
 
   .public-enquiry__step + .public-enquiry__step::before {
     content: "";
-    @apply mr-1 hidden h-px w-8 bg-[#ccdade] sm:block lg:w-12;
+    @apply mr-2 hidden h-px min-w-8 flex-1 bg-[#ccdade] sm:block;
   }
 
   .public-enquiry__step-num {
@@ -2354,12 +2360,13 @@
     @apply inline;
   }
 
+  /* Main form + summary: summary fills the remaining width (no 260px cap). */
   .public-enquiry__layout {
-    @apply grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(260px,300px)] lg:items-start;
+    @apply grid w-full gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(18rem,1fr)] lg:items-start;
   }
 
   .public-enquiry__form {
-    @apply rounded-2xl border border-[#e3eaee] bg-white p-5 shadow-[0_10px_32px_rgba(33,79,90,0.06)] sm:p-8;
+    @apply w-full min-w-0 rounded-2xl border border-[#e3eaee] bg-white p-5 shadow-[0_10px_32px_rgba(33,79,90,0.06)] sm:p-8;
   }
 
   .public-enquiry__panel {
@@ -2383,16 +2390,18 @@
     @apply mb-4;
   }
 
+  /* Full-width stacked options — a 2-column grid left a single/empty-catalogue
+     choice looking like a skinny strip inside the form card. */
   .public-enquiry__choices {
-    @apply grid gap-3 sm:grid-cols-2;
+    @apply grid w-full grid-cols-1 gap-3;
   }
 
   .public-enquiry__choice {
-    @apply relative flex cursor-pointer items-start gap-3 rounded-xl border border-[#dbe6e9] bg-white p-4 transition-colors hover:border-[#b8ccd2];
+    @apply relative flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-xl border border-[#dbe6e9] bg-white p-4 transition-colors hover:border-[#b8ccd2] sm:p-5;
   }
 
   .public-enquiry__choice input {
-    @apply absolute top-4 right-4 size-4 accent-[#25877f];
+    @apply absolute top-4 right-4 size-4 accent-[#25877f] sm:top-5 sm:right-5;
   }
 
   .public-enquiry__choice:has(input:checked) {
@@ -2409,15 +2418,15 @@
   }
 
   .public-enquiry__choice-body {
-    @apply flex min-w-0 flex-col gap-1 pr-6;
+    @apply flex min-w-0 flex-1 flex-col gap-1 pr-7;
   }
 
   .public-enquiry__choice-title {
-    @apply text-sm font-bold text-[#173244];
+    @apply text-sm font-bold text-[#173244] sm:text-[15px];
   }
 
   .public-enquiry__choice-text {
-    @apply text-xs leading-relaxed text-[#6f8792];
+    @apply text-xs leading-relaxed text-[#6f8792] sm:text-[13px];
   }
 
   .public-enquiry__choice--unsure {
@@ -2529,15 +2538,15 @@
   }
 
   .public-enquiry__summary {
-    @apply rounded-2xl border border-[#dce9ec] bg-[#f3f9fa] p-5 lg:sticky lg:top-24;
+    @apply w-full min-w-0 rounded-2xl border border-[#dce9ec] bg-[#f3f9fa] p-5 sm:p-6 lg:sticky lg:top-24;
   }
 
   .public-enquiry__summary-title {
-    @apply text-base font-extrabold text-[#173244];
+    @apply text-base font-extrabold text-[#173244] sm:text-lg;
   }
 
   .public-enquiry__summary-text {
-    @apply mt-1 text-xs text-[#6f8792];
+    @apply mt-1 text-xs text-[#6f8792] sm:text-sm;
   }
 
   .public-enquiry__summary-list {
@@ -2545,7 +2554,7 @@
   }
 
   .public-enquiry__summary-list li {
-    @apply flex items-center justify-between gap-3 border-b border-[#deebed] py-2.5 text-sm text-[#567280] last:border-b-0;
+    @apply flex items-center justify-between gap-3 border-b border-[#deebed] py-2.5 text-sm text-[#567280] last:border-b-0 sm:py-3;
   }
 
   .public-enquiry__summary-notice {
@@ -3676,6 +3685,10 @@
     @apply grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5;
   }
 
+  .staff-clients-stats {
+    @apply grid grid-cols-2 gap-3 xl:grid-cols-4;
+  }
+
   .staff-enquiry-stat {
     @apply relative flex min-h-[7.25rem] flex-col overflow-hidden rounded-[16px] border border-[#e2eaeb] p-4 no-underline shadow-[0_8px_24px_rgba(33,79,90,0.05)] transition-[transform,box-shadow,border-color,background-color] duration-200;
     background-color: #fff;
@@ -3729,6 +3742,123 @@
 
   .staff-enquiry-stat__caption {
     @apply mt-2 text-[11px] font-semibold leading-snug text-[#25877f];
+  }
+
+  .staff-enquiry-stat--static {
+    @apply cursor-default;
+  }
+
+  .staff-enquiry-stat--static:hover {
+    @apply border-[#e2eaeb] shadow-[0_8px_24px_rgba(33,79,90,0.05)];
+    transform: none;
+  }
+
+  .staff-enquiry-stat__value--text {
+    @apply mt-3 text-[1.15rem] font-extrabold leading-snug tracking-[-0.03em] text-[#173244];
+  }
+
+  .staff-project-stats {
+    @apply grid grid-cols-2 gap-3 xl:grid-cols-4;
+  }
+
+  .staff-project-overview {
+    @apply grid gap-5 lg:grid-cols-[minmax(0,1fr)_19rem];
+  }
+
+  .staff-project-overview__main {
+    @apply min-w-0;
+  }
+
+  .staff-project-overview__aside {
+    @apply min-w-0 lg:sticky lg:top-4 lg:self-start;
+  }
+
+  .staff-project-overview__section-label {
+    @apply mb-1.5 text-[10px] font-bold tracking-[0.05em] text-[#1f7a72] uppercase;
+  }
+
+  .staff-project-progress {
+    @apply mb-4 h-2 overflow-hidden rounded-full bg-[#e7f1f3];
+  }
+
+  .staff-project-progress__bar {
+    @apply block h-full rounded-full bg-[#25877f];
+  }
+
+  .staff-project-checklist {
+    @apply list-none space-y-2 p-0;
+  }
+
+  .staff-project-checklist__item {
+    @apply flex items-start gap-3 rounded-[12px] border border-[#eef3f4] bg-[#fbfcfd] px-3 py-2.5;
+  }
+
+  .staff-project-checklist__icon {
+    @apply mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[#e6f4f2] text-[#1f7a72];
+  }
+
+  .staff-project-checklist__body {
+    @apply min-w-0 flex-1;
+  }
+
+  .staff-project-checklist__title {
+    @apply text-[13px] font-semibold leading-snug text-[#173244];
+  }
+
+  .staff-project-checklist__meta {
+    @apply mt-0.5 text-[11px] text-[#8799a3];
+  }
+
+  .staff-project-attention {
+    @apply list-none space-y-2 p-0;
+  }
+
+  .staff-project-attention__row {
+    @apply flex items-start gap-3 rounded-[12px] border border-[#eef3f4] bg-[#fbfcfd] px-3 py-2.5 no-underline transition hover:border-[#9fd3cc] hover:bg-white;
+  }
+
+  .staff-project-attention__row--static {
+    @apply cursor-default hover:border-[#eef3f4] hover:bg-[#fbfcfd];
+  }
+
+  .staff-project-attention__icon {
+    @apply mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[#e6f4f2] text-[#1f7a72];
+  }
+
+  .staff-project-attention__copy {
+    @apply min-w-0 flex-1;
+  }
+
+  .staff-project-attention__title {
+    @apply block text-[13px] font-semibold leading-snug text-[#173244];
+  }
+
+  .staff-project-attention__detail {
+    @apply mt-0.5 block text-[11px] leading-relaxed text-[#6d8594];
+  }
+
+  .staff-project-shortcuts {
+    @apply grid gap-2;
+  }
+
+  .staff-project-status-forms {
+    @apply rounded-[12px] border border-[#e6eef1] bg-[#fbfcfd];
+  }
+
+  .staff-project-status-forms > summary {
+    @apply cursor-pointer list-none px-3.5 py-3 text-[12px] font-semibold text-[#3d5a6b];
+  }
+
+  .staff-project-status-forms > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .staff-project-status-forms__body {
+    @apply border-t border-[#e6eef1] px-3.5 py-3;
+  }
+
+  .staff-project-docs-note {
+    @apply border-t border-[#eef3f4] pt-3;
   }
 
   .ant-filter-toolbar {

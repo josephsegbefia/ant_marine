@@ -61,11 +61,19 @@ class Organization < ApplicationRecord
   end
 
   def portal_member_count
-    memberships.active.count
+    if memberships.loaded?
+      memberships.count { |membership| membership.status == "active" }
+    else
+      memberships.active.count
+    end
   end
 
   def pending_invitation_count
-    invitations.pending.count
+    if invitations.loaded?
+      invitations.count { |invitation| invitation.status == "pending" }
+    else
+      invitations.pending.count
+    end
   end
 
   def self.duplicate_suggestions(name:, email: nil, limit: 5)

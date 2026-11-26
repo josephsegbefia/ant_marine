@@ -41,6 +41,10 @@ class Staff::ProjectsTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_match(/Simulated project/i, response.body)
     assert_match(project.reference_number, response.body)
+    assert_match(/Job details/i, response.body)
+    assert_match(/Work checklist/i, response.body)
+    assert_match(/What needs attention/i, response.body)
+    assert_match(/Current stage/i, response.body)
   end
 
   test "project index is authorization scoped" do

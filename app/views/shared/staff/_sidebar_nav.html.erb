@@ -35,7 +35,7 @@
   <% if staff_can_manage_clients? %>
     <%= link_to staff_clients_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:clients)}" do %>
-      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <%= render "shared/staff/nav_icon", name: "users" %>
       <span>Clients</span>
     <% end %>
   <% end %>
@@ -43,7 +43,7 @@
   <% if staff_can_manage_quotations? %>
     <%= link_to staff_quotations_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:quotations)}" do %>
-      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <%= render "shared/staff/nav_icon", name: "file" %>
       <span>Quotations</span>
     <% end %>
   <% end %>
@@ -56,12 +56,12 @@
     <% end %>
     <%= link_to staff_tasks_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:tasks)}" do %>
-      <%= render "shared/staff/nav_icon", name: "clipboard" %>
+      <%= render "shared/staff/nav_icon", name: "check" %>
       <span>My tasks</span>
     <% end %>
     <%= link_to staff_schedule_events_path,
           class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:schedule)}" do %>
-      <%= render "shared/staff/nav_icon", name: "clock" %>
+      <%= render "shared/staff/nav_icon", name: "calendar" %>
       <span>Schedule</span>
     <% end %>
     <% if staff_can_view_inspections? %>

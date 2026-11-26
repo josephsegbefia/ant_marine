@@ -22,6 +22,8 @@ module Public
       assert_select "input[type=file]", count: 0
       assert_includes response.headers["Cache-Control"], "no-store"
       assert_select "body", text: /You can request a quote without creating an account/
+      assert_select '[data-controller="ant-date-picker"][data-ant-date-picker-min-value]'
+      assert_select 'input[type=date][name="service_inquiry[preferred_date]"][id=service_inquiry_preferred_date]'
     end
 
     test "service page call to action preselects that published service" do
