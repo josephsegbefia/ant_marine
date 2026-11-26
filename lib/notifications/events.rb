@@ -16,7 +16,14 @@ module Notifications
       "clarification_answered" => { category: "enquiries", channel: "in_app" },
       "quote_accepted" => { category: "quotations", channel: "in_app" },
       "quote_declined" => { category: "quotations", channel: "in_app" },
-      "quote_changes_requested" => { category: "quotations", channel: "in_app" }
+      "quote_changes_requested" => { category: "quotations", channel: "in_app" },
+      "project_created" => { category: "projects", channel: "in_app" },
+      "project_assigned" => { category: "projects", channel: "in_app" },
+      "project_assignment_changed" => { category: "projects", channel: "in_app" },
+      "task_assigned" => { category: "projects", channel: "in_app" },
+      "schedule_confirmed" => { category: "projects", channel: "in_app" },
+      "schedule_cancelled" => { category: "projects", channel: "in_app" },
+      "project_update" => { category: "projects", channel: "in_app" }
     }.freeze
 
     def self.fetch(key)

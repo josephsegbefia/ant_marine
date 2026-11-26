@@ -1,0 +1,31 @@
+<% content_for :staff_nav, :projects %>
+<% progress = @project.progress_summary %>
+
+<%= ant_page_header(
+      title: @project.title,
+      description: "#{@project.reference_number} · #{@project.client_organization.name}"
+    ) %>
+
+<% if @project.simulated? %>
+  <div class="ant-notice ant-notice--warn mt-4">
+    <p><strong>Simulated project for testing.</strong> Not a live commercial job. No invoices or technical reports are created here.</p>
+  </div>
+<% end %>
+
+<div class="mt-4 flex flex-wrap items-center gap-3">
+  <%= ant_status_badge(label: @project.internal_status_label) %>
+  <span class="staff-quote-summary__hint"><%= progress[:label] %></span>
+</div>
+
+<%= ant_section_tabs(tabs: [
+      { label: "Overview", path: staff_project_path(@project, tab: "overview"), active: @tab == "overview" },
+      { label: "Team", path: staff_project_path(@project, tab: "team"), active: @tab == "team" },
+      { label: "Milestones", path: staff_project_path(@project, tab: "milestones"), active: @tab == "milestones" },
+      { label: "Tasks", path: staff_project_path(@project, tab: "tasks"), active: @tab == "tasks" },
+      { label: "Schedule", path: staff_project_path(@project, tab: "schedule"), active: @tab == "schedule" },
+      { label: "Activity", path: staff_project_path(@project, tab: "activity"), active: @tab == "activity" }
+    ]) %>
+
+<section class="mt-6">
+  <%= render "staff/projects/#{@tab}" %>
+</section>

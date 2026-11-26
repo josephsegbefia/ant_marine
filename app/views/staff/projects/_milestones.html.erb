@@ -1,0 +1,23 @@
+<section class="staff-enquiry-panel p-5">
+  <h2 class="staff-quote-editor__step-title">Milestones</h2>
+  <p class="staff-quote-summary__hint mt-1"><%= @project.progress_summary[:label] %>. Technical review and report release stay gated until later modules.</p>
+  <ul class="staff-quote-versions__list mt-4">
+    <% @milestones.each do |milestone| %>
+      <li class="staff-quote-versions__item">
+        <div class="staff-quote-versions__head">
+          <p class="staff-enquiry-clarification__title"><%= milestone.title %></p>
+          <p class="staff-enquiry-row__sub"><%= milestone.status.humanize %><% if milestone.target_on %> · due <%= l(milestone.target_on) %><% end %></p>
+        </div>
+        <% if milestone.status == "pending" && policy(@project).manage? %>
+          <% if milestone.evidence_gated? %>
+            <p class="staff-quote-summary__hint mt-1">Needs technical evidence from a later module.</p>
+          <% else %>
+            <%= button_to "Mark complete",
+                  complete_staff_project_milestone_path(@project, milestone),
+                  class: "ant-btn-outline ant-btn-outline--compact mt-2" %>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</section>

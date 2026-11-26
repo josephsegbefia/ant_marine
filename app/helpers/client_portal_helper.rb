@@ -29,6 +29,16 @@ module ClientPortalHelper
     )
   end
 
+  def client_can_view_projects?
+    return false unless Current.membership&.client_domain?
+    return false if Rails.env.production? # simulated projects only until live policy
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "projects.view_org"
+    )
+  end
+
   def client_request_status_label(status)
     CLIENT_REQUEST_STATUSES.fetch(status, status.to_s.humanize)
   end

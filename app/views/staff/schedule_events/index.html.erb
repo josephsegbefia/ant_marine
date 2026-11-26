@@ -1,0 +1,29 @@
+<% content_for :staff_nav, :schedule %>
+
+<%= ant_page_header(title: "Schedule", description: "Upcoming project activities. Agenda view for clear mobile reading.") %>
+
+<section class="mt-6">
+  <div class="flex flex-wrap gap-2 mb-4">
+    <% %w[upcoming mine confirmed proposed].each do |view| %>
+      <%= link_to view.humanize, staff_schedule_events_path(view: view), class: "ant-btn-outline ant-btn-outline--compact#{" ant-btn-primary" if @view == view}" %>
+    <% end %>
+  </div>
+
+  <% if @events.any? %>
+    <ul class="staff-quote-versions__list">
+      <% @events.each do |event| %>
+        <li class="staff-quote-versions__item">
+          <p class="staff-enquiry-clarification__title"><%= event.title %></p>
+          <p class="staff-enquiry-row__sub">
+            <%= link_to event.project.reference_number, staff_project_path(event.project, tab: "schedule"), class: "staff-quote-link" %>
+            · <%= event.state_label %>
+            · <%= l(event.starts_at, format: :long) %>
+          </p>
+        </li>
+      <% end %>
+    </ul>
+    <%= ant_pagination(@pagination, path_for: ->(page) { staff_schedule_events_path(view: @view, page: page) }) %>
+  <% else %>
+    <%= ant_empty_state(title: "No activities", description: "Proposed and confirmed project activities will appear here.") %>
+  <% end %>
+</section>

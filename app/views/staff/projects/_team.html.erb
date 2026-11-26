@@ -1,0 +1,56 @@
+<section class="staff-enquiry-panel p-5">
+  <h2 class="staff-quote-editor__step-title">Team</h2>
+  <% if @assignments.any? %>
+    <ul class="staff-quote-versions__list mt-3">
+      <% @assignments.each do |assignment| %>
+        <li class="staff-quote-versions__item">
+          <div class="staff-quote-versions__head">
+            <p class="staff-enquiry-clarification__title">
+              <%= assignment.user.full_name.presence || assignment.user.email %>
+              <% unless assignment.active? %><span class="staff-quote-summary__hint">(ended)</span><% end %>
+            </p>
+            <p class="staff-enquiry-row__sub"><%= assignment.kind_label %> · <%= assignment.scope_label %></p>
+          </div>
+          <% if assignment.active? && policy(@project).assign? %>
+            <%= form_with url: staff_project_assignment_path(@project, assignment), method: :delete, class: "mt-2 flex gap-2", local: true do %>
+              <input name="reason" class="ant-control" placeholder="Reason for removal" required>
+              <button class="ant-btn-outline ant-btn-outline--compact" type="submit">Remove</button>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="staff-quote-summary__hint mt-2">No team members assigned yet.</p>
+  <% end %>
+
+  <% if policy(@project).assign? %>
+    <h3 class="mt-6 text-sm font-semibold">Assign someone</h3>
+    <%= form_with url: staff_project_assignments_path(@project), method: :post, class: "mt-3 grid gap-3 md:grid-cols-2", local: true do %>
+      <div class="ant-field">
+        <label class="ant-field__label" for="membership_id">Staff member</label>
+        <select id="membership_id" name="membership_id" class="ant-control w-full" required>
+          <option value="">Choose…</option>
+          <% @staff_options.each do |membership| %>
+            <option value="<%= membership.id %>"><%= membership.user.full_name.presence || membership.user.email %></option>
+          <% end %>
+        </select>
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="assignment_kind">Role</label>
+        <select id="assignment_kind" name="assignment_kind" class="ant-control w-full" required>
+          <% Assignment::KINDS.each do |kind| %>
+            <option value="<%= kind %>"><%= kind.tr("_", " ").humanize %></option>
+          <% end %>
+        </select>
+      </div>
+      <div class="ant-field md:col-span-2">
+        <label class="ant-field__label" for="assign_reason">Note (optional)</label>
+        <input id="assign_reason" name="reason" class="ant-control w-full">
+      </div>
+      <div>
+        <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Assign</button>
+      </div>
+    <% end %>
+  <% end %>
+</section>

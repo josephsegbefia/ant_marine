@@ -255,6 +255,13 @@ data: {
 - **Timeline:** `ol.ant-timeline` > `li.ant-timeline__item--{kind}` with `__title`, `__detail`, `__meta` ("Name · 25 Nov 19:32"; "Website" for public submissions). Fed by `Intake::InquiryTimeline` entries only — never raw audit data.
 - **Notification list:** `/staff/notifications`, unread items emphasised, "Mark all as read", opening an item marks it read; sidebar item shows the unread count in its accessible name ("Notifications, 1 unread").
 
+## Project management (F4-05)
+
+- **Staff projects:** `/staff/projects` list + filtered views; `/staff/projects/:id` section tabs (overview/team/milestones/tasks/schedule/activity); create wizard from accepted quotation decision panel.
+- **My tasks / Schedule:** `/staff/tasks`, `/staff/schedule_events` agenda lists (no heavy calendar gem).
+- **Client projects:** `/client/projects` + show; simulated banners; no internal notes or staff assignment history.
+- Simulation labelling required on staff and client surfaces until live policy is approved.
+
 ## Commercial decisions (F4-04B)
 
 - **Client quotation detail / decide:** extends F4-04A show with Accept / Request changes / Decline (permission-gated), confirmation page (`client/quotations/decide`), decision history, unmistakable simulated banners; exact PDF download retained.

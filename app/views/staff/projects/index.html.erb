@@ -1,0 +1,75 @@
+<% content_for :staff_nav, :projects %>
+
+<%= ant_page_header(
+      title: "Projects",
+      description: "Manage delivery from accepted quotations. Simulated projects are for testing only and are not live commercial work."
+    ) %>
+
+<section class="staff-quotations mt-6" aria-labelledby="projects-list-heading">
+  <h2 id="projects-list-heading" class="sr-only">Project list</h2>
+
+  <div class="staff-enquiry-summary mb-4" aria-label="Project counts">
+    <% @summary.each do |key, count| %>
+      <%= link_to staff_projects_path(view: key), class: "staff-enquiry-summary__card#{" staff-enquiry-summary__card--active" if @view == key.to_s}" do %>
+        <span class="staff-enquiry-summary__value"><%= count %></span>
+        <span class="staff-enquiry-summary__label"><%= key.to_s.tr("_", " ").humanize %></span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= form_with url: staff_projects_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+    <input type="hidden" name="view" value="<%= @view %>">
+    <div class="ant-filter-toolbar__field ant-filter-toolbar__field--grow">
+      <label class="ant-field__label" for="q">Search</label>
+      <input id="q" name="q" type="search" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference, title or client">
+    </div>
+    <div class="ant-filter-toolbar__actions">
+      <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+    </div>
+  <% end %>
+
+  <% if @projects.any? %>
+    <div class="staff-enquiry-panel">
+      <div class="staff-enquiry-table-wrap">
+        <table class="staff-enquiry-table">
+          <thead>
+            <tr>
+              <th scope="col">Project</th>
+              <th scope="col">Client</th>
+              <th scope="col">Status</th>
+              <th scope="col">Progress</th>
+              <th scope="col">Next activity</th>
+              <th scope="col"><span class="sr-only">Open</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @projects.each do |project| %>
+              <% progress = project.progress_summary %>
+              <tr class="staff-enquiry-row">
+                <td>
+                  <span class="staff-enquiry-row__ref"><%= project.reference_number %></span>
+                  <span class="staff-enquiry-row__company"><%= project.title %></span>
+                  <% if project.simulated? %><span class="staff-quote-summary__hint">Simulated</span><% end %>
+                </td>
+                <td><%= project.client_organization.name %></td>
+                <td><%= project.internal_status_label %></td>
+                <td><%= progress[:label] %></td>
+                <td>
+                  <% next_event = project.next_confirmed_activity %>
+                  <%= next_event ? l(next_event.starts_at, format: :short) : "—" %>
+                </td>
+                <td><%= link_to "Open", staff_project_path(project), class: "staff-quote-link" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <%= ant_pagination(@pagination, path_for: ->(page) { staff_projects_path(request.query_parameters.merge(page: page)) }) %>
+    </div>
+  <% else %>
+    <%= ant_empty_state(
+          title: "No projects yet",
+          description: "Create a project from an accepted simulated quotation when you are ready to plan delivery."
+        ) %>
+  <% end %>
+</section>

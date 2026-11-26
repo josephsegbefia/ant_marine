@@ -1,0 +1,53 @@
+<section class="staff-enquiry-panel p-5">
+  <h2 class="staff-quote-editor__step-title">Tasks</h2>
+  <% if @tasks.any? %>
+    <ul class="staff-quote-versions__list mt-3">
+      <% @tasks.each do |task| %>
+        <li class="staff-quote-versions__item">
+          <p class="staff-enquiry-clarification__title"><%= task.title %></p>
+          <p class="staff-enquiry-row__sub">
+            <%= task.status_label %> · <%= task.priority.humanize %>
+            <% if task.due_on %> · due <%= l(task.due_on) %><% end %>
+            <% if task.overdue? %> · overdue<% end %>
+            <% if task.assignee_membership %> · <%= task.assignee_membership.user.full_name.presence || task.assignee_membership.user.email %><% end %>
+          </p>
+          <% if policy(@project).manage? && !task.completed? && task.status != "cancelled" %>
+            <%= button_to "Mark completed",
+                  staff_project_task_path(@project, task),
+                  method: :patch,
+                  params: { task: { status: "completed" } },
+                  class: "ant-btn-outline ant-btn-outline--compact mt-2" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="staff-quote-summary__hint mt-2">No tasks yet.</p>
+  <% end %>
+
+  <% if policy(@project).manage? %>
+    <h3 class="mt-6 text-sm font-semibold">Add a task</h3>
+    <%= form_with url: staff_project_tasks_path(@project), method: :post, class: "mt-3 grid gap-3", local: true do %>
+      <div class="ant-field">
+        <label class="ant-field__label" for="task_title">Title</label>
+        <input id="task_title" name="task[title]" class="ant-control w-full" required>
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="task_due_on">Due date</label>
+        <input id="task_due_on" name="task[due_on]" type="date" class="ant-control">
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="task_assignee">Assignee</label>
+        <select id="task_assignee" name="task[assignee_membership_id]" class="ant-control w-full">
+          <option value="">Unassigned</option>
+          <% @project.active_assignments.includes(membership: :user).each do |assignment| %>
+            <option value="<%= assignment.membership_id %>"><%= assignment.user.full_name.presence || assignment.user.email %></option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Create task</button>
+      </div>
+    <% end %>
+  <% end %>
+</section>

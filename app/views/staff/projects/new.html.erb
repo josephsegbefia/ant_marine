@@ -1,0 +1,92 @@
+<% content_for :staff_nav, :projects %>
+
+<%= ant_page_header(
+      title: "Create project",
+      description: "Start delivery from the exact accepted quotation version. This creates a simulated project for testing only."
+    ) %>
+
+<% revision = @response.quote_revision %>
+<% quote = @response.quote %>
+
+<section class="staff-quote-editor mt-6">
+  <div class="ant-notice ant-notice--warn mb-4">
+    <p><strong>Simulated project.</strong> This is not a live commercial commitment and does not create invoices or real reports.</p>
+  </div>
+
+  <h2 class="staff-quote-editor__step-title">1. Commercial source</h2>
+  <dl class="staff-quote-summary mt-3">
+    <div><dt>Client</dt><dd><%= @response.client_organization.name %></dd></div>
+    <div><dt>Quotation</dt><dd><%= quote.reference_number %> · Version <%= revision.version_number %></dd></div>
+    <div><dt>Accepted</dt><dd><%= l(@response.confirmed_at, format: :long) %></dd></div>
+    <div><dt>Total</dt><dd><%= revision.currency %> <%= format("%.2f", revision.total_cents.to_i / 100.0) %></dd></div>
+    <div><dt>Scope</dt><dd><%= simple_format(revision.scope_description) %></dd></div>
+    <div><dt>Deliverables</dt><dd><%= simple_format(revision.deliverables) %></dd></div>
+  </dl>
+
+  <%= form_with model: @project, url: staff_projects_path, class: "staff-quote-form mt-6", local: true do |f| %>
+    <%= hidden_field_tag :quote_response_id, @response.id %>
+    <%= hidden_field_tag :step, 4 %>
+
+    <h2 class="staff-quote-editor__step-title">2. Project information</h2>
+    <div class="ant-field mt-3">
+      <%= f.label :title, "Project title", class: "ant-field__label" %>
+      <%= f.text_field :title, class: "ant-control w-full", required: true %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :location, "Location", class: "ant-field__label" %>
+      <%= f.text_field :location, class: "ant-control w-full" %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :vessel_name, "Vessel or asset", class: "ant-field__label" %>
+      <%= f.text_field :vessel_name, class: "ant-control w-full" %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :vessel_identifier, "IMO or other identifier", class: "ant-field__label" %>
+      <%= f.text_field :vessel_identifier, class: "ant-control w-full" %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :operational_description, "Operational description", class: "ant-field__label" %>
+      <%= f.text_area :operational_description, class: "ant-control w-full", rows: 4 %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :internal_notes, "Internal planning notes", class: "ant-field__label" %>
+      <%= f.text_area :internal_notes, class: "ant-control w-full", rows: 3 %>
+      <p class="ant-field__hint">Not shown to the client.</p>
+    </div>
+
+    <h2 class="staff-quote-editor__step-title mt-8">3. Planning and team</h2>
+    <div class="ant-field mt-3">
+      <%= f.label :proposed_start_on, "Proposed start date", class: "ant-field__label" %>
+      <%= f.date_field :proposed_start_on, class: "ant-control" %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :target_completion_on, "Target completion date", class: "ant-field__label" %>
+      <%= f.date_field :target_completion_on, class: "ant-control" %>
+    </div>
+    <div class="ant-field mt-3">
+      <%= f.label :coordinator_membership_id, "Project coordinator", class: "ant-field__label" %>
+      <%= f.collection_select :coordinator_membership_id,
+            @staff_options,
+            :id,
+            ->(m) { m.user.full_name.presence || m.user.email },
+            { include_blank: "Choose later" },
+            class: "ant-control w-full" %>
+    </div>
+
+    <h2 class="staff-quote-editor__step-title mt-8">4. Review and create</h2>
+    <p class="staff-quote-summary__hint mt-2">
+      Client: <%= @response.client_organization.name %> ·
+      Offer: <%= quote.reference_number %> v<%= revision.version_number %> ·
+      Classification: Simulated
+    </p>
+    <label class="ant-check mt-4">
+      <%= f.check_box :confirm, { required: true }, "1", "0" %>
+      <span>I confirm this simulated project uses the exact accepted offer above and does not create a live commercial commitment.</span>
+    </label>
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      <%= f.submit "Create project", class: "ant-btn-primary", data: { turbo_submits_with: "Creating…" } %>
+      <%= link_to "Cancel", staff_quotation_path(quote), class: "ant-btn-outline" %>
+    </div>
+  <% end %>
+</section>

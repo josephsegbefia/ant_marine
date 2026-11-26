@@ -1,0 +1,68 @@
+<section class="staff-enquiry-panel p-5">
+  <h2 class="staff-quote-editor__step-title">Schedule</h2>
+  <p class="staff-quote-summary__hint mt-1">Proposed dates are not confirmed. Clients only see confirmed activities.</p>
+
+  <% if @events.any? %>
+    <ul class="staff-quote-versions__list mt-3">
+      <% @events.each do |event| %>
+        <li class="staff-quote-versions__item">
+          <p class="staff-enquiry-clarification__title"><%= event.title %></p>
+          <p class="staff-enquiry-row__sub">
+            <%= event.state_label %> ·
+            <%= l(event.starts_at, format: :short) %> – <%= l(event.ends_at, format: :time) %>
+            <% if event.location.present? %> · <%= event.location %><% end %>
+          </p>
+          <% if policy(@project).manage? %>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <% if event.proposed? || event.confirmation_state == "rescheduled" %>
+                <%= button_to "Confirm", confirm_staff_project_schedule_event_path(@project, event), class: "ant-btn-primary ant-btn-primary--compact" %>
+              <% end %>
+              <% unless event.cancelled? %>
+                <%= form_with url: cancel_staff_project_schedule_event_path(@project, event), method: :post, class: "flex gap-2", local: true do %>
+                  <input name="reason" class="ant-control" placeholder="Cancel reason" required>
+                  <button class="ant-btn-outline ant-btn-outline--compact" type="submit">Cancel</button>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="staff-quote-summary__hint mt-2">No scheduled activities yet.</p>
+  <% end %>
+
+  <% if policy(@project).manage? %>
+    <h3 class="mt-6 text-sm font-semibold">Propose an activity</h3>
+    <%= form_with url: staff_project_schedule_events_path(@project), method: :post, class: "mt-3 grid gap-3 md:grid-cols-2", local: true do %>
+      <div class="ant-field md:col-span-2">
+        <label class="ant-field__label" for="event_title">Title</label>
+        <input id="event_title" name="schedule_event[title]" class="ant-control w-full" required>
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="event_starts">Starts</label>
+        <input id="event_starts" name="schedule_event[starts_at]" type="datetime-local" class="ant-control w-full" required>
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="event_ends">Ends</label>
+        <input id="event_ends" name="schedule_event[ends_at]" type="datetime-local" class="ant-control w-full" required>
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="event_location">Location</label>
+        <input id="event_location" name="schedule_event[location]" class="ant-control w-full">
+      </div>
+      <div class="ant-field">
+        <label class="ant-field__label" for="event_owner">Responsible</label>
+        <select id="event_owner" name="schedule_event[responsible_membership_id]" class="ant-control w-full">
+          <option value="">Unassigned</option>
+          <% @project.active_assignments.includes(membership: :user).each do |assignment| %>
+            <option value="<%= assignment.membership_id %>"><%= assignment.user.full_name.presence || assignment.user.email %></option>
+          <% end %>
+        </select>
+      </div>
+      <div>
+        <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Propose</button>
+      </div>
+    <% end %>
+  <% end %>
+</section>

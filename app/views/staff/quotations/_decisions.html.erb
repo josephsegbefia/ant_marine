@@ -10,7 +10,21 @@
         <%= terminal.responded_by_user.full_name.presence || terminal.responded_by_user.email %>
       </p>
       <% if terminal.accepted? %>
-        <p class="staff-quote-summary__hint mt-2">Quotation accepted. Project setup is the next step (F4-05).</p>
+        <% existing_project = Project.find_by(quote_response_id: terminal.id) %>
+        <% if existing_project && policy(existing_project).show? %>
+          <p class="staff-quote-summary__hint mt-2">
+            <%= link_to "Open project #{existing_project.reference_number}", staff_project_path(existing_project), class: "staff-quote-link" %>
+          </p>
+        <% elsif Delivery::CreateFromAcceptance.available? && policy(Project).create? %>
+          <p class="staff-quote-summary__hint mt-2">Quotation accepted. You can set up a simulated project for testing.</p>
+          <p class="mt-2">
+            <%= link_to "Create project",
+                  new_staff_project_path(quote_response_id: terminal.id),
+                  class: "ant-btn-primary ant-btn-primary--compact" %>
+          </p>
+        <% else %>
+          <p class="staff-quote-summary__hint mt-2">Quotation accepted. Project setup is the next step.</p>
+        <% end %>
       <% end %>
       <% if terminal.reason.present? %>
         <p class="staff-quote-summary__hint mt-2"><%= terminal.reason %></p>

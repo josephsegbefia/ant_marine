@@ -1,0 +1,63 @@
+<div class="grid gap-6 lg:grid-cols-[1fr_18rem]">
+  <div class="space-y-6">
+    <section class="staff-enquiry-panel p-5">
+      <h2 class="staff-quote-editor__step-title">Project overview</h2>
+      <dl class="staff-quote-summary mt-3">
+        <div><dt>Reference</dt><dd><%= @project.reference_number %></dd></div>
+        <div><dt>Client</dt><dd><%= @project.client_organization.name %></dd></div>
+        <div><dt>Quotation</dt><dd><%= @project.quote.reference_number %> · Version <%= @project.quote_revision.version_number %></dd></div>
+        <div><dt>Location</dt><dd><%= @project.location.presence || "—" %></dd></div>
+        <div><dt>Vessel / asset</dt><dd><%= @project.vessel_name.presence || "—" %></dd></div>
+        <div><dt>Coordinator</dt><dd><%= @project.coordinator_membership&.user&.full_name.presence || @project.coordinator_membership&.user&.email || "Not assigned" %></dd></div>
+        <div><dt>Proposed start</dt><dd><%= @project.proposed_start_on ? l(@project.proposed_start_on) : "—" %></dd></div>
+        <div><dt>Target completion</dt><dd><%= @project.target_completion_on ? l(@project.target_completion_on) : "—" %></dd></div>
+      </dl>
+      <% if @project.operational_description.present? %>
+        <h3 class="mt-4 text-sm font-semibold">Operational description</h3>
+        <div class="staff-quote-summary__hint mt-1"><%= simple_format(@project.operational_description) %></div>
+      <% end %>
+      <% if policy(@project).view_internal_notes? && @project.internal_notes.present? %>
+        <h3 class="mt-4 text-sm font-semibold">Internal notes</h3>
+        <div class="staff-quote-summary__hint mt-1"><%= simple_format(@project.internal_notes) %></div>
+      <% end %>
+    </section>
+
+    <% if policy(@project).view_commercial? %>
+      <section class="staff-enquiry-panel p-5">
+        <h2 class="staff-quote-editor__step-title">Agreed commercial terms</h2>
+        <p class="staff-quote-summary__hint mt-1">Read-only from the accepted offer. Editing here is not allowed.</p>
+        <dl class="staff-quote-summary mt-3">
+          <div><dt>Total</dt><dd><%= @project.commercial_snapshot["currency"] %> <%= format("%.2f", @project.commercial_snapshot["total_cents"].to_i / 100.0) %></dd></div>
+          <div><dt>Scope</dt><dd><%= simple_format(@project.commercial_snapshot["scope_description"]) %></dd></div>
+          <div><dt>Deliverables</dt><dd><%= simple_format(@project.commercial_snapshot["deliverables"]) %></dd></div>
+        </dl>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Next actions", heading_id: "project-actions", icon: "check" %>
+      <div class="staff-quote-side-panel__body space-y-2">
+        <% if @actions.any? && policy(@project).transition? %>
+          <% @actions.each do |action| %>
+            <%= button_to action.to_s.tr("_", " ").humanize,
+                  transition_staff_project_path(@project),
+                  params: { project_action: action },
+                  class: "ant-btn-outline ant-btn-outline--compact w-full",
+                  form: { class: "w-full" } %>
+          <% end %>
+          <%= form_with url: transition_staff_project_path(@project), method: :post, class: "mt-3 space-y-2", local: true do %>
+            <%= hidden_field_tag :project_action, "place_on_hold" %>
+            <label class="ant-field__label" for="hold_reason">Put on hold — reason</label>
+            <input id="hold_reason" name="reason" class="ant-control w-full" required>
+            <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Place on hold</button>
+          <% end %>
+        <% else %>
+          <p class="staff-quote-summary__hint">No further status changes are available right now.</p>
+        <% end %>
+        <p class="staff-quote-summary__hint mt-3">Documents, inspections and invoices arrive in later modules.</p>
+      </div>
+    </section>
+  </aside>
+</div>

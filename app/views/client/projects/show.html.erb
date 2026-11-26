@@ -1,0 +1,73 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_back_link(label: "All projects", path: client_projects_path) %>
+
+<%= ant_page_header(
+      title: @project.title,
+      description: "#{@project.reference_number} · #{@project.client_status_label}"
+    ) %>
+
+<% if @project.simulated? %>
+  <div class="ant-notice ant-notice--warn mt-4">
+    <p><strong>Simulated project for portal testing.</strong> This is not live operational work.</p>
+  </div>
+<% end %>
+
+<section class="mt-6 grid gap-6 lg:grid-cols-2">
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Overview</h2>
+    <dl class="staff-quote-summary mt-3">
+      <div><dt>Status</dt><dd><%= @project.client_status_label %></dd></div>
+      <div><dt>Progress</dt><dd><%= @progress[:label] %></dd></div>
+      <div><dt>Location</dt><dd><%= @project.location.presence || "—" %></dd></div>
+      <div><dt>Vessel / asset</dt><dd><%= @project.vessel_name.presence || "—" %></dd></div>
+    </dl>
+    <% if @project.commercial_snapshot["scope_description"].present? %>
+      <h3 class="mt-4 text-sm font-semibold">Agreed scope</h3>
+      <div class="staff-quote-summary__hint mt-1"><%= simple_format(@project.commercial_snapshot["scope_description"]) %></div>
+    <% end %>
+  </div>
+
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Milestones</h2>
+    <ul class="mt-3 space-y-2">
+      <% @milestones.each do |milestone| %>
+        <li class="staff-quote-summary__hint">
+          <%= milestone.title %> — <%= milestone.status.humanize %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Confirmed schedule</h2>
+    <% if @events.any? %>
+      <ul class="mt-3 space-y-2">
+        <% @events.each do |event| %>
+          <li>
+            <p class="font-medium"><%= event.title %></p>
+            <p class="staff-quote-summary__hint"><%= l(event.starts_at, format: :long) %><% if event.location.present? %> · <%= event.location %><% end %></p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="staff-quote-summary__hint mt-2">No confirmed activities yet.</p>
+    <% end %>
+  </div>
+
+  <div class="client-content-card p-5">
+    <h2 class="text-lg font-semibold">Updates</h2>
+    <% if @updates.any? %>
+      <ul class="mt-3 space-y-3">
+        <% @updates.each do |update| %>
+          <li>
+            <p class="staff-quote-summary__hint"><%= l(update.published_at, format: :short) %></p>
+            <div><%= simple_format(update.body) %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="staff-quote-summary__hint mt-2">No updates published yet.</p>
+    <% end %>
+  </div>
+</section>

@@ -70,6 +70,85 @@ module Notifications
       )
     end
 
+    def project_created(project:, audit_event:)
+      label = project.simulated? ? "simulated project" : "project"
+      recipients = active_staff(project.operating_organization).select do |membership|
+        Authorization::EffectivePermissions.new(membership).allowed?("projects.view_all")
+      end
+      publish_subject(
+        recipients,
+        kind: "project_created",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "#{project.reference_number} created (#{label}) for #{project.client_organization.name}"
+      )
+    end
+
+    def project_assigned(project:, assignee:, actor:, audit_event:)
+      return if assignee.id == actor.id
+
+      publish_subject(
+        [ assignee ],
+        kind: "project_assigned",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "You were assigned to #{project.reference_number}"
+      )
+    end
+
+    def project_assignment_changed(project:, previous:, actor:, audit_event:)
+      return unless previous && previous.id != actor.id
+
+      publish_subject(
+        [ previous ],
+        kind: "project_assignment_changed",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "#{project.reference_number} is no longer assigned to you"
+      )
+    end
+
+    def task_assigned(project:, task:, audit_event:)
+      assignee = task.assignee_membership
+      return unless assignee
+
+      publish_subject(
+        [ assignee ],
+        kind: "task_assigned",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "Task on #{project.reference_number}: #{task.title}"
+      )
+    end
+
+    def schedule_confirmed(project:, event:, audit_event:)
+      recipients = [ event.responsible_membership, project.coordinator_membership ].compact
+      publish_subject(
+        recipients,
+        kind: "schedule_confirmed",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "Schedule confirmed for #{project.reference_number}: #{event.title}"
+      )
+    end
+
+    def schedule_cancelled(project:, event:, audit_event:)
+      recipients = [ event.responsible_membership, project.coordinator_membership ].compact
+      publish_subject(
+        recipients,
+        kind: "schedule_cancelled",
+        organization: project.operating_organization,
+        subject: project,
+        audit_event: audit_event,
+        title: "Schedule cancelled for #{project.reference_number}: #{event.title}"
+      )
+    end
+
     def active_staff(organization)
       Membership.active.where(organization: organization).joins(:user).where(users: { status: "active" })
                 .includes(:organization).select(&:staff_domain?)

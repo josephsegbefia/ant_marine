@@ -24,6 +24,15 @@
     <% end %>
   <% end %>
 
+  <% if client_can_view_projects? %>
+    <%= link_to client_projects_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:projects)}",
+          data: { action: "click->client-shell#close" } do %>
+      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <span>Projects</span>
+    <% end %>
+  <% end %>
+
   <% if client_can_invite? %>
     <%= link_to client_invitations_path,
           class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:invitations)}",

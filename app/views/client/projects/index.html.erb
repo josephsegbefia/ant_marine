@@ -1,0 +1,31 @@
+<% content_for :client_nav, :projects %>
+
+<%= ant_page_header(
+      title: "Projects",
+      description: "Service work for #{Current.membership.organization.name}."
+    ) %>
+
+<section class="mt-6">
+  <% if @projects.any? %>
+    <ul class="client-list space-y-3">
+      <% @projects.each do |project| %>
+        <li class="client-content-card">
+          <%= link_to client_project_path(project), class: "block" do %>
+            <p class="staff-enquiry-row__ref"><%= project.reference_number %></p>
+            <p class="font-semibold text-[var(--ant-navy)]"><%= project.title %></p>
+            <p class="staff-quote-summary__hint mt-1">
+              <%= project.client_status_label %>
+              <% if project.simulated? %> · Simulated test project<% end %>
+            </p>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+    <%= ant_pagination(@pagination, path_for: ->(page) { client_projects_path(page: page) }) %>
+  <% else %>
+    <%= ant_empty_state(
+          title: "No projects yet",
+          description: "When ANT Marine starts a project for your organisation, it will appear here."
+        ) %>
+  <% end %>
+</section>

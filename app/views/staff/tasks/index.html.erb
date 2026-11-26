@@ -1,0 +1,30 @@
+<% content_for :staff_nav, :tasks %>
+
+<%= ant_page_header(title: "My tasks", description: "Tasks on projects you can access.") %>
+
+<section class="mt-6">
+  <div class="flex flex-wrap gap-2 mb-4">
+    <% %w[mine all upcoming overdue completed].each do |view| %>
+      <%= link_to view.humanize, staff_tasks_path(view: view), class: "ant-btn-outline ant-btn-outline--compact#{" ant-btn-primary" if @view == view}" %>
+    <% end %>
+  </div>
+
+  <% if @tasks.any? %>
+    <ul class="staff-quote-versions__list">
+      <% @tasks.each do |task| %>
+        <li class="staff-quote-versions__item">
+          <p class="staff-enquiry-clarification__title"><%= task.title %></p>
+          <p class="staff-enquiry-row__sub">
+            <%= link_to task.project.reference_number, staff_project_path(task.project, tab: "tasks"), class: "staff-quote-link" %>
+            · <%= task.status_label %>
+            <% if task.due_on %> · due <%= l(task.due_on) %><% end %>
+            <% if task.overdue? %> · overdue<% end %>
+          </p>
+        </li>
+      <% end %>
+    </ul>
+    <%= ant_pagination(@pagination, path_for: ->(page) { staff_tasks_path(view: @view, page: page) }) %>
+  <% else %>
+    <%= ant_empty_state(title: "No tasks", description: "Assigned tasks will appear here.") %>
+  <% end %>
+</section>

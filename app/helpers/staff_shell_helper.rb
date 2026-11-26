@@ -34,6 +34,18 @@ module StaffShellHelper
     )
   end
 
+  def staff_can_view_projects?
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "projects.view_all"
+    ) || Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "projects.view_assigned"
+    )
+  end
+
   def staff_can_view_enquiries?
     return false unless Current.membership&.staff_domain?
 
@@ -87,7 +99,17 @@ module StaffShellHelper
       "new_enquiry" => "clipboard",
       "enquiry_assigned" => "users",
       "enquiry_reassigned_away" => "users",
-      "clarification_answered" => "mail"
+      "clarification_answered" => "mail",
+      "quote_accepted" => "check",
+      "quote_declined" => "check",
+      "quote_changes_requested" => "check",
+      "project_created" => "brief",
+      "project_assigned" => "users",
+      "project_assignment_changed" => "users",
+      "task_assigned" => "clipboard",
+      "schedule_confirmed" => "clock",
+      "schedule_cancelled" => "clock",
+      "project_update" => "mail"
     }.fetch(kind.to_s, "mail")
   end
 end

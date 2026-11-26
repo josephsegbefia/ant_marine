@@ -99,6 +99,27 @@ Rails.application.routes.draw do
         post :cancel
       end
     end
+    resources :projects, only: %i[index show new create] do
+      member do
+        post :transition
+      end
+      resources :assignments, only: %i[create destroy], controller: "project_assignments"
+      resources :tasks, only: %i[create update], controller: "project_tasks"
+      resources :milestones, only: [], controller: "project_milestones" do
+        member do
+          post :complete
+        end
+      end
+      resources :schedule_events, only: %i[create], controller: "project_schedule_events" do
+        member do
+          post :confirm
+          post :cancel
+        end
+      end
+      resources :updates, only: %i[create], controller: "project_updates"
+    end
+    resources :tasks, only: %i[index], controller: "tasks"
+    resources :schedule_events, only: %i[index], controller: "schedule_events"
     namespace :website do
       resources :services do
         member do
@@ -145,6 +166,7 @@ Rails.application.routes.draw do
         post :decide, action: :create_decision
       end
     end
+    resources :projects, only: %i[index show]
     resource :account, only: %i[show], controller: "accounts"
     resources :invitations, only: %i[index create destroy] do
       member do

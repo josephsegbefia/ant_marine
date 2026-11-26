@@ -343,6 +343,48 @@ ALTER SEQUENCE public.articles_id_seq OWNED BY public.articles.id;
 
 
 --
+-- Name: assignments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.assignments (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    membership_id bigint NOT NULL,
+    assignment_kind character varying NOT NULL,
+    access_scope character varying NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    acknowledged_at timestamp(6) without time zone,
+    assigned_by_membership_id bigint NOT NULL,
+    reason text,
+    ended_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT assignments_access_scope_check CHECK (((access_scope)::text = ANY ((ARRAY['delivery'::character varying, 'review'::character varying, 'collaborator'::character varying])::text[]))),
+    CONSTRAINT assignments_kind_check CHECK (((assignment_kind)::text = ANY ((ARRAY['coordinator'::character varying, 'lead_surveyor'::character varying, 'surveyor'::character varying, 'technical_reviewer'::character varying, 'collaborator'::character varying])::text[])))
+);
+
+
+--
+-- Name: assignments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.assignments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.assignments_id_seq OWNED BY public.assignments.id;
+
+
+--
 -- Name: audit_events; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -668,6 +710,180 @@ CREATE SEQUENCE public.permissions_id_seq
 --
 
 ALTER SEQUENCE public.permissions_id_seq OWNED BY public.permissions.id;
+
+
+--
+-- Name: project_milestones; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_milestones (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    title character varying NOT NULL,
+    description text,
+    kind character varying DEFAULT 'operational'::character varying NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    responsible_membership_id bigint,
+    target_on date,
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    completed_at timestamp(6) without time zone,
+    completed_by_membership_id bigint,
+    counts_toward_progress boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT project_milestones_kind_check CHECK (((kind)::text = ANY ((ARRAY['project_initiated'::character varying, 'planning'::character varying, 'mobilization'::character varying, 'site_work'::character varying, 'technical_review'::character varying, 'report_release'::character varying, 'project_completion'::character varying, 'operational'::character varying])::text[]))),
+    CONSTRAINT project_milestones_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'completed'::character varying, 'cancelled'::character varying])::text[])))
+);
+
+
+--
+-- Name: project_milestones_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_milestones_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_milestones_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_milestones_id_seq OWNED BY public.project_milestones.id;
+
+
+--
+-- Name: project_status_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_status_events (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    from_status character varying,
+    to_status character varying NOT NULL,
+    actor_membership_id bigint NOT NULL,
+    reason text,
+    occurred_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: project_status_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_status_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_status_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_status_events_id_seq OWNED BY public.project_status_events.id;
+
+
+--
+-- Name: project_updates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.project_updates (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    author_membership_id bigint NOT NULL,
+    body text NOT NULL,
+    visibility character varying DEFAULT 'client'::character varying NOT NULL,
+    published_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT project_updates_body_length CHECK (((char_length(body) >= 1) AND (char_length(body) <= 5000))),
+    CONSTRAINT project_updates_visibility_check CHECK (((visibility)::text = ANY ((ARRAY['client'::character varying, 'internal'::character varying])::text[])))
+);
+
+
+--
+-- Name: project_updates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.project_updates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: project_updates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.project_updates_id_seq OWNED BY public.project_updates.id;
+
+
+--
+-- Name: projects; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.projects (
+    id bigint NOT NULL,
+    reference_number character varying NOT NULL,
+    title character varying NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    service_id bigint,
+    service_inquiry_id bigint,
+    quote_id bigint NOT NULL,
+    quote_revision_id bigint NOT NULL,
+    quote_response_id bigint NOT NULL,
+    quote_portal_release_id bigint NOT NULL,
+    created_by_membership_id bigint NOT NULL,
+    coordinator_membership_id bigint,
+    internal_status character varying DEFAULT 'planning'::character varying NOT NULL,
+    client_status character varying DEFAULT 'planning'::character varying NOT NULL,
+    mode character varying DEFAULT 'simulated'::character varying NOT NULL,
+    location character varying,
+    vessel_name character varying,
+    vessel_identifier character varying,
+    operational_description text,
+    internal_notes text,
+    proposed_start_on date,
+    target_completion_on date,
+    commercial_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    archived_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT projects_client_status_check CHECK (((client_status)::text = ANY ((ARRAY['planning'::character varying, 'scheduled'::character varying, 'in_progress'::character varying, 'on_hold'::character varying, 'completed'::character varying, 'cancelled'::character varying, 'closed'::character varying])::text[]))),
+    CONSTRAINT projects_internal_status_check CHECK (((internal_status)::text = ANY ((ARRAY['planning'::character varying, 'scheduled'::character varying, 'in_progress'::character varying, 'technical_review'::character varying, 'report_ready'::character varying, 'completed'::character varying, 'closed'::character varying, 'on_hold'::character varying, 'cancelled'::character varying])::text[]))),
+    CONSTRAINT projects_mode_check CHECK (((mode)::text = 'simulated'::text)),
+    CONSTRAINT projects_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: projects_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.projects_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: projects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.projects_id_seq OWNED BY public.projects.id;
 
 
 --
@@ -1104,6 +1320,54 @@ ALTER SEQUENCE public.role_permissions_id_seq OWNED BY public.role_permissions.i
 
 
 --
+-- Name: schedule_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.schedule_events (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    title character varying NOT NULL,
+    activity_type character varying DEFAULT 'site_work'::character varying NOT NULL,
+    confirmation_state character varying DEFAULT 'proposed'::character varying NOT NULL,
+    location character varying,
+    starts_at timestamp(6) without time zone NOT NULL,
+    ends_at timestamp(6) without time zone NOT NULL,
+    responsible_membership_id bigint,
+    internal_notes text,
+    cancellation_reason text,
+    created_by_membership_id bigint NOT NULL,
+    confirmed_by_membership_id bigint,
+    confirmed_at timestamp(6) without time zone,
+    conflict_override boolean DEFAULT false NOT NULL,
+    conflict_override_reason text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT schedule_events_activity_type_check CHECK (((activity_type)::text = ANY ((ARRAY['site_work'::character varying, 'mobilization'::character varying, 'meeting'::character varying, 'inspection'::character varying, 'other'::character varying])::text[]))),
+    CONSTRAINT schedule_events_confirmation_state_check CHECK (((confirmation_state)::text = ANY ((ARRAY['proposed'::character varying, 'confirmed'::character varying, 'rescheduled'::character varying, 'cancelled'::character varying, 'completed'::character varying])::text[]))),
+    CONSTRAINT schedule_events_time_order_check CHECK ((starts_at < ends_at))
+);
+
+
+--
+-- Name: schedule_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.schedule_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: schedule_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.schedule_events_id_seq OWNED BY public.schedule_events.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1418,7 +1682,7 @@ CREATE TABLE public.staff_notifications (
     dedupe_key character varying NOT NULL,
     read_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying])::text[]))),
+    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying])::text[]))),
     CONSTRAINT staff_notifications_title_length CHECK ((char_length((title)::text) <= 200))
 );
 
@@ -1486,6 +1750,49 @@ CREATE SEQUENCE public.storage_assets_id_seq
 --
 
 ALTER SEQUENCE public.storage_assets_id_seq OWNED BY public.storage_assets.id;
+
+
+--
+-- Name: tasks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tasks (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    title character varying NOT NULL,
+    description text,
+    assignee_membership_id bigint,
+    priority character varying DEFAULT 'normal'::character varying NOT NULL,
+    status character varying DEFAULT 'todo'::character varying NOT NULL,
+    due_on date,
+    completed_at timestamp(6) without time zone,
+    created_by_membership_id bigint NOT NULL,
+    notes text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT tasks_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'normal'::character varying, 'high'::character varying, 'urgent'::character varying])::text[]))),
+    CONSTRAINT tasks_status_check CHECK (((status)::text = ANY ((ARRAY['todo'::character varying, 'in_progress'::character varying, 'blocked'::character varying, 'completed'::character varying, 'cancelled'::character varying])::text[]))),
+    CONSTRAINT tasks_title_length CHECK (((char_length((title)::text) >= 1) AND (char_length((title)::text) <= 200)))
+);
+
+
+--
+-- Name: tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tasks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tasks_id_seq OWNED BY public.tasks.id;
 
 
 --
@@ -1618,6 +1925,13 @@ ALTER TABLE ONLY public.articles ALTER COLUMN id SET DEFAULT nextval('public.art
 
 
 --
+-- Name: assignments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments ALTER COLUMN id SET DEFAULT nextval('public.assignments_id_seq'::regclass);
+
+
+--
 -- Name: audit_events id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1671,6 +1985,34 @@ ALTER TABLE ONLY public.permission_overrides ALTER COLUMN id SET DEFAULT nextval
 --
 
 ALTER TABLE ONLY public.permissions ALTER COLUMN id SET DEFAULT nextval('public.permissions_id_seq'::regclass);
+
+
+--
+-- Name: project_milestones id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_milestones ALTER COLUMN id SET DEFAULT nextval('public.project_milestones_id_seq'::regclass);
+
+
+--
+-- Name: project_status_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_status_events ALTER COLUMN id SET DEFAULT nextval('public.project_status_events_id_seq'::regclass);
+
+
+--
+-- Name: project_updates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_updates ALTER COLUMN id SET DEFAULT nextval('public.project_updates_id_seq'::regclass);
+
+
+--
+-- Name: projects id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects ALTER COLUMN id SET DEFAULT nextval('public.projects_id_seq'::regclass);
 
 
 --
@@ -1737,6 +2079,13 @@ ALTER TABLE ONLY public.role_permissions ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
+-- Name: schedule_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events ALTER COLUMN id SET DEFAULT nextval('public.schedule_events_id_seq'::regclass);
+
+
+--
 -- Name: service_inquiries id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1790,6 +2139,13 @@ ALTER TABLE ONLY public.staff_notifications ALTER COLUMN id SET DEFAULT nextval(
 --
 
 ALTER TABLE ONLY public.storage_assets ALTER COLUMN id SET DEFAULT nextval('public.storage_assets_id_seq'::regclass);
+
+
+--
+-- Name: tasks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks ALTER COLUMN id SET DEFAULT nextval('public.tasks_id_seq'::regclass);
 
 
 --
@@ -1855,6 +2211,14 @@ ALTER TABLE ONLY public.articles
 
 
 --
+-- Name: assignments assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments
+    ADD CONSTRAINT assignments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: audit_events audit_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1916,6 +2280,38 @@ ALTER TABLE ONLY public.permission_overrides
 
 ALTER TABLE ONLY public.permissions
     ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_milestones project_milestones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_milestones
+    ADD CONSTRAINT project_milestones_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_status_events project_status_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_status_events
+    ADD CONSTRAINT project_status_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: project_updates project_updates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_updates
+    ADD CONSTRAINT project_updates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: projects projects_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT projects_pkey PRIMARY KEY (id);
 
 
 --
@@ -1991,6 +2387,14 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
+-- Name: schedule_events schedule_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events
+    ADD CONSTRAINT schedule_events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2063,6 +2467,14 @@ ALTER TABLE ONLY public.storage_assets
 
 
 --
+-- Name: tasks tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT tasks_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: training_offerings training_offerings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2093,10 +2505,24 @@ CREATE INDEX idx_on_created_by_membership_id_5421d8492b ON public.service_inquir
 
 
 --
+-- Name: idx_on_operating_organization_id_internal_status_3e729fa405; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_operating_organization_id_internal_status_3e729fa405 ON public.projects USING btree (operating_organization_id, internal_status);
+
+
+--
 -- Name: idx_on_response_recorded_by_membership_id_e5ec9fb48e; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_on_response_recorded_by_membership_id_e5ec9fb48e ON public.service_inquiry_clarifications USING btree (response_recorded_by_membership_id);
+
+
+--
+-- Name: idx_on_responsible_membership_id_starts_at_76bde5637d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_on_responsible_membership_id_starts_at_76bde5637d ON public.schedule_events USING btree (responsible_membership_id, starts_at);
 
 
 --
@@ -2188,6 +2614,55 @@ CREATE INDEX index_articles_on_status_and_published_at ON public.articles USING 
 --
 
 CREATE INDEX index_articles_on_updated_by_membership_id ON public.articles USING btree (updated_by_membership_id);
+
+
+--
+-- Name: index_assignments_on_assigned_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_assigned_by_membership_id ON public.assignments USING btree (assigned_by_membership_id);
+
+
+--
+-- Name: index_assignments_on_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_membership_id ON public.assignments USING btree (membership_id);
+
+
+--
+-- Name: index_assignments_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_project_id ON public.assignments USING btree (project_id);
+
+
+--
+-- Name: index_assignments_on_project_id_and_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_project_id_and_active ON public.assignments USING btree (project_id, active);
+
+
+--
+-- Name: index_assignments_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_user_id ON public.assignments USING btree (user_id);
+
+
+--
+-- Name: index_assignments_on_user_id_and_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assignments_on_user_id_and_active ON public.assignments USING btree (user_id, active);
+
+
+--
+-- Name: index_assignments_unique_active_kind; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_assignments_unique_active_kind ON public.assignments USING btree (project_id, user_id, assignment_kind) WHERE (active = true);
 
 
 --
@@ -2433,6 +2908,167 @@ CREATE INDEX index_permission_overrides_on_permission_id ON public.permission_ov
 --
 
 CREATE UNIQUE INDEX index_permissions_on_key ON public.permissions USING btree (key);
+
+
+--
+-- Name: index_project_milestones_on_completed_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_milestones_on_completed_by_membership_id ON public.project_milestones USING btree (completed_by_membership_id);
+
+
+--
+-- Name: index_project_milestones_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_milestones_on_project_id ON public.project_milestones USING btree (project_id);
+
+
+--
+-- Name: index_project_milestones_on_project_id_and_position; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_milestones_on_project_id_and_position ON public.project_milestones USING btree (project_id, "position");
+
+
+--
+-- Name: index_project_milestones_on_responsible_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_milestones_on_responsible_membership_id ON public.project_milestones USING btree (responsible_membership_id);
+
+
+--
+-- Name: index_project_status_events_on_actor_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_status_events_on_actor_membership_id ON public.project_status_events USING btree (actor_membership_id);
+
+
+--
+-- Name: index_project_status_events_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_status_events_on_project_id ON public.project_status_events USING btree (project_id);
+
+
+--
+-- Name: index_project_status_events_on_project_id_and_occurred_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_status_events_on_project_id_and_occurred_at ON public.project_status_events USING btree (project_id, occurred_at);
+
+
+--
+-- Name: index_project_updates_on_author_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_updates_on_author_membership_id ON public.project_updates USING btree (author_membership_id);
+
+
+--
+-- Name: index_project_updates_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_updates_on_project_id ON public.project_updates USING btree (project_id);
+
+
+--
+-- Name: index_project_updates_on_project_id_and_published_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_project_updates_on_project_id_and_published_at ON public.project_updates USING btree (project_id, published_at);
+
+
+--
+-- Name: index_projects_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_client_organization_id ON public.projects USING btree (client_organization_id);
+
+
+--
+-- Name: index_projects_on_client_organization_id_and_client_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_client_organization_id_and_client_status ON public.projects USING btree (client_organization_id, client_status);
+
+
+--
+-- Name: index_projects_on_coordinator_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_coordinator_membership_id ON public.projects USING btree (coordinator_membership_id);
+
+
+--
+-- Name: index_projects_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_created_by_membership_id ON public.projects USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_projects_on_mode; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_mode ON public.projects USING btree (mode);
+
+
+--
+-- Name: index_projects_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_operating_organization_id ON public.projects USING btree (operating_organization_id);
+
+
+--
+-- Name: index_projects_on_quote_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_quote_id ON public.projects USING btree (quote_id);
+
+
+--
+-- Name: index_projects_on_quote_portal_release_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_quote_portal_release_id ON public.projects USING btree (quote_portal_release_id);
+
+
+--
+-- Name: index_projects_on_quote_response_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_projects_on_quote_response_id ON public.projects USING btree (quote_response_id);
+
+
+--
+-- Name: index_projects_on_quote_revision_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_projects_on_quote_revision_id ON public.projects USING btree (quote_revision_id);
+
+
+--
+-- Name: index_projects_on_reference_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_projects_on_reference_number ON public.projects USING btree (reference_number);
+
+
+--
+-- Name: index_projects_on_service_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_service_id ON public.projects USING btree (service_id);
+
+
+--
+-- Name: index_projects_on_service_inquiry_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_projects_on_service_inquiry_id ON public.projects USING btree (service_inquiry_id);
 
 
 --
@@ -2821,6 +3457,48 @@ CREATE UNIQUE INDEX index_role_permissions_on_role_key_and_permission_id ON publ
 
 
 --
+-- Name: index_schedule_events_on_confirmation_state; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_confirmation_state ON public.schedule_events USING btree (confirmation_state);
+
+
+--
+-- Name: index_schedule_events_on_confirmed_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_confirmed_by_membership_id ON public.schedule_events USING btree (confirmed_by_membership_id);
+
+
+--
+-- Name: index_schedule_events_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_created_by_membership_id ON public.schedule_events USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_schedule_events_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_project_id ON public.schedule_events USING btree (project_id);
+
+
+--
+-- Name: index_schedule_events_on_project_id_and_starts_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_project_id_and_starts_at ON public.schedule_events USING btree (project_id, starts_at);
+
+
+--
+-- Name: index_schedule_events_on_responsible_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_schedule_events_on_responsible_membership_id ON public.schedule_events USING btree (responsible_membership_id);
+
+
+--
 -- Name: index_service_inquiries_on_assigned_membership_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3080,6 +3758,48 @@ CREATE INDEX index_storage_assets_on_uploaded_by_membership_id ON public.storage
 
 
 --
+-- Name: index_tasks_on_assignee_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_assignee_membership_id ON public.tasks USING btree (assignee_membership_id);
+
+
+--
+-- Name: index_tasks_on_assignee_membership_id_and_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_assignee_membership_id_and_status ON public.tasks USING btree (assignee_membership_id, status);
+
+
+--
+-- Name: index_tasks_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_created_by_membership_id ON public.tasks USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_tasks_on_due_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_due_on ON public.tasks USING btree (due_on);
+
+
+--
+-- Name: index_tasks_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_project_id ON public.tasks USING btree (project_id);
+
+
+--
+-- Name: index_tasks_on_project_id_and_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_tasks_on_project_id_and_status ON public.tasks USING btree (project_id, status);
+
+
+--
 -- Name: index_training_offerings_on_approved_by_membership_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3165,6 +3885,22 @@ ALTER TABLE ONLY public.quote_deliveries
 
 
 --
+-- Name: tasks fk_rails_02e851e3b7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT fk_rails_02e851e3b7 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: projects fk_rails_07fdbba781; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_07fdbba781 FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
+
+
+--
 -- Name: quotes fk_rails_0afeb292dc; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3237,6 +3973,22 @@ ALTER TABLE ONLY public.quote_responses
 
 
 --
+-- Name: project_status_events fk_rails_1de9195048; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_status_events
+    ADD CONSTRAINT fk_rails_1de9195048 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: schedule_events fk_rails_218bf7f1f8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events
+    ADD CONSTRAINT fk_rails_218bf7f1f8 FOREIGN KEY (confirmed_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: staff_notifications fk_rails_22395b4a1a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3266,6 +4018,14 @@ ALTER TABLE ONLY public.public_site_pages
 
 ALTER TABLE ONLY public.quote_responses
     ADD CONSTRAINT fk_rails_279252d533 FOREIGN KEY (responded_by_user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: project_updates fk_rails_2b247d1bc3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_updates
+    ADD CONSTRAINT fk_rails_2b247d1bc3 FOREIGN KEY (author_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -3309,11 +4069,35 @@ ALTER TABLE ONLY public.service_inquiry_clarifications
 
 
 --
+-- Name: projects fk_rails_396e16b895; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_396e16b895 FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: service_inquiry_clarifications fk_rails_39e15834b4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.service_inquiry_clarifications
     ADD CONSTRAINT fk_rails_39e15834b4 FOREIGN KEY (response_recorded_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: tasks fk_rails_3b9f41a231; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT fk_rails_3b9f41a231 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: projects fk_rails_42e54ee219; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_42e54ee219 FOREIGN KEY (quote_portal_release_id) REFERENCES public.quote_portal_releases(id);
 
 
 --
@@ -3365,6 +4149,30 @@ ALTER TABLE ONLY public.training_offerings
 
 
 --
+-- Name: project_status_events fk_rails_4bc03a6f1c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_status_events
+    ADD CONSTRAINT fk_rails_4bc03a6f1c FOREIGN KEY (actor_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: assignments fk_rails_4d3d2c839c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments
+    ADD CONSTRAINT fk_rails_4d3d2c839c FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: project_updates fk_rails_4f9b2ad919; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_updates
+    ADD CONSTRAINT fk_rails_4f9b2ad919 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
 -- Name: service_inquiries fk_rails_50e31e4c00; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3381,6 +4189,14 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: schedule_events fk_rails_544b90cfb5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events
+    ADD CONSTRAINT fk_rails_544b90cfb5 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: training_offerings fk_rails_5642067273; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3394,6 +4210,14 @@ ALTER TABLE ONLY public.training_offerings
 
 ALTER TABLE ONLY public.quote_revisions
     ADD CONSTRAINT fk_rails_585287f59b FOREIGN KEY (superseded_by_revision_id) REFERENCES public.quote_revisions(id);
+
+
+--
+-- Name: project_milestones fk_rails_5ac5d10ce0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_milestones
+    ADD CONSTRAINT fk_rails_5ac5d10ce0 FOREIGN KEY (completed_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -3485,6 +4309,14 @@ ALTER TABLE ONLY public.service_inquiry_clarifications
 
 
 --
+-- Name: projects fk_rails_6c1f6266c2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_6c1f6266c2 FOREIGN KEY (quote_revision_id) REFERENCES public.quote_revisions(id);
+
+
+--
 -- Name: quote_deliveries fk_rails_6d5f4f2407; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3533,6 +4365,14 @@ ALTER TABLE ONLY public.case_studies
 
 
 --
+-- Name: assignments fk_rails_7a0906be01; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments
+    ADD CONSTRAINT fk_rails_7a0906be01 FOREIGN KEY (membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: public_resources fk_rails_7a5cbabb49; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3549,6 +4389,14 @@ ALTER TABLE ONLY public.permission_overrides
 
 
 --
+-- Name: projects fk_rails_7f51c5737c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_7f51c5737c FOREIGN KEY (quote_response_id) REFERENCES public.quote_responses(id);
+
+
+--
 -- Name: service_inquiry_notes fk_rails_81b6480f05; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3562,6 +4410,46 @@ ALTER TABLE ONLY public.service_inquiry_notes
 
 ALTER TABLE ONLY public.quote_revisions
     ADD CONSTRAINT fk_rails_82a8ad8956 FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
+
+
+--
+-- Name: assignments fk_rails_82b1433829; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments
+    ADD CONSTRAINT fk_rails_82b1433829 FOREIGN KEY (assigned_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: projects fk_rails_8333d12366; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_8333d12366 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: project_milestones fk_rails_843f80230e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_milestones
+    ADD CONSTRAINT fk_rails_843f80230e FOREIGN KEY (responsible_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: schedule_events fk_rails_89c18faad2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events
+    ADD CONSTRAINT fk_rails_89c18faad2 FOREIGN KEY (responsible_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: project_milestones fk_rails_8ea5131e54; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.project_milestones
+    ADD CONSTRAINT fk_rails_8ea5131e54 FOREIGN KEY (project_id) REFERENCES public.projects(id);
 
 
 --
@@ -3597,11 +4485,27 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
+-- Name: tasks fk_rails_9f28c828eb; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tasks
+    ADD CONSTRAINT fk_rails_9f28c828eb FOREIGN KEY (assignee_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: training_offerings fk_rails_9f8168231e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.training_offerings
     ADD CONSTRAINT fk_rails_9f8168231e FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: projects fk_rails_a43a9532f1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_a43a9532f1 FOREIGN KEY (coordinator_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -3629,6 +4533,14 @@ ALTER TABLE ONLY public.public_resources
 
 
 --
+-- Name: assignments fk_rails_aa6b76dac2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assignments
+    ADD CONSTRAINT fk_rails_aa6b76dac2 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: case_studies fk_rails_ae2a2e43e0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3653,6 +4565,14 @@ ALTER TABLE ONLY public.client_contacts
 
 
 --
+-- Name: projects fk_rails_b55f8f1c63; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_b55f8f1c63 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: public_site_pages fk_rails_b646781e99; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3674,6 +4594,14 @@ ALTER TABLE ONLY public.quote_deliveries
 
 ALTER TABLE ONLY public.services
     ADD CONSTRAINT fk_rails_bcf4f37ee4 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: schedule_events fk_rails_bd6eccad37; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.schedule_events
+    ADD CONSTRAINT fk_rails_bd6eccad37 FOREIGN KEY (project_id) REFERENCES public.projects(id);
 
 
 --
@@ -3746,6 +4674,14 @@ ALTER TABLE ONLY public.quote_responses
 
 ALTER TABLE ONLY public.permission_overrides
     ADD CONSTRAINT fk_rails_c942e92102 FOREIGN KEY (permission_id) REFERENCES public.permissions(id);
+
+
+--
+-- Name: projects fk_rails_ca7db128d4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_ca7db128d4 FOREIGN KEY (service_id) REFERENCES public.services(id);
 
 
 --
@@ -3909,6 +4845,14 @@ ALTER TABLE ONLY public.public_site_pages
 
 
 --
+-- Name: projects fk_rails_f9f3cae347; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.projects
+    ADD CONSTRAINT fk_rails_f9f3cae347 FOREIGN KEY (service_inquiry_id) REFERENCES public.service_inquiries(id);
+
+
+--
 -- Name: storage_assets fk_rails_fc20c8e060; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3939,6 +4883,7 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126140000'),
 ('20261126120000'),
 ('20261126020100'),
 ('20261126020000'),

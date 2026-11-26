@@ -48,6 +48,24 @@
     <% end %>
   <% end %>
 
+  <% if staff_can_view_projects? %>
+    <%= link_to staff_projects_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:projects)}" do %>
+      <%= render "shared/staff/nav_icon", name: "brief" %>
+      <span>Projects</span>
+    <% end %>
+    <%= link_to staff_tasks_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:tasks)}" do %>
+      <%= render "shared/staff/nav_icon", name: "clipboard" %>
+      <span>My tasks</span>
+    <% end %>
+    <%= link_to staff_schedule_events_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:schedule)}" do %>
+      <%= render "shared/staff/nav_icon", name: "clock" %>
+      <span>Schedule</span>
+    <% end %>
+  <% end %>
+
   <p class="staff-side-label staff-side-label--spaced">ADMINISTRATION</p>
   <% if staff_can_manage_website? %>
     <%= link_to staff_website_services_path,
