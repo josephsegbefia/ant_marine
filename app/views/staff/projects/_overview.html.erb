@@ -33,6 +33,32 @@
         </dl>
       </section>
     <% end %>
+
+    <% if staff_can_view_finance? && Billing::Access.can_manage?(Current.membership) %>
+      <% currency = @project.commercial_snapshot["currency"] %>
+      <% accepted = Billing::Capacity.accepted_total_cents(@project) %>
+      <% issued = Billing::Capacity.issued_committed_cents(@project) %>
+      <% remaining = Billing::Capacity.remaining_billable_cents(@project, include_drafts: true) %>
+      <% issued_invoices = @project.invoices.issued %>
+      <% paid = issued_invoices.sum(&:net_paid_cents) %>
+      <% outstanding = issued_invoices.sum(&:outstanding_cents) %>
+      <section class="staff-enquiry-panel p-5">
+        <h2 class="staff-quote-editor__step-title">Simulated billing</h2>
+        <p class="staff-quote-summary__hint mt-1">Not genuine receivables. Figures stay in the accepted currency only.</p>
+        <dl class="staff-quote-summary mt-3">
+          <div><dt>Accepted amount</dt><dd><%= currency %> <%= format("%.2f", accepted / 100.0) %></dd></div>
+          <div><dt>Issued amount</dt><dd><%= currency %> <%= format("%.2f", issued / 100.0) %></dd></div>
+          <div><dt>Recorded payments</dt><dd><%= currency %> <%= format("%.2f", paid / 100.0) %></dd></div>
+          <div><dt>Outstanding</dt><dd><%= currency %> <%= format("%.2f", outstanding / 100.0) %></dd></div>
+          <div><dt>Remaining billable</dt><dd><%= currency %> <%= format("%.2f", remaining / 100.0) %></dd></div>
+        </dl>
+        <% if remaining.positive? && !Rails.env.production? %>
+          <div class="mt-4">
+            <%= link_to "Create invoice", new_staff_invoice_path(project_id: @project.id), class: "ant-btn-outline ant-btn-outline--compact" %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
   </div>
 
   <aside class="space-y-4">

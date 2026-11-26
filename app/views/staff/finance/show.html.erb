@@ -1,0 +1,78 @@
+<% content_for :staff_nav, :finance %>
+<%= ant_page_header(
+      title: "Bills & balances",
+      description: "Simulated invoices and recorded payments only. No live collection.",
+      primary_action: (policy(Invoice).create? ? { label: "Open invoices", path: staff_invoices_path } : nil)
+    ) %>
+
+<div class="staff-quote-notice staff-quote-notice--warn mt-4">
+  <p><strong>Simulated finance workspace.</strong> Totals exclude live receivables. Tax, deposits and payment terms remain unapproved for genuine issuance.</p>
+</div>
+
+<%= form_with url: staff_finance_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+  <%= ant_select_tag "currency",
+                     Commercial::Money::MINOR_UNITS.keys.map { |c| [ c, c ] },
+                     label: "Currency",
+                     selected: @currency,
+                     include_blank: "All currencies",
+                     compact: true,
+                     wrapper_class: "ant-filter-toolbar__field" %>
+  <div class="ant-filter-toolbar__actions">
+    <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+  </div>
+<% end %>
+
+<% if @summaries.any? %>
+  <% @summaries.each do |summary| %>
+    <section class="staff-enquiry-stats mt-5" aria-label="<%= summary.currency %> finance summary">
+      <div class="staff-enquiry-stat">
+        <span class="staff-enquiry-stat__label">Issued (<%= summary.currency %>)</span>
+        <span class="staff-enquiry-stat__value"><%= Commercial::Money.display(summary.issued_total_cents, summary.currency) %></span>
+        <span class="staff-enquiry-stat__caption"><%= summary.issued_count %> issued invoices</span>
+      </div>
+      <div class="staff-enquiry-stat">
+        <span class="staff-enquiry-stat__label">Recorded payments</span>
+        <span class="staff-enquiry-stat__value"><%= Commercial::Money.display(summary.net_paid_cents, summary.currency) %></span>
+        <span class="staff-enquiry-stat__caption">Net of reversals</span>
+      </div>
+      <div class="staff-enquiry-stat">
+        <span class="staff-enquiry-stat__label">Outstanding</span>
+        <span class="staff-enquiry-stat__value"><%= Commercial::Money.display(summary.outstanding_cents, summary.currency) %></span>
+        <span class="staff-enquiry-stat__caption">Issued and unpaid</span>
+      </div>
+      <div class="staff-enquiry-stat">
+        <span class="staff-enquiry-stat__label">Overdue</span>
+        <span class="staff-enquiry-stat__value"><%= Commercial::Money.display(summary.overdue_cents, summary.currency) %></span>
+        <span class="staff-enquiry-stat__caption"><%= summary.overdue_count %> overdue · <%= summary.draft_count %> drafts</span>
+      </div>
+    </section>
+  <% end %>
+<% else %>
+  <%= ant_empty_state(title: "No simulated invoices yet", description: "Create an invoice from an eligible simulated project when you are ready to test billing.") %>
+<% end %>
+
+<section class="staff-enquiry-panel mt-6">
+  <div class="p-5">
+    <h2 class="staff-quote-editor__step-title">Recent invoices</h2>
+    <% if @recent.any? %>
+      <ul class="staff-quote-versions__list mt-3">
+        <% @recent.each do |invoice| %>
+          <li class="staff-quote-versions__item">
+            <div class="staff-quote-versions__head">
+              <p class="staff-enquiry-clarification__title">
+                <%= link_to invoice.reference_number, staff_invoice_path(invoice), class: "staff-quote-link" %>
+              </p>
+              <%= ant_status_badge(label: invoice_payment_display_label(invoice), badge_class: invoice_payment_badge_variant(invoice)) %>
+            </div>
+            <p class="staff-enquiry-row__sub">
+              <%= invoice.client_organization.name %> · <%= invoice.display_total %> · <%= invoice.issue_status_label %>
+            </p>
+          </li>
+        <% end %>
+      </ul>
+      <p class="mt-4"><%= link_to "View all invoices", staff_invoices_path, class: "staff-quote-link" %></p>
+    <% else %>
+      <p class="staff-quote-versions__lede mt-3">No invoices yet.</p>
+    <% end %>
+  </div>
+</section>

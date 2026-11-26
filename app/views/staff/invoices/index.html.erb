@@ -1,0 +1,79 @@
+<% content_for :staff_nav, :finance %>
+<%= ant_page_header(
+      title: "Invoices",
+      description: "Simulated bills linked to accepted commercial offers.",
+      secondary_action: { label: "Finance overview", path: staff_finance_path }
+    ) %>
+
+<section class="staff-project-stats mt-5" aria-label="Invoice counts">
+  <% [
+       [ "All", @summary[:all], staff_invoices_path ],
+       [ "Draft", @summary[:draft], staff_invoices_path(issue_status: "draft") ],
+       [ "Issued", @summary[:issued], staff_invoices_path(issue_status: "issued") ],
+       [ "Overdue", @summary[:overdue], staff_invoices_path(payment_status: "overdue") ]
+     ].each do |label, count, path| %>
+    <%= link_to path, class: "staff-enquiry-stat" do %>
+      <span class="staff-enquiry-stat__label"><%= label %></span>
+      <span class="staff-enquiry-stat__value"><%= count %></span>
+    <% end %>
+  <% end %>
+</section>
+
+<%= form_with url: staff_invoices_path, method: :get, class: "ant-filter-toolbar", local: true do %>
+  <div class="ant-filter-toolbar__field ant-filter-toolbar__field--grow">
+    <label class="ant-field__label" for="invoice-q">Search</label>
+    <input id="invoice-q" type="search" name="q" value="<%= params[:q] %>" class="ant-control w-full" placeholder="Reference or client">
+  </div>
+  <%= ant_select_tag "issue_status",
+                     [ %w[Draft draft], %w[Issued issued], %w[Void void] ],
+                     label: "Issue state", selected: params[:issue_status], include_blank: "All", compact: true,
+                     wrapper_class: "ant-filter-toolbar__field" %>
+  <%= ant_select_tag "currency",
+                     Commercial::Money::MINOR_UNITS.keys.map { |c| [ c, c ] },
+                     label: "Currency", selected: params[:currency], include_blank: "All", compact: true,
+                     wrapper_class: "ant-filter-toolbar__field" %>
+  <div class="ant-filter-toolbar__actions">
+    <button type="submit" class="ant-btn-primary ant-btn-primary--compact">Apply</button>
+  </div>
+<% end %>
+
+<% if @invoices.any? %>
+  <div class="staff-enquiry-panel mt-4">
+    <div class="staff-enquiry-table-wrap">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Client</th>
+            <th>Issue</th>
+            <th>Payment</th>
+            <th>Total</th>
+            <th>Outstanding</th>
+            <th><span class="sr-only">Open</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @invoices.each do |invoice| %>
+            <tr>
+              <td>
+                <span class="staff-enquiry-row__ref"><%= invoice.reference_number %></span>
+                <span class="staff-enquiry-row__company"><%= invoice.project.reference_number %></span>
+              </td>
+              <td><%= invoice.client_organization.name %></td>
+              <td><%= ant_status_badge(label: invoice.issue_status_label, badge_class: invoice_issue_badge_variant(invoice)) %></td>
+              <td><%= ant_status_badge(label: invoice_payment_display_label(invoice), badge_class: invoice_payment_badge_variant(invoice)) %></td>
+              <td><%= invoice.display_total %></td>
+              <td><%= invoice.issued? ? invoice.display_outstanding : "—" %></td>
+              <td><%= link_to "Open", staff_invoice_path(invoice), class: "staff-quote-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="staff-enquiry-panel__footer">
+      <%= ant_pagination(@pagination, label: "invoices", path_for: ->(page) { staff_invoices_path(request.query_parameters.merge(page: page)) }) %>
+    </div>
+  </div>
+<% else %>
+  <%= ant_empty_state(title: "No invoices matched", description: "Try a different filter or create a simulated invoice from a project.") %>
+<% end %>

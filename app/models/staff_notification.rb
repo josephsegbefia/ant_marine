@@ -11,6 +11,7 @@ class StaffNotification < ApplicationRecord
     document_released document_release_revoked upload_requested
     inspection_assigned inspection_submitted
     report_review_required report_changes_requested report_approved report_released
+    invoice_issued invoice_released payment_recorded payment_reversed invoice_voided
   ].freeze
 
   belongs_to :organization
@@ -54,7 +55,12 @@ class StaffNotification < ApplicationRecord
       "report_review_required" => "Report review required",
       "report_changes_requested" => "Report changes requested",
       "report_approved" => "Report approved",
-      "report_released" => "Report released to client"
+      "report_released" => "Report released to client",
+      "invoice_issued" => "Invoice issued",
+      "invoice_released" => "Invoice released to client",
+      "payment_recorded" => "Payment recorded",
+      "payment_reversed" => "Payment reversed",
+      "invoice_voided" => "Invoice voided"
     }.fetch(kind)
   end
 
@@ -69,6 +75,7 @@ class StaffNotification < ApplicationRecord
     when "UploadRequest" then UploadRequest.find_by(id: subject_id)
     when "Inspection" then Inspection.find_by(id: subject_id)
     when "Report" then Report.find_by(id: subject_id)
+    when "Invoice" then Invoice.find_by(id: subject_id)
     end
   end
 end

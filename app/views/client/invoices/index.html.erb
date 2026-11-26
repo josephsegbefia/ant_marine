@@ -1,0 +1,58 @@
+<% content_for :client_nav, :billing %>
+<%= ant_page_header(
+      title: "Bills & payments",
+      description: "Invoices shared with your organisation. Online payments are not enabled."
+    ) %>
+
+<div class="staff-quote-notice staff-quote-notice--warn mt-4">
+  <p><strong>Simulated bills.</strong> These records are for authorised testing and are not payable tax invoices.</p>
+</div>
+
+<% if @invoices.any? %>
+  <section class="mt-6 space-y-3 sm:hidden" aria-label="Bills list">
+    <% @invoices.each do |invoice| %>
+      <article class="staff-enquiry-panel p-4">
+        <p class="staff-enquiry-clarification__title">
+          <%= link_to invoice.reference_number, client_invoice_path(invoice), class: "staff-quote-link" %>
+        </p>
+        <p class="staff-enquiry-row__sub mt-1">
+          <%= invoice.project.reference_number %> · <%= invoice.display_total %> · <%= invoice_payment_display_label(invoice) %>
+        </p>
+        <p class="staff-enquiry-row__sub">Due <%= invoice.due_on || "—" %></p>
+      </article>
+    <% end %>
+  </section>
+
+  <section class="staff-enquiry-panel mt-6 hidden sm:block">
+    <div class="staff-enquiry-table-wrap overflow-x-auto">
+      <table class="staff-enquiry-table">
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Project</th>
+            <th>Issued</th>
+            <th>Due</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th><span class="sr-only">Open</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @invoices.each do |invoice| %>
+            <tr>
+              <td><%= link_to invoice.reference_number, client_invoice_path(invoice), class: "staff-quote-link" %></td>
+              <td><%= invoice.project.reference_number %></td>
+              <td><%= invoice.issue_on || "—" %></td>
+              <td><%= invoice.due_on || "—" %></td>
+              <td><%= invoice.display_total %></td>
+              <td><%= invoice_payment_display_label(invoice) %></td>
+              <td><%= link_to "View", client_invoice_path(invoice), class: "staff-quote-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% else %>
+  <%= ant_empty_state(title: "No bills shared yet", description: "When ANT Marine releases an invoice to your organisation, it will appear here.") %>
+<% end %>

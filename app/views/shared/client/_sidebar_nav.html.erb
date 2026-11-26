@@ -51,6 +51,15 @@
     <% end %>
   <% end %>
 
+  <% if client_can_view_billing? %>
+    <%= link_to client_invoices_path,
+          class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:billing)}",
+          data: { action: "click->client-shell#close" } do %>
+      <%= render "shared/staff/nav_icon", name: "file" %>
+      <span>Bills</span>
+    <% end %>
+  <% end %>
+
   <% if client_can_invite? %>
     <%= link_to client_invitations_path,
           class: "client-nav-button#{" client-nav-button--active" if client_nav_active?(:invitations)}",

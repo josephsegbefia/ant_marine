@@ -36,7 +36,12 @@ module Notifications
       "report_review_required" => { category: "reports", channel: "in_app" },
       "report_changes_requested" => { category: "reports", channel: "in_app" },
       "report_approved" => { category: "reports", channel: "in_app" },
-      "report_released" => { category: "reports", channel: "in_app" }
+      "report_released" => { category: "reports", channel: "in_app" },
+      "invoice_issued" => { category: "billing", channel: "in_app" },
+      "invoice_released" => { category: "billing", channel: "in_app" },
+      "payment_recorded" => { category: "billing", channel: "in_app" },
+      "payment_reversed" => { category: "billing", channel: "in_app" },
+      "invoice_voided" => { category: "billing", channel: "in_app" }
     }.freeze
 
     def self.fetch(key)

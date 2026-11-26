@@ -72,6 +72,21 @@ module StaffShellHelper
     staff_can_view_projects? && Current.membership&.staff_domain?
   end
 
+  def staff_can_view_finance?
+    return false unless Current.membership&.staff_domain?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "billing.view_all"
+    ) || Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "billing.view"
+    ) || Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "billing.manage"
+    )
+  end
+
   def staff_can_manage_website?
     return false unless Current.membership&.staff_domain?
 

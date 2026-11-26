@@ -124,6 +124,180 @@ $$;
 
 
 --
+-- Name: ant_marine_invoice_line_item_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_invoice_line_item_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  parent_status text;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    SELECT issue_status INTO parent_status FROM invoices WHERE id = OLD.invoice_id;
+    IF parent_status IS DISTINCT FROM 'draft' THEN
+      PERFORM ant_marine_reject('Invoice line items cannot be removed after issuance.');
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
+    SELECT issue_status INTO parent_status FROM invoices WHERE id = OLD.invoice_id;
+    IF parent_status IS DISTINCT FROM 'draft' THEN
+      PERFORM ant_marine_reject('Invoice line items are immutable after issuance.');
+    END IF;
+  END IF;
+
+  IF TG_OP = 'INSERT' THEN
+    SELECT issue_status INTO parent_status FROM invoices WHERE id = NEW.invoice_id;
+    IF parent_status IS DISTINCT FROM 'draft' THEN
+      PERFORM ant_marine_reject('Invoice line items cannot be added after issuance.');
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_invoice_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_invoice_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    IF OLD.issue_status <> 'draft' THEN
+      PERFORM ant_marine_reject('Issued or void invoices cannot be deleted.');
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  IF TG_OP = 'UPDATE' THEN
+    IF OLD.issue_status IN ('issued', 'void') THEN
+      IF NEW.reference_number IS DISTINCT FROM OLD.reference_number
+         OR NEW.operating_organization_id IS DISTINCT FROM OLD.operating_organization_id
+         OR NEW.client_organization_id IS DISTINCT FROM OLD.client_organization_id
+         OR NEW.project_id IS DISTINCT FROM OLD.project_id
+         OR NEW.quote_id IS DISTINCT FROM OLD.quote_id
+         OR NEW.quote_revision_id IS DISTINCT FROM OLD.quote_revision_id
+         OR NEW.quote_response_id IS DISTINCT FROM OLD.quote_response_id
+         OR NEW.commercial_snapshot IS DISTINCT FROM OLD.commercial_snapshot
+         OR NEW.mode IS DISTINCT FROM OLD.mode
+         OR NEW.currency IS DISTINCT FROM OLD.currency
+         OR NEW.total_cents IS DISTINCT FROM OLD.total_cents
+         OR NEW.description IS DISTINCT FROM OLD.description
+         OR NEW.billing_recipient_snapshot IS DISTINCT FROM OLD.billing_recipient_snapshot
+         OR NEW.issue_on IS DISTINCT FROM OLD.issue_on
+         OR NEW.due_on IS DISTINCT FROM OLD.due_on
+         OR NEW.payment_terms_text IS DISTINCT FROM OLD.payment_terms_text
+         OR NEW.issued_at IS DISTINCT FROM OLD.issued_at
+         OR NEW.issued_by_membership_id IS DISTINCT FROM OLD.issued_by_membership_id
+         OR NEW.storage_asset_id IS DISTINCT FROM OLD.storage_asset_id
+         OR NEW.artifact_checksum_sha256 IS DISTINCT FROM OLD.artifact_checksum_sha256
+         OR NEW.created_by_membership_id IS DISTINCT FROM OLD.created_by_membership_id THEN
+        PERFORM ant_marine_reject('Issued invoice financial identity fields are immutable.');
+      END IF;
+    END IF;
+
+    IF OLD.issue_status = 'void' THEN
+      IF NEW.voided_at IS DISTINCT FROM OLD.voided_at
+         OR NEW.voided_by_membership_id IS DISTINCT FROM OLD.voided_by_membership_id
+         OR NEW.void_reason IS DISTINCT FROM OLD.void_reason
+         OR NEW.issue_status IS DISTINCT FROM OLD.issue_status THEN
+        PERFORM ant_marine_reject('Void invoice records cannot be changed.');
+      END IF;
+    END IF;
+
+    IF OLD.issue_status = 'issued' AND NEW.issue_status NOT IN ('issued', 'void') THEN
+      PERFORM ant_marine_reject('Issued invoices can only move to void.');
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_invoice_release_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_invoice_release_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Invoice releases cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.invoice_id IS DISTINCT FROM OLD.invoice_id
+       OR NEW.client_organization_id IS DISTINCT FROM OLD.client_organization_id
+       OR NEW.released_by_membership_id IS DISTINCT FROM OLD.released_by_membership_id
+       OR NEW.released_at IS DISTINCT FROM OLD.released_at
+       OR NEW.storage_asset_id IS DISTINCT FROM OLD.storage_asset_id
+       OR NEW.artifact_checksum_sha256 IS DISTINCT FROM OLD.artifact_checksum_sha256 THEN
+      PERFORM ant_marine_reject('Invoice release identity fields are immutable.');
+    END IF;
+    IF OLD.revoked_at IS NOT NULL
+       AND (NEW.revoked_at IS DISTINCT FROM OLD.revoked_at
+            OR NEW.revocation_reason IS DISTINCT FROM OLD.revocation_reason
+            OR NEW.revoked_by_membership_id IS DISTINCT FROM OLD.revoked_by_membership_id) THEN
+      PERFORM ant_marine_reject('Invoice release revocation cannot be changed after set.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_payment_record_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_payment_record_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Payment records cannot be deleted. Record a reversal instead.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.invoice_id IS DISTINCT FROM OLD.invoice_id
+       OR NEW.amount_cents IS DISTINCT FROM OLD.amount_cents
+       OR NEW.currency IS DISTINCT FROM OLD.currency
+       OR NEW.payment_on IS DISTINCT FROM OLD.payment_on
+       OR NEW.payment_method IS DISTINCT FROM OLD.payment_method
+       OR NEW.external_reference IS DISTINCT FROM OLD.external_reference
+       OR NEW.recorded_by_membership_id IS DISTINCT FROM OLD.recorded_by_membership_id
+       OR NEW.recorded_at IS DISTINCT FROM OLD.recorded_at THEN
+      PERFORM ant_marine_reject('Payment record financial fields are immutable.');
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: ant_marine_payment_reversal_protect(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ant_marine_payment_reversal_protect() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    PERFORM ant_marine_reject('Payment reversals cannot be deleted.');
+  ELSIF TG_OP = 'UPDATE' THEN
+    PERFORM ant_marine_reject('Payment reversals cannot be changed.');
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: ant_marine_project_commercial_protect(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1248,6 +1422,146 @@ ALTER SEQUENCE public.invitations_id_seq OWNED BY public.invitations.id;
 
 
 --
+-- Name: invoice_line_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.invoice_line_items (
+    id bigint NOT NULL,
+    invoice_id bigint NOT NULL,
+    description text NOT NULL,
+    quantity numeric(12,3) DEFAULT 1.0 NOT NULL,
+    unit character varying DEFAULT 'Lot'::character varying NOT NULL,
+    unit_amount_cents bigint NOT NULL,
+    line_total_cents bigint NOT NULL,
+    "position" integer DEFAULT 1 NOT NULL,
+    quote_line_item_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT invoice_line_items_line_total_check CHECK ((line_total_cents >= 0)),
+    CONSTRAINT invoice_line_items_quantity_check CHECK ((quantity > (0)::numeric)),
+    CONSTRAINT invoice_line_items_unit_amount_check CHECK ((unit_amount_cents >= 0))
+);
+
+
+--
+-- Name: invoice_line_items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.invoice_line_items_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: invoice_line_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.invoice_line_items_id_seq OWNED BY public.invoice_line_items.id;
+
+
+--
+-- Name: invoice_releases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.invoice_releases (
+    id bigint NOT NULL,
+    invoice_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    released_by_membership_id bigint NOT NULL,
+    released_at timestamp(6) without time zone NOT NULL,
+    storage_asset_id bigint NOT NULL,
+    artifact_checksum_sha256 character varying NOT NULL,
+    revoked_at timestamp(6) without time zone,
+    revoked_by_membership_id bigint,
+    revocation_reason text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: invoice_releases_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.invoice_releases_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: invoice_releases_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.invoice_releases_id_seq OWNED BY public.invoice_releases.id;
+
+
+--
+-- Name: invoices; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.invoices (
+    id bigint NOT NULL,
+    reference_number character varying NOT NULL,
+    operating_organization_id bigint NOT NULL,
+    client_organization_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    quote_id bigint NOT NULL,
+    quote_revision_id bigint NOT NULL,
+    quote_response_id bigint NOT NULL,
+    commercial_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    mode character varying DEFAULT 'simulated'::character varying NOT NULL,
+    issue_status character varying DEFAULT 'draft'::character varying NOT NULL,
+    currency character varying NOT NULL,
+    total_cents bigint DEFAULT 0 NOT NULL,
+    description text,
+    billing_recipient_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    issue_on date,
+    due_on date,
+    payment_terms_text text,
+    issued_at timestamp(6) without time zone,
+    issued_by_membership_id bigint,
+    voided_at timestamp(6) without time zone,
+    voided_by_membership_id bigint,
+    void_reason text,
+    storage_asset_id bigint,
+    artifact_checksum_sha256 character varying,
+    created_by_membership_id bigint NOT NULL,
+    lock_version integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT invoices_currency_check CHECK (((currency)::text = ANY ((ARRAY['GHS'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying])::text[]))),
+    CONSTRAINT invoices_issue_status_check CHECK (((issue_status)::text = ANY ((ARRAY['draft'::character varying, 'issued'::character varying, 'void'::character varying])::text[]))),
+    CONSTRAINT invoices_mode_check CHECK (((mode)::text = 'simulated'::text)),
+    CONSTRAINT invoices_total_cents_check CHECK ((total_cents >= 0))
+);
+
+
+--
+-- Name: invoices_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.invoices_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: invoices_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.invoices_id_seq OWNED BY public.invoices.id;
+
+
+--
 -- Name: memberships; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1324,6 +1638,83 @@ CREATE SEQUENCE public.organizations_id_seq
 --
 
 ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
+
+
+--
+-- Name: payment_records; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payment_records (
+    id bigint NOT NULL,
+    invoice_id bigint NOT NULL,
+    amount_cents bigint NOT NULL,
+    currency character varying NOT NULL,
+    payment_on date NOT NULL,
+    payment_method character varying NOT NULL,
+    external_reference character varying,
+    internal_note text,
+    recorded_by_membership_id bigint NOT NULL,
+    recorded_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT payment_records_amount_check CHECK ((amount_cents > 0)),
+    CONSTRAINT payment_records_currency_check CHECK (((currency)::text = ANY ((ARRAY['GHS'::character varying, 'USD'::character varying, 'EUR'::character varying, 'GBP'::character varying])::text[])))
+);
+
+
+--
+-- Name: payment_records_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.payment_records_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: payment_records_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.payment_records_id_seq OWNED BY public.payment_records.id;
+
+
+--
+-- Name: payment_reversals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.payment_reversals (
+    id bigint NOT NULL,
+    payment_record_id bigint NOT NULL,
+    amount_cents bigint NOT NULL,
+    reason text NOT NULL,
+    recorded_by_membership_id bigint NOT NULL,
+    recorded_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT payment_reversals_amount_check CHECK ((amount_cents > 0))
+);
+
+
+--
+-- Name: payment_reversals_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.payment_reversals_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: payment_reversals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.payment_reversals_id_seq OWNED BY public.payment_reversals.id;
 
 
 --
@@ -2526,7 +2917,7 @@ CREATE TABLE public.staff_notifications (
     dedupe_key character varying NOT NULL,
     read_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying, 'document_uploaded'::character varying, 'document_review_required'::character varying, 'document_changes_requested'::character varying, 'document_approved'::character varying, 'document_released'::character varying, 'document_release_revoked'::character varying, 'upload_requested'::character varying, 'inspection_assigned'::character varying, 'inspection_submitted'::character varying, 'report_review_required'::character varying, 'report_changes_requested'::character varying, 'report_approved'::character varying, 'report_released'::character varying])::text[]))),
+    CONSTRAINT staff_notifications_kind_check CHECK (((kind)::text = ANY ((ARRAY['new_enquiry'::character varying, 'enquiry_assigned'::character varying, 'enquiry_reassigned_away'::character varying, 'clarification_answered'::character varying, 'quote_accepted'::character varying, 'quote_declined'::character varying, 'quote_changes_requested'::character varying, 'project_created'::character varying, 'project_assigned'::character varying, 'project_assignment_changed'::character varying, 'task_assigned'::character varying, 'schedule_confirmed'::character varying, 'schedule_cancelled'::character varying, 'project_update'::character varying, 'document_uploaded'::character varying, 'document_review_required'::character varying, 'document_changes_requested'::character varying, 'document_approved'::character varying, 'document_released'::character varying, 'document_release_revoked'::character varying, 'upload_requested'::character varying, 'inspection_assigned'::character varying, 'inspection_submitted'::character varying, 'report_review_required'::character varying, 'report_changes_requested'::character varying, 'report_approved'::character varying, 'report_released'::character varying, 'invoice_issued'::character varying, 'invoice_released'::character varying, 'payment_recorded'::character varying, 'payment_reversed'::character varying, 'invoice_voided'::character varying])::text[]))),
     CONSTRAINT staff_notifications_title_length CHECK ((char_length((title)::text) <= 200))
 );
 
@@ -2927,6 +3318,27 @@ ALTER TABLE ONLY public.invitations ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: invoice_line_items id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_line_items ALTER COLUMN id SET DEFAULT nextval('public.invoice_line_items_id_seq'::regclass);
+
+
+--
+-- Name: invoice_releases id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases ALTER COLUMN id SET DEFAULT nextval('public.invoice_releases_id_seq'::regclass);
+
+
+--
+-- Name: invoices id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices ALTER COLUMN id SET DEFAULT nextval('public.invoices_id_seq'::regclass);
+
+
+--
 -- Name: memberships id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2938,6 +3350,20 @@ ALTER TABLE ONLY public.memberships ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.organizations ALTER COLUMN id SET DEFAULT nextval('public.organizations_id_seq'::regclass);
+
+
+--
+-- Name: payment_records id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_records ALTER COLUMN id SET DEFAULT nextval('public.payment_records_id_seq'::regclass);
+
+
+--
+-- Name: payment_reversals id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_reversals ALTER COLUMN id SET DEFAULT nextval('public.payment_reversals_id_seq'::regclass);
 
 
 --
@@ -3341,6 +3767,30 @@ ALTER TABLE ONLY public.invitations
 
 
 --
+-- Name: invoice_line_items invoice_line_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_line_items
+    ADD CONSTRAINT invoice_line_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: invoice_releases invoice_releases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT invoice_releases_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: invoices invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT invoices_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: memberships memberships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3354,6 +3804,22 @@ ALTER TABLE ONLY public.memberships
 
 ALTER TABLE ONLY public.organizations
     ADD CONSTRAINT organizations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payment_records payment_records_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_records
+    ADD CONSTRAINT payment_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payment_reversals payment_reversals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_reversals
+    ADD CONSTRAINT payment_reversals_pkey PRIMARY KEY (id);
 
 
 --
@@ -4314,6 +4780,167 @@ CREATE UNIQUE INDEX index_invitations_unique_pending_token_digest ON public.invi
 
 
 --
+-- Name: index_invoice_line_items_on_invoice_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_line_items_on_invoice_id ON public.invoice_line_items USING btree (invoice_id);
+
+
+--
+-- Name: index_invoice_line_items_on_invoice_id_and_position; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_line_items_on_invoice_id_and_position ON public.invoice_line_items USING btree (invoice_id, "position");
+
+
+--
+-- Name: index_invoice_line_items_on_quote_line_item_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_line_items_on_quote_line_item_id ON public.invoice_line_items USING btree (quote_line_item_id);
+
+
+--
+-- Name: index_invoice_releases_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_client_organization_id ON public.invoice_releases USING btree (client_organization_id);
+
+
+--
+-- Name: index_invoice_releases_on_invoice_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_invoice_id ON public.invoice_releases USING btree (invoice_id);
+
+
+--
+-- Name: index_invoice_releases_on_invoice_id_and_revoked_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_invoice_id_and_revoked_at ON public.invoice_releases USING btree (invoice_id, revoked_at);
+
+
+--
+-- Name: index_invoice_releases_on_released_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_released_by_membership_id ON public.invoice_releases USING btree (released_by_membership_id);
+
+
+--
+-- Name: index_invoice_releases_on_revoked_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_revoked_by_membership_id ON public.invoice_releases USING btree (revoked_by_membership_id);
+
+
+--
+-- Name: index_invoice_releases_on_storage_asset_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoice_releases_on_storage_asset_id ON public.invoice_releases USING btree (storage_asset_id);
+
+
+--
+-- Name: index_invoices_on_client_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_client_organization_id ON public.invoices USING btree (client_organization_id);
+
+
+--
+-- Name: index_invoices_on_client_organization_id_and_issue_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_client_organization_id_and_issue_status ON public.invoices USING btree (client_organization_id, issue_status);
+
+
+--
+-- Name: index_invoices_on_created_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_created_by_membership_id ON public.invoices USING btree (created_by_membership_id);
+
+
+--
+-- Name: index_invoices_on_due_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_due_on ON public.invoices USING btree (due_on);
+
+
+--
+-- Name: index_invoices_on_issued_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_issued_by_membership_id ON public.invoices USING btree (issued_by_membership_id);
+
+
+--
+-- Name: index_invoices_on_operating_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_operating_organization_id ON public.invoices USING btree (operating_organization_id);
+
+
+--
+-- Name: index_invoices_on_project_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_project_id ON public.invoices USING btree (project_id);
+
+
+--
+-- Name: index_invoices_on_project_id_and_issue_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_project_id_and_issue_status ON public.invoices USING btree (project_id, issue_status);
+
+
+--
+-- Name: index_invoices_on_quote_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_quote_id ON public.invoices USING btree (quote_id);
+
+
+--
+-- Name: index_invoices_on_quote_response_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_quote_response_id ON public.invoices USING btree (quote_response_id);
+
+
+--
+-- Name: index_invoices_on_quote_revision_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_quote_revision_id ON public.invoices USING btree (quote_revision_id);
+
+
+--
+-- Name: index_invoices_on_reference_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_invoices_on_reference_number ON public.invoices USING btree (reference_number);
+
+
+--
+-- Name: index_invoices_on_storage_asset_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_storage_asset_id ON public.invoices USING btree (storage_asset_id);
+
+
+--
+-- Name: index_invoices_on_voided_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_invoices_on_voided_by_membership_id ON public.invoices USING btree (voided_by_membership_id);
+
+
+--
 -- Name: index_memberships_on_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4374,6 +5001,34 @@ CREATE UNIQUE INDEX index_organizations_on_slug ON public.organizations USING bt
 --
 
 CREATE UNIQUE INDEX index_organizations_unique_active_ant_marine ON public.organizations USING btree (kind) WHERE (((kind)::text = 'ant_marine'::text) AND (archived_at IS NULL));
+
+
+--
+-- Name: index_payment_records_on_invoice_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payment_records_on_invoice_id ON public.payment_records USING btree (invoice_id);
+
+
+--
+-- Name: index_payment_records_on_recorded_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payment_records_on_recorded_by_membership_id ON public.payment_records USING btree (recorded_by_membership_id);
+
+
+--
+-- Name: index_payment_reversals_on_payment_record_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_payment_reversals_on_payment_record_id ON public.payment_reversals USING btree (payment_record_id);
+
+
+--
+-- Name: index_payment_reversals_on_recorded_by_membership_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_payment_reversals_on_recorded_by_membership_id ON public.payment_reversals USING btree (recorded_by_membership_id);
 
 
 --
@@ -5567,6 +6222,41 @@ CREATE TRIGGER inspection_template_versions_protect BEFORE DELETE OR UPDATE ON p
 
 
 --
+-- Name: invoice_line_items invoice_line_items_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER invoice_line_items_protect BEFORE INSERT OR DELETE OR UPDATE ON public.invoice_line_items FOR EACH ROW EXECUTE FUNCTION public.ant_marine_invoice_line_item_protect();
+
+
+--
+-- Name: invoice_releases invoice_releases_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER invoice_releases_protect BEFORE DELETE OR UPDATE ON public.invoice_releases FOR EACH ROW EXECUTE FUNCTION public.ant_marine_invoice_release_protect();
+
+
+--
+-- Name: invoices invoices_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER invoices_protect BEFORE DELETE OR UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION public.ant_marine_invoice_protect();
+
+
+--
+-- Name: payment_records payment_records_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER payment_records_protect BEFORE DELETE OR UPDATE ON public.payment_records FOR EACH ROW EXECUTE FUNCTION public.ant_marine_payment_record_protect();
+
+
+--
+-- Name: payment_reversals payment_reversals_protect; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER payment_reversals_protect BEFORE DELETE OR UPDATE ON public.payment_reversals FOR EACH ROW EXECUTE FUNCTION public.ant_marine_payment_reversal_protect();
+
+
+--
 -- Name: projects projects_commercial_protect; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -5704,11 +6394,27 @@ ALTER TABLE ONLY public.inspections
 
 
 --
+-- Name: invoices fk_rails_06de90072c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_06de90072c FOREIGN KEY (storage_asset_id) REFERENCES public.storage_assets(id);
+
+
+--
 -- Name: projects fk_rails_07fdbba781; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.projects
     ADD CONSTRAINT fk_rails_07fdbba781 FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
+
+
+--
+-- Name: invoices fk_rails_08adbef03a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_08adbef03a FOREIGN KEY (quote_response_id) REFERENCES public.quote_responses(id);
 
 
 --
@@ -5752,6 +6458,14 @@ ALTER TABLE ONLY public.report_releases
 
 
 --
+-- Name: payment_reversals fk_rails_0de1e19ab9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_reversals
+    ADD CONSTRAINT fk_rails_0de1e19ab9 FOREIGN KEY (payment_record_id) REFERENCES public.payment_records(id);
+
+
+--
 -- Name: case_studies fk_rails_0f287bf63b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5773,6 +6487,14 @@ ALTER TABLE ONLY public.invitations
 
 ALTER TABLE ONLY public.service_inquiry_assignments
     ADD CONSTRAINT fk_rails_1093d24fb0 FOREIGN KEY (service_inquiry_id) REFERENCES public.service_inquiries(id);
+
+
+--
+-- Name: payment_records fk_rails_128884fba0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_records
+    ADD CONSTRAINT fk_rails_128884fba0 FOREIGN KEY (recorded_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -6032,6 +6754,14 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
+-- Name: invoice_line_items fk_rails_44d85992cd; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_line_items
+    ADD CONSTRAINT fk_rails_44d85992cd FOREIGN KEY (quote_line_item_id) REFERENCES public.quote_line_items(id);
+
+
+--
 -- Name: quote_responses fk_rails_4501651c40; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6104,11 +6834,27 @@ ALTER TABLE ONLY public.assignments
 
 
 --
+-- Name: payment_reversals fk_rails_4e3ed229d4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_reversals
+    ADD CONSTRAINT fk_rails_4e3ed229d4 FOREIGN KEY (recorded_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: project_updates fk_rails_4f9b2ad919; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.project_updates
     ADD CONSTRAINT fk_rails_4f9b2ad919 FOREIGN KEY (project_id) REFERENCES public.projects(id);
+
+
+--
+-- Name: invoices fk_rails_50dd6c4fff; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_50dd6c4fff FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
 
 
 --
@@ -6256,6 +7002,14 @@ ALTER TABLE ONLY public.quote_portal_releases
 
 
 --
+-- Name: invoices fk_rails_62d032a81e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_62d032a81e FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: reports fk_rails_62d58a0388; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6320,11 +7074,27 @@ ALTER TABLE ONLY public.inspections
 
 
 --
+-- Name: invoices fk_rails_69fb18948b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_69fb18948b FOREIGN KEY (issued_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: service_inquiry_clarifications fk_rails_6b2318db12; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.service_inquiry_clarifications
     ADD CONSTRAINT fk_rails_6b2318db12 FOREIGN KEY (created_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: invoices fk_rails_6c1bd012e9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_6c1bd012e9 FOREIGN KEY (quote_revision_id) REFERENCES public.quote_revisions(id);
 
 
 --
@@ -6349,6 +7119,14 @@ ALTER TABLE ONLY public.quote_deliveries
 
 ALTER TABLE ONLY public.documents
     ADD CONSTRAINT fk_rails_703386e8df FOREIGN KEY (current_version_id) REFERENCES public.document_versions(id);
+
+
+--
+-- Name: invoices fk_rails_743ae81f00; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_743ae81f00 FOREIGN KEY (operating_organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -6448,6 +7226,14 @@ ALTER TABLE ONLY public.document_access_grants
 
 
 --
+-- Name: invoice_line_items fk_rails_80427eb9d3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_line_items
+    ADD CONSTRAINT fk_rails_80427eb9d3 FOREIGN KEY (invoice_id) REFERENCES public.invoices(id);
+
+
+--
 -- Name: inspection_evidence_links fk_rails_80615e21e0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6501,6 +7287,14 @@ ALTER TABLE ONLY public.projects
 
 ALTER TABLE ONLY public.project_milestones
     ADD CONSTRAINT fk_rails_843f80230e FOREIGN KEY (responsible_membership_id) REFERENCES public.memberships(id);
+
+
+--
+-- Name: invoices fk_rails_8442c0a799; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_8442c0a799 FOREIGN KEY (project_id) REFERENCES public.projects(id);
 
 
 --
@@ -6616,6 +7410,14 @@ ALTER TABLE ONLY public.inspection_checklist_responses
 
 
 --
+-- Name: invoice_releases fk_rails_9dc3f69153; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT fk_rails_9dc3f69153 FOREIGN KEY (invoice_id) REFERENCES public.invoices(id);
+
+
+--
 -- Name: tasks fk_rails_9f28c828eb; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6677,6 +7479,22 @@ ALTER TABLE ONLY public.public_resources
 
 ALTER TABLE ONLY public.assignments
     ADD CONSTRAINT fk_rails_aa6b76dac2 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: invoice_releases fk_rails_acc08fdddd; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT fk_rails_acc08fdddd FOREIGN KEY (storage_asset_id) REFERENCES public.storage_assets(id);
+
+
+--
+-- Name: invoice_releases fk_rails_ade2bb528f; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT fk_rails_ade2bb528f FOREIGN KEY (released_by_membership_id) REFERENCES public.memberships(id);
 
 
 --
@@ -6789,6 +7607,14 @@ ALTER TABLE ONLY public.public_site_pages
 
 ALTER TABLE ONLY public.quote_responses
     ADD CONSTRAINT fk_rails_c2902b3570 FOREIGN KEY (quote_id) REFERENCES public.quotes(id);
+
+
+--
+-- Name: invoices fk_rails_c369402ca3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_c369402ca3 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -6944,6 +7770,14 @@ ALTER TABLE ONLY public.service_inquiry_clarifications
 
 
 --
+-- Name: invoice_releases fk_rails_e32e301758; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT fk_rails_e32e301758 FOREIGN KEY (revoked_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: upload_requests fk_rails_e5a86e017b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7008,6 +7842,22 @@ ALTER TABLE ONLY public.service_inquiry_notes
 
 
 --
+-- Name: invoice_releases fk_rails_ee064e96b0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoice_releases
+    ADD CONSTRAINT fk_rails_ee064e96b0 FOREIGN KEY (client_organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: invoices fk_rails_eeffd1700a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.invoices
+    ADD CONSTRAINT fk_rails_eeffd1700a FOREIGN KEY (voided_by_membership_id) REFERENCES public.memberships(id);
+
+
+--
 -- Name: quotes fk_rails_f1bc6f676f; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7064,6 +7914,14 @@ ALTER TABLE ONLY public.projects
 
 
 --
+-- Name: payment_records fk_rails_fac1a74bc2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.payment_records
+    ADD CONSTRAINT fk_rails_fac1a74bc2 FOREIGN KEY (invoice_id) REFERENCES public.invoices(id);
+
+
+--
 -- Name: storage_assets fk_rails_fc20c8e060; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -7110,6 +7968,8 @@ ALTER TABLE ONLY public.quote_portal_releases
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126221000'),
+('20261126220000'),
 ('20261126210000'),
 ('20261126200000'),
 ('20261126195000'),

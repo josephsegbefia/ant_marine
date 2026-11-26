@@ -325,6 +325,66 @@ module Notifications
       )
     end
 
+    def invoice_issued(invoice:, audit_event:, actor:)
+      recipients = finance_staff(invoice.operating_organization).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "invoice_issued",
+        organization: invoice.operating_organization,
+        subject: invoice,
+        audit_event: audit_event,
+        title: "Simulated invoice issued: #{invoice.reference_number}"
+      )
+    end
+
+    def invoice_released(invoice:, audit_event:, actor:)
+      recipients = finance_staff(invoice.operating_organization).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "invoice_released",
+        organization: invoice.operating_organization,
+        subject: invoice,
+        audit_event: audit_event,
+        title: "Simulated invoice shared with client: #{invoice.reference_number}"
+      )
+    end
+
+    def payment_recorded(invoice:, audit_event:, actor:)
+      recipients = finance_staff(invoice.operating_organization).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "payment_recorded",
+        organization: invoice.operating_organization,
+        subject: invoice,
+        audit_event: audit_event,
+        title: "Payment recorded on #{invoice.reference_number}"
+      )
+    end
+
+    def payment_reversed(invoice:, audit_event:, actor:)
+      recipients = finance_staff(invoice.operating_organization).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "payment_reversed",
+        organization: invoice.operating_organization,
+        subject: invoice,
+        audit_event: audit_event,
+        title: "Payment reversed on #{invoice.reference_number}"
+      )
+    end
+
+    def invoice_voided(invoice:, audit_event:, actor:)
+      recipients = finance_staff(invoice.operating_organization).reject { |m| m.id == actor.id }
+      publish_subject(
+        recipients,
+        kind: "invoice_voided",
+        organization: invoice.operating_organization,
+        subject: invoice,
+        audit_event: audit_event,
+        title: "Simulated invoice voided: #{invoice.reference_number}"
+      )
+    end
+
     def upload_requested(upload_request:, audit_event:, actor:)
       project = upload_request.project
       recipients = delivery_staff(project).reject { |m| m.id == actor.id }
@@ -355,6 +415,10 @@ module Notifications
         perms = Authorization::EffectivePermissions.new(membership)
         keys.any? { |key| perms.allowed?(key) }
       end
+    end
+
+    def finance_staff(organization)
+      staff_with_permissions(organization, "billing.view_all", "billing.manage", "billing.record_payment", "billing.adjust")
     end
 
     def publish_subject(recipients, kind:, organization:, subject:, audit_event:, title:)

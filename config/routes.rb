@@ -164,6 +164,25 @@ Rails.application.routes.draw do
         end
       end
     end
+    resource :finance, only: %i[show], controller: "finance"
+    resources :invoices, only: %i[index show new create edit update] do
+      member do
+        post :issue
+        post :release
+        post :void
+        get :download
+      end
+      resources :payments, only: %i[create], controller: "invoice_payments" do
+        member do
+          post :reverse
+        end
+      end
+      resources :releases, only: [], controller: "invoice_releases" do
+        member do
+          post :revoke
+        end
+      end
+    end
     resources :tasks, only: %i[index], controller: "tasks"
     resources :schedule_events, only: %i[index], controller: "schedule_events"
     namespace :website do
@@ -226,6 +245,11 @@ Rails.application.routes.draw do
     end
     resources :documents, only: %i[index], controller: "documents"
     resources :reports, only: %i[index show] do
+      member do
+        get :download
+      end
+    end
+    resources :invoices, only: %i[index show], controller: "invoices" do
       member do
         get :download
       end

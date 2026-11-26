@@ -82,7 +82,13 @@ Only mark a decision `APPROVED` when the user or authorized stakeholder clearly 
 | ADR-F4-07-004 | Approval ≠ release | Approve freezes PDF via trusted `application_generated` artifact path; client visibility requires explicit `ReportRelease` | **Implemented** 2026-11-26 | F4-07 |
 | ADR-F4-07-005 | Report revision | Corrections / post-approval edits create a new draft `ReportVersion`; prior approved/released content unchanged | **Implemented** 2026-11-26 | F4-07 |
 | ADR-F4-07-006 | Simulation boundary | Inspections/reports `mode: simulated` only; production create/release paths refuse; PDF watermark required | **Implemented** 2026-11-26 | F4-07 |
-| ADR-F4-07-007 | Billing handoff | No invoice from inspection/report events; F4-08 owns commercial billing | **Deferred** 2026-11-26 | F4-08 |
+| ADR-F4-07-007 | Billing handoff | No invoice from inspection/report events; F4-08 owns commercial billing | **Implemented in F4-08** 2026-11-26 | F4-08 |
+| ADR-F4-08-001 | Simulated billing only | Invoices/payments `mode: simulated`; production create/issue/release/pay/reverse/void refuse | **Implemented** 2026-11-26 | F4-08 |
+| ADR-F4-08-002 | Commercial source freeze | Invoice binds accepted QuoteRevision/Response + project commercial_snapshot; snapshots not mutated | **Implemented** 2026-11-26 | F4-08 |
+| ADR-F4-08-003 | Issue ≠ release ≠ payment | Explicit issue, separate client release, derived payment/overdue status | **Implemented** 2026-11-26 | F4-08 |
+| ADR-F4-08-004 | Capacity locking | Multiple invoices OK; issued totals cannot exceed accepted amount; concurrent-safe locks | **Implemented** 2026-11-26 | F4-08 |
+| ADR-F4-08-005 | Manual payments | ADR-008; append-only PaymentRecord + PaymentReversal; no overpayment; no gateway | **Implemented** 2026-11-26 | F4-08 |
+| ADR-F4-08-006 | Tax/terms policy | No invented tax rates/deposits/banking details; genuine issuance blocked until approved | **Accepted limitation** 2026-11-26 | F4-08 |
 | ADR-F4-07-008 | Client report notifications | Client discover released reports via portal library; no new client notification channel in F4-07 | **Accepted limitation** 2026-11-26 | F4-07 |
 | ADR-F4-07-H1-001 | Session rate limit in tests | Session create rate limit skipped in `Rails.env.test?`; isolated MemoryStore retained for non-test | **Implemented** 2026-11-26 | F4-07-H1 |
 | ADR-F4-07-H1-002 | Trusted artifact flag | `mark_available!(trusted_application_generated: true)` required for `application_generated` provenance; only `Reports::ArtifactStore` | **Implemented** 2026-11-26 | F4-07-H1 |

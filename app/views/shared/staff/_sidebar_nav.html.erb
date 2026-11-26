@@ -80,6 +80,14 @@
     <% end %>
   <% end %>
 
+  <% if staff_can_view_finance? %>
+    <%= link_to staff_finance_path,
+          class: "staff-nav-button#{" staff-nav-button--active" if staff_nav_active?(:finance)}" do %>
+      <%= render "shared/staff/nav_icon", name: "file" %>
+      <span>Bills</span>
+    <% end %>
+  <% end %>
+
   <p class="staff-side-label staff-side-label--spaced">ADMINISTRATION</p>
   <% if staff_can_manage_website? %>
     <%= link_to staff_website_services_path,

@@ -46,6 +46,7 @@ class Project < ApplicationRecord
   has_many :upload_requests, dependent: :restrict_with_exception
   has_many :inspections, dependent: :restrict_with_exception
   has_many :reports, dependent: :restrict_with_exception
+  has_many :invoices, dependent: :restrict_with_exception
 
   validates :reference_number, presence: true, uniqueness: true
   validates :title, presence: true, length: { maximum: 200 }

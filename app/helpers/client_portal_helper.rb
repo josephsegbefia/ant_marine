@@ -37,6 +37,16 @@ module ClientPortalHelper
       )
   end
 
+  def client_can_view_billing?
+    return false unless Current.membership&.client_domain?
+    return false if Rails.env.production?
+
+    Authorization::EffectivePermissions.allowed?(
+      membership: Current.membership,
+      permission_key: "billing.view"
+    )
+  end
+
   def client_can_view_projects?
     return false unless Current.membership&.client_domain?
     return false if Rails.env.production? # simulated projects only until live policy

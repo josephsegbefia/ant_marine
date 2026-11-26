@@ -1,0 +1,53 @@
+<% content_for :staff_nav, :finance %>
+<%= ant_page_header(
+      title: "Edit draft invoice",
+      description: @invoice.reference_number,
+      secondary_action: { label: "Back to invoice", path: staff_invoice_path(@invoice) }
+    ) %>
+
+<%= form_with url: staff_invoice_path(@invoice), method: :patch, local: true, class: "mt-6 space-y-4" do %>
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Billing details", heading_id: "invoice-edit-billing", icon: "file" %>
+    <div class="staff-quote-side-panel__body space-y-3">
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="invoice_description">Description</label>
+        <input id="invoice_description" name="invoice[description]" class="ant-control w-full" value="<%= @invoice.description %>">
+      </div>
+      <%= ant_date_field "invoice[issue_on]", label: "Proposed issue date", value: @invoice.issue_on, required: true %>
+      <%= ant_date_field "invoice[due_on]", label: "Due date", value: @invoice.due_on, required: true %>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="invoice_payment_terms_text">Payment terms note</label>
+        <textarea id="invoice_payment_terms_text" name="invoice[payment_terms_text]" class="ant-control w-full" rows="3"><%= @invoice.payment_terms_text %></textarea>
+      </div>
+    </div>
+  </section>
+
+  <% line = @invoice.invoice_line_items.first %>
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Invoice item", heading_id: "invoice-edit-line", icon: "layers" %>
+    <div class="staff-quote-side-panel__body space-y-3">
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="line_description">Description</label>
+        <input id="line_description" name="invoice[lines][][description]" class="ant-control w-full" required value="<%= line&.description %>">
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_quantity">Quantity</label>
+          <input id="line_quantity" name="invoice[lines][][quantity]" class="ant-control w-full" value="<%= line&.quantity || 1 %>" required>
+        </div>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_unit">Unit</label>
+          <input id="line_unit" name="invoice[lines][][unit]" class="ant-control w-full" value="<%= line&.unit || 'Lot' %>" required>
+        </div>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_amount">Unit amount (<%= @invoice.currency %>)</label>
+          <input id="line_amount" name="invoice[lines][][unit_amount]" class="ant-control w-full" required
+                 value="<%= line ? Commercial::Money.to_input(line.unit_amount_cents, @invoice.currency) : '' %>">
+        </div>
+      </div>
+      <p class="staff-quote-summary__hint">Remaining billable including other drafts: <%= Commercial::Money.display(@remaining, @invoice.currency) %>.</p>
+    </div>
+  </section>
+
+  <button type="submit" class="ant-btn-primary">Save draft</button>
+<% end %>

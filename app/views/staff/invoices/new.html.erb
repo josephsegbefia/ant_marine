@@ -1,0 +1,74 @@
+<% content_for :staff_nav, :finance %>
+<%= ant_page_header(
+      title: "Create invoice",
+      description: "Link a simulated invoice to the accepted commercial source for #{@project.reference_number}.",
+      secondary_action: { label: "Back to project", path: staff_project_path(@project) }
+    ) %>
+
+<div class="staff-quote-notice staff-quote-notice--warn mt-4">
+  <p><strong>Simulated draft only.</strong> Issuing stays separate and remains non-payable.</p>
+</div>
+
+<section class="staff-quote-side-panel mt-6">
+  <%= render "shared/ui/side_panel_head", title: "Commercial source", heading_id: "invoice-source", icon: "brief" %>
+  <div class="staff-quote-side-panel__body">
+    <dl class="staff-enquiry-facts">
+      <div><dt>Client</dt><dd><%= @project.client_organization.name %></dd></div>
+      <div><dt>Project</dt><dd><%= @project.reference_number %></dd></div>
+      <div><dt>Quotation</dt><dd><%= @project.quote.reference_number %> · Version <%= @project.quote_revision.version_number %></dd></div>
+      <div><dt>Accepted amount</dt><dd><%= Commercial::Money.display(@accepted, @project.commercial_snapshot["currency"]) %></dd></div>
+      <div><dt>Remaining (incl. drafts)</dt><dd><%= Commercial::Money.display(@remaining, @project.commercial_snapshot["currency"]) %></dd></div>
+      <div><dt>Currency</dt><dd><%= @project.commercial_snapshot["currency"] %></dd></div>
+    </dl>
+  </div>
+</section>
+
+<%= form_with url: staff_invoices_path, method: :post, local: true, class: "mt-6 space-y-4" do %>
+  <%= hidden_field_tag :project_id, @project.id %>
+  <%= hidden_field_tag :confirm, "1" %>
+
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Billing details", heading_id: "invoice-billing", icon: "file" %>
+    <div class="staff-quote-side-panel__body space-y-3">
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="invoice_description">Description</label>
+        <input id="invoice_description" name="invoice[description]" class="ant-control w-full" value="<%= @project.title %>">
+      </div>
+      <%= ant_date_field "invoice[issue_on]", label: "Proposed issue date", value: Time.zone.today, required: true %>
+      <%= ant_date_field "invoice[due_on]", label: "Due date", value: Time.zone.today + 14, required: true %>
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="invoice_payment_terms_text">Payment terms note</label>
+        <textarea id="invoice_payment_terms_text" name="invoice[payment_terms_text]" class="ant-control w-full" rows="3"><%= @project.quote_revision.payment_terms %></textarea>
+        <p class="ant-field__hint">Do not invent tax rates or banking details. Tax treatment remains unapproved.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="staff-quote-side-panel">
+    <%= render "shared/ui/side_panel_head", title: "Invoice item", heading_id: "invoice-line", icon: "layers" %>
+    <div class="staff-quote-side-panel__body space-y-3">
+      <div class="ant-field ant-field--portal">
+        <label class="ant-field__label" for="line_description">Description</label>
+        <input id="line_description" name="invoice[lines][][description]" class="ant-control w-full" required value="<%= @project.title %>">
+      </div>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_quantity">Quantity</label>
+          <input id="line_quantity" name="invoice[lines][][quantity]" class="ant-control w-full" value="1" required>
+        </div>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_unit">Unit</label>
+          <input id="line_unit" name="invoice[lines][][unit]" class="ant-control w-full" value="Lot" required>
+        </div>
+        <div class="ant-field ant-field--portal">
+          <label class="ant-field__label" for="line_amount">Unit amount (<%= @project.commercial_snapshot["currency"] %>)</label>
+          <input id="line_amount" name="invoice[lines][][unit_amount]" class="ant-control w-full" required placeholder="0.00"
+                 value="<%= Commercial::Money.to_input([ @remaining, @accepted ].min, @project.commercial_snapshot['currency']) %>">
+        </div>
+      </div>
+      <p class="staff-quote-summary__hint">Server-side totals enforce remaining billable capacity. Over-invoicing is rejected.</p>
+    </div>
+  </section>
+
+  <button type="submit" class="ant-btn-primary">Save draft invoice</button>
+<% end %>

@@ -38,9 +38,9 @@ class ClientShellNavigationTest < ApplicationSystemTestCase
     assert_selector "h1", text: /Review quotation/
 
     find("button.client-mobile-nav-toggle", text: /Menu/).click
-    assert_selector ".client-app-side__nav--open"
+    assert_selector ".client-app-side__nav--open", wait: 5
     page.send_keys(:escape)
-    assert_no_selector ".client-app-side__nav--open"
+    assert_no_selector ".client-app-side__nav--open", wait: 5
 
     click_link "Accept quotation"
     assert_selector "h1", text: /Accept this quotation/

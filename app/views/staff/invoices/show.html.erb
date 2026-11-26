@@ -1,0 +1,151 @@
+<% content_for :staff_nav, :finance %>
+<%= ant_page_header(
+      eyebrow: @invoice.reference_number,
+      title: @invoice.description.presence || @invoice.project.title,
+      description: "#{@invoice.client_organization.name} · #{@invoice.project.reference_number} · Simulated invoice",
+      primary_action: (@invoice.draft? && policy(@invoice).update? ? { label: "Edit draft", path: edit_staff_invoice_path(@invoice) } : nil),
+      secondary_action: { label: "All invoices", path: staff_invoices_path }
+    ) %>
+
+<div class="staff-quote-notice staff-quote-notice--warn mt-4">
+  <p><strong>SIMULATED — NOT PAYABLE.</strong> This is not a tax invoice and creates no genuine receivable.</p>
+</div>
+
+<div class="mt-4 flex flex-wrap gap-2">
+  <%= ant_status_badge(label: @invoice.issue_status_label, badge_class: invoice_issue_badge_variant(@invoice)) %>
+  <%= ant_status_badge(label: invoice_payment_display_label(@invoice), badge_class: invoice_payment_badge_variant(@invoice)) %>
+  <% if @invoice.released_to_client? %>
+    <%= ant_status_badge(label: "Released to client", badge_class: "ant-badge--good") %>
+  <% end %>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-[1fr_18rem]">
+  <div class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Invoice overview", heading_id: "invoice-overview", icon: "file" %>
+      <div class="staff-quote-side-panel__body">
+        <dl class="staff-enquiry-facts">
+          <div><dt>Reference</dt><dd class="staff-quote-summary__ref"><%= @invoice.reference_number %></dd></div>
+          <div><dt>Client</dt><dd><%= @invoice.client_organization.name %></dd></div>
+          <div><dt>Project</dt><dd><%= link_to @invoice.project.reference_number, staff_project_path(@invoice.project), class: "staff-quote-link" %></dd></div>
+          <div><dt>Quotation</dt><dd><%= @invoice.quote.reference_number %> · Version <%= @invoice.quote_revision.version_number %></dd></div>
+          <div><dt>Currency</dt><dd><%= @invoice.currency %></dd></div>
+          <div><dt>Total</dt><dd><%= @invoice.display_total %></dd></div>
+          <div><dt>Issue date</dt><dd><%= @invoice.issue_on || "—" %></dd></div>
+          <div><dt>Due date</dt><dd><%= @invoice.due_on || "—" %></dd></div>
+          <div><dt>Outstanding</dt><dd><%= @invoice.issued? ? @invoice.display_outstanding : "—" %></dd></div>
+          <div><dt>Recorded payments</dt><dd><%= Commercial::Money.display(@invoice.net_paid_cents, @invoice.currency) %></dd></div>
+        </dl>
+        <% if @invoice.payment_terms_text.present? %>
+          <h3 class="mt-4 text-sm font-semibold">Payment terms on this invoice</h3>
+          <div class="staff-quote-summary__hint mt-1"><%= simple_format(@invoice.payment_terms_text) %></div>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Invoice items", heading_id: "invoice-items", icon: "layers" %>
+      <div class="staff-quote-side-panel__body">
+        <ul class="staff-quote-versions__list">
+          <% @invoice.invoice_line_items.each do |line| %>
+            <li class="staff-quote-versions__item">
+              <div class="staff-quote-versions__head">
+                <p class="staff-enquiry-clarification__title"><%= line.description %></p>
+                <p class="staff-enquiry-row__sub"><%= line.display_line_total %></p>
+              </div>
+              <p class="staff-enquiry-row__sub"><%= line.quantity.to_s("F") %> <%= line.unit %> · <%= line.display_unit_amount %> each</p>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </section>
+
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Payment history", heading_id: "invoice-payments", icon: "check" %>
+      <div class="staff-quote-side-panel__body">
+        <% if @payments.any? %>
+          <ul class="staff-quote-versions__list">
+            <% @payments.each do |payment| %>
+              <li class="staff-quote-versions__item">
+                <div class="staff-quote-versions__head">
+                  <p class="staff-enquiry-clarification__title"><%= payment.display_amount %></p>
+                  <%= ant_status_badge(label: (payment.reversed? ? "Reversed" : "Recorded"), badge_class: (payment.reversed? ? "ant-badge--warn" : "ant-badge--good")) %>
+                </div>
+                <p class="staff-enquiry-row__sub">
+                  <%= l(payment.payment_on) %> · <%= payment.payment_method_label %>
+                  <% if payment.external_reference.present? %> · <%= payment.external_reference %><% end %>
+                </p>
+                <% if payment.reversed? %>
+                  <p class="staff-quote-summary__hint mt-1">Reversal reason: <%= payment.payment_reversal.reason %></p>
+                <% elsif policy(@invoice).reverse_payment? %>
+                  <%= form_with url: reverse_staff_invoice_payment_path(@invoice, payment), method: :post, class: "mt-2 space-y-2", local: true do %>
+                    <label class="ant-field__label" for="reverse_reason_<%= payment.id %>">Reverse — reason</label>
+                    <input id="reverse_reason_<%= payment.id %>" name="reason" class="ant-control w-full" required>
+                    <button class="ant-btn-outline ant-btn-outline--compact" type="submit">Record reversal</button>
+                  <% end %>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="staff-quote-versions__lede">No payments recorded yet.</p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <aside class="space-y-4">
+    <section class="staff-quote-side-panel">
+      <%= render "shared/ui/side_panel_head", title: "Actions", heading_id: "invoice-actions", icon: "check" %>
+      <div class="staff-quote-side-panel__body space-y-3">
+        <% if @invoice.issued? && policy(@invoice).download? %>
+          <%= link_to "Download PDF", download_staff_invoice_path(@invoice), class: "ant-btn-outline ant-btn-outline--compact w-full" %>
+        <% end %>
+
+        <% if policy(@invoice).issue? %>
+          <%= form_with url: issue_staff_invoice_path(@invoice), method: :post, local: true, class: "space-y-2" do %>
+            <%= hidden_field_tag :confirm, "1" %>
+            <button class="ant-btn-primary ant-btn-primary--compact w-full" type="submit">Issue invoice</button>
+          <% end %>
+        <% end %>
+
+        <% if policy(@invoice).release? && !@invoice.released_to_client? %>
+          <%= form_with url: release_staff_invoice_path(@invoice), method: :post, local: true, class: "space-y-2" do %>
+            <%= hidden_field_tag :confirm, "1" %>
+            <button class="ant-btn-primary ant-btn-primary--compact w-full" type="submit">Release to client</button>
+          <% end %>
+        <% end %>
+
+        <% if (release = @invoice.active_release) && policy(@invoice).revoke_release? %>
+          <%= form_with url: revoke_staff_invoice_release_path(@invoice, release), method: :post, local: true, class: "space-y-2" do %>
+            <label class="ant-field__label" for="revoke_reason">Withdraw client access — reason</label>
+            <input id="revoke_reason" name="reason" class="ant-control w-full" required>
+            <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Revoke release</button>
+          <% end %>
+        <% end %>
+
+        <% if policy(@invoice).record_payment? && @invoice.outstanding_cents.positive? %>
+          <%= form_with url: staff_invoice_payments_path(@invoice), method: :post, scope: :payment, local: true, class: "space-y-2" do %>
+            <h3 class="text-sm font-semibold">Record payment</h3>
+            <label class="ant-field__label" for="payment_amount">Amount (<%= @invoice.currency %>)</label>
+            <input id="payment_amount" name="payment[amount]" class="ant-control w-full" required placeholder="0.00">
+            <%= ant_date_field "payment[payment_on]", label: "Payment date", value: Time.zone.today, required: true %>
+            <%= ant_select_tag "payment[payment_method]", payment_method_options, label: "Method", selected: "bank_transfer" %>
+            <label class="ant-field__label" for="payment_ref">External reference</label>
+            <input id="payment_ref" name="payment[external_reference]" class="ant-control w-full">
+            <button class="ant-btn-primary ant-btn-primary--compact w-full" type="submit">Record payment</button>
+          <% end %>
+        <% end %>
+
+        <% if policy(@invoice).void? %>
+          <%= form_with url: void_staff_invoice_path(@invoice), method: :post, local: true, class: "space-y-2" do %>
+            <%= hidden_field_tag :confirm, "1" %>
+            <label class="ant-field__label" for="void_reason">Void invoice — reason</label>
+            <input id="void_reason" name="reason" class="ant-control w-full" required>
+            <button class="ant-btn-outline ant-btn-outline--compact w-full" type="submit">Void invoice</button>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  </aside>
+</div>

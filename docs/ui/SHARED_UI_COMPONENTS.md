@@ -21,6 +21,7 @@ Design references: **A01/A03/A05/A06** (fields), **M08** (invitations form), stu
 | `ant_status_badge` | [`_status_badge.html.erb`](../../app/views/shared/ui/_status_badge.html.erb) | Editorial status pill (uses `.ant-badge--*`) |
 | `ant_content_record` | [`_content_record.html.erb`](../../app/views/shared/ui/_content_record.html.erb) | Studio **list-item** row: icon, title, status, guidance, actions |
 | Staff quotations (F4-02A) | [`staff/quotations/*`](../../app/views/staff/quotations/), `Commercial::*` | S05 dashboard + 5-step editor; Prawn PDF; not website CMS |
+| Staff/client billing (F4-08) | [`staff/finance`](../../app/views/staff/finance/), [`staff/invoices`](../../app/views/staff/invoices/), [`client/invoices`](../../app/views/client/invoices/), `Billing::*` | S19/S20/C13/C14 simulated invoices, payments, releases; reuse page header/tabs/badges/date/select |
 | Staff workspace shell | [`layouts/staff_portal.html.erb`](../../app/views/layouts/staff_portal.html.erb), [`shared/staff/*`](../../app/views/shared/staff/) | Studio **S01** sidebar + header (staff routes only) |
 | Client workspace shell | [`layouts/client_portal.html.erb`](../../app/views/layouts/client_portal.html.erb), [`shared/client/*`](../../app/views/shared/client/) | Studio **C01** sidebar + header (client routes) |
 | Public site shell | [`layouts/public_site.html.erb`](../../app/views/layouts/public_site.html.erb), [`shared/public/*`](../../app/views/shared/public/) | Studio **P01** header/footer + homepage entry |
@@ -290,7 +291,7 @@ data: {
 
 ## Client onboarding & portal (F4-04A)
 
-- **Staff Clients:** `/staff/clients` reuses enquiry list panel + `ant_pagination`, summary stats, and client detail tabs via `ant_section_tabs` (Overview / Contacts & access / Service requests / Quotations / Activity). Side panels use `shared/ui/side_panel_head`.
+- **Staff Clients (S16):** `/staff/clients` — “Client directory” with clickable `staff-clients-stats` cards, `ant_section_tabs` views (All / Awaiting portal / Portal connected / Pending invitations), `ant-filter-toolbar`, desktop `staff-enquiry-table` + mobile `staff-enquiry-cards`, and `ant_pagination`. Client detail tabs via `ant_section_tabs` (Overview / Contacts & access / Service requests / Quotations / Activity).
 - **Onboarding:** `/staff/enquiries/:id/onboard` — guided form (organisation, representative, portal role, confirmation); roles from `Invitations::Policy` + `client_portal_role_options`.
 - **Client shell:** nav Overview / Service requests / Quotations / Account only (future modules omitted). Helpers: `ClientPortalHelper` (`client_can_view_requests?`, `client_can_view_quotations?`, `client_request_status_label`, `client_money`).
 - **Client mobile drawer (F4-04B-H1):** closed drawer and backdrop use `pointer-events: none`; Stimulus `client-shell` applies `inert`/`aria-hidden` when closed below `lg`, closes on `turbo:before-visit` / `turbo:before-cache` (not `turbo:load`, which races menu open after navigation), Escape, backdrop click, and sidebar link click. An open drawer must be dismissed before page content receives clicks; a closed drawer must never intercept commercial actions.
